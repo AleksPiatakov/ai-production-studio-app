@@ -36,6 +36,8 @@ jobs:
             sleep 1
           done
           curl -fsS http://127.0.0.1:4173/api/health
+      - name: Build shared online preview
+        run: node scripts/build-preview.js
       - name: Visual and navigation acceptance
         run: node scripts/verify-dashboard-preview.js
       - name: Save rendered screenshots
