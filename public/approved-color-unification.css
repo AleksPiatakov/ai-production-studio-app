@@ -102,3 +102,60 @@ body button:not(.primary):not(.p01-module):not(.p04-strip-item):not(.p07-demo-pe
 #screen-shot .p05-shot-workspace,
 #screen-images .p06-image-studio,
 #screen-voice .p07-workspace{color-scheme:dark}
+
+/* Visible shared shell: approved navy/purple family used by P-02/P-04.
+   Applies to the overview and generic pages; dedicated production canvases retain
+   their documented module-specific depth and contrast. */
+:root{
+  --canvas:#090d20;
+  --surface:#10162b;
+  --surface-raised:#191a35;
+  --ink:#f3effb;
+  --muted:#bcb3d3;
+  --quiet:#9b92b6;
+  --line:rgba(144,124,221,.25);
+  --line-strong:rgba(144,124,221,.43);
+  --violet:#9a27f0;
+  --violet-soft:rgba(154,39,240,.16);
+}
+html{background:#090d20!important}
+body{
+  background:radial-gradient(900px 560px at 82% -18%,rgba(109,52,177,.12),transparent 63%),#090d20!important;
+}
+body>header{background:#0d1127!important;border-color:var(--line)!important}
+body #content{background-color:transparent}
+body #content>.hero{color:var(--ink)}
+body #content>.hero h2{color:#f3effb!important}
+body #content>.hero p{color:#bcb3d3!important}
+body .grid>.card,
+body .preview-main-card,
+body .p01-dashboard{
+  background:#10162b!important;
+  border-color:var(--line)!important;
+  color:#f3effb!important;
+}
+body .p01-dashboard .p01-module,
+body .p01-dashboard .p01-panel,
+body .preview-box{
+  background:#191a35!important;
+  border-color:var(--line)!important;
+  color:#f3effb!important;
+}
+body .p01-dashboard .p01-module:hover{
+  background:#282244!important;border-color:#9a27f0!important;
+}
+body .p01-dashboard .p01-next{
+  background:linear-gradient(110deg,rgba(93,42,148,.28),#15152d)!important;
+  border-color:var(--line)!important;
+}
+body button.primary{
+  background:linear-gradient(130deg,#7628bd,#9a27f0)!important;
+  border-color:#ad53f2!important;
+  color:#fff!important;
+}
+body .preview-rail button.active,
+body .aps-nav-main button.active{
+  background:linear-gradient(90deg,#4e247e,#32224e)!important;
+  border-color:#7339a6!important;
+  color:#fff!important;
+}
