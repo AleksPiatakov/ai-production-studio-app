@@ -1,0 +1,49 @@
+name: P-04 Approved Storyboard
+
+on:
+  pull_request:
+    paths:
+      - 'public/**'
+      - 'scripts/verify-storyboard-p04.js'
+      - '.github/workflows/p04-storyboard.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  visual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Unit tests
+        run: npm test
+      - name: Install browser
+        run: |
+          npm install --no-save playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Start ephemeral local app
+        run: |
+          node server/index.js > /tmp/p04-server.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -fsS http://127.0.0.1:4173/api/health >/dev/null && break
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:4173/api/health
+      - name: Check approved storyboard
+        run: node scripts/verify-storyboard-p04.js
+      - name: Attach screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p04-approved-storyboard-screenshots
+          path: preview-screenshots/p04-*.png
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Diagnostics
+        if: failure()
+        run: tail -80 /tmp/p04-server.log
