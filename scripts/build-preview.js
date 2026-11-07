@@ -26,5 +26,7 @@ fs.copyFileSync(path.join(root, 'public', 'mobile-studio.css'), path.join(output
 fs.copyFileSync(path.join(root, 'public', 'image-studio-p06.css'), path.join(output, 'image-studio-p06.css'));
 fs.copyFileSync(path.join(root, 'public', 'image-studio-p06.js'), path.join(output, 'image-studio-p06.js'));
 fs.copyFileSync(path.join(root, 'preview', 'script-editor-demo.js'), path.join(output, 'script-editor-demo.js'));
+fs.copyFileSync(path.join(root, 'public', 'shot-workspace-p05.js'), path.join(output, 'shot-workspace-p05.js'));
+fs.copyFileSync(path.join(root, 'public', 'shot-workspace-p05.css'), path.join(output, 'shot-workspace-p05.css'));
 fs.writeFileSync(path.join(output, 'robots.txt'), 'User-agent: *\nDisallow: /\n');
 console.log('Preview built with synthetic data. Static files:', fs.readdirSync(output).length);
