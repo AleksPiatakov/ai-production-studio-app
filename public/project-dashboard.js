@@ -13,7 +13,7 @@ window.APSProjectDashboard = Object.freeze({ render: function renderDashboard(da
   {icon:'✎',title:'Сценарій',view:'script',description:'Епізоди, сцени та діалоги'},
   {icon:'♙',title:'Персонажі',view:'assets',description:'Біблія персонажів і стилю'},
   {icon:'▦',title:'Сторіборд',view:'storyboard',description:'Плани, кадри та референси'},
-  {icon:'▧',title:'Зображення',view:'assets',description:'Варіанти зображень і ресурси'},
+  {icon:'▧',title:'Зображення',view:'imageStudio',description:'Варіанти зображень і ресурси'},
   {icon:'◖',title:'Голос і звук',view:'audio',description:'Озвучення, мови й голоси'},
   {icon:'▣',title:'Відео',view:'preview',description:'Кліпи, перевірка, DaVinci'}
  ];
