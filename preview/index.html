@@ -30,6 +30,13 @@
 .preview-sidebar-item.active{background:var(--violet-soft);border:1px solid rgba(162,138,245,.4)}
 .preview-sidebar-item small{display:block;color:var(--muted)}
 .preview-warning{margin-top:14px;border-left:3px solid var(--violet);padding-left:10px;color:var(--muted);font-size:12px}
+body:has(#screen-script.active) #content{max-width:none;padding:0;margin:0;width:100%}
+body:has(#screen-script.active) #content>.hero{display:none}
+body:has(#screen-script.active) #screen-script{margin:0;padding:0}
+body:has(#screen-script.active) .preview-warning{display:none}
+#screen-script .p02-approved-layout{background:#0b1024!important}
+#screen-script .p02-project-tabs{display:flex;overflow-x:auto}
+#screen-script.demo-p02-focus .p02-project-tabs{display:none!important}
 #screen-script:not(.demo-p02-focus) .p02-approved-layout>.p02-edit-layout{height:min(620px,67vh);min-height:460px}
 #screen-script .p02-approved-layout .editor-main{display:flex;flex-direction:column;min-height:0}
 #screen-script .p02-approved-layout #demo-script-text{flex:1;min-height:320px!important;background:#0e1328!important;border-color:rgba(144,124,221,.26)!important;color:#f6efff}
@@ -64,6 +71,17 @@
  <div class="preview-screen" id="screen-script">
    <div class="editor-page-frame p02-editor"><article class="editor-shell p02-approved-layout">
     <div class="editor-topbar"><div class="p02-project-context"><span class="p02-context-logo" aria-hidden="true">▣</span><strong>Міст із Світла</strong><span>Сезон 1 · Епізод 1: Остання ніч міста ліхтарів</span><span class="p02-context-state">● Чернетка</span></div><span class="tag">Демо</span></div>
+    <nav class="p02-project-tabs" aria-label="Розділи проєкту">
+      <button type="button" data-screen="project">Огляд</button>
+      <button type="button" data-screen="script" class="active" aria-current="page">Сценарій</button>
+      <button type="button" data-screen="project">Епізоди</button>
+      <button type="button" data-screen="project">Сцени</button>
+      <button type="button" data-screen="project">Персонажі</button>
+      <button type="button" data-screen="project">Локації</button>
+      <button type="button" data-screen="project">Матеріали</button>
+      <button type="button" data-screen="project">Виробництво</button>
+      <button type="button" data-screen="project">Нотатки</button>
+    </nav>
     <div class="p02-commandbar">
       <div class="p02-segments" role="group" aria-label="Режими сценарію">
         <button type="button" class="active" data-demo-script-mode="whole">Увесь епізод</button>
