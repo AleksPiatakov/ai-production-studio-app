@@ -285,7 +285,16 @@ document.getElementById('preview-image-studio').addEventListener('change',event=
 <script src="./approved-script-format.js"></script><script src="./script-editor-demo.js"></script>
 
 <script>
-window.goToView=function(name){if(name==='imageStudio'){document.querySelector('.preview-controls [data-screen="images"]')?.click();return;}document.getElementById('preview-feedback').textContent='Відкрито демо-модуль «'+name+'». Реальна навігація працює лише в локальному застосунку.';};
+window.goToView=function(name){
+  // Share available demo workspaces with the actual P-01 module cards.
+  // Unimplemented modules stay explicitly unavailable; never imply working AI or local APIs.
+  const demoRoutes={script:'script',storyboard:'storyboard',imageStudio:'images',audio:'voice',shot:'shot',models:'models',assistant:'assistant'};
+  const destination=demoRoutes[name];
+  const button=destination&&document.querySelector('.preview-controls [data-screen="'+destination+'"]');
+  if(button){button.click();return;}
+  const friendly={assets:'Персонажі та бібліотека',episodes:'Епізоди',preview:'Відео та експорт',sound:'Звук і музика'};
+  document.getElementById('preview-feedback').textContent='«'+(friendly[name]||name)+'»: окремий інтерактивний екран ще не включено до онлайн-прев’ю. У локальній студії доступність залежить від реалізованого модуля; це демо не запускає генерацію.';
+};
 document.getElementById('preview-dashboard').innerHTML=window.APSProjectDashboard.render({
  name:'Демонстраційний проєкт',
  episodes:[{title:'Епізод 01',status:'draft'},{title:'Епізод 02',status:'planned'}],
