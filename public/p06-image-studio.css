@@ -1,0 +1,59 @@
+/* Approved P-06: dark indigo visual generation workspace; no fake results. */
+body:has(.p06-studio) #content{max-width:none;padding:18px 20px}
+body:has(.p06-studio) #content>.hero{margin-bottom:14px}
+.p06-studio{background:#090e21;border:1px solid #302a55;border-radius:14px;overflow:hidden;color:#f3eaff;box-shadow:0 13px 38px #0006}
+.p06-tabs{display:flex;gap:6px;overflow-x:auto;padding:10px 14px;background:#10132c;border-bottom:1px solid #352b5f}
+.p06-tabs button{flex:0 0 auto;padding:10px 15px;border:1px solid transparent;border-radius:9px;background:#1a1c3a!important;color:#cfc4e0!important;box-shadow:none!important;font-size:12px}
+.p06-tabs button.active{background:linear-gradient(120deg,#7422be,#a32fe7)!important;border-color:#b447f7;color:white!important;box-shadow:0 0 14px #8125dd66!important}
+.p06-body{display:grid;grid-template-columns:minmax(240px,.85fr) minmax(390px,1.65fr) minmax(240px,.88fr);gap:0;min-height:610px}
+.p06-body>section,.p06-body>aside{min-width:0;padding:15px;background:#0d122a}
+.p06-prompt-panel{border-right:1px solid #39305e}
+.p06-canvas-panel{background:#0b1126!important}
+.p06-settings{border-left:1px solid #39305e}
+.p06-heading{display:flex;gap:12px;align-items:center;justify-content:space-between;min-height:30px;margin-bottom:13px}
+.p06-heading h3{margin:0;font-size:15px;color:#f5ecff}
+.p06-heading small{font-size:11px;color:#b6a7d0}
+.p06-tag{display:inline-block;border-radius:7px;padding:5px 8px;background:#282046;border:1px solid #543477;color:#c9b3ed;font-size:10px;white-space:nowrap}
+.p06-field{display:grid;gap:7px;margin-bottom:16px;color:#d8cdec;font-size:12px;font-weight:700}
+.p06-field textarea,.p06-field select{background:#11182f!important;color:#f2eafa!important;border:1px solid #4a3a73!important;border-radius:10px;padding:12px;font-size:13px;line-height:1.55}
+.p06-field textarea#p06-prompt{min-height:185px;resize:vertical}
+.p06-field textarea#p06-negative{min-height:85px}
+.p06-field select:disabled{opacity:.78;cursor:not-allowed}
+.p06-prompt-panel h4{font-size:13px;color:#eee4ff;margin:14px 0 11px}
+.p06-style-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.p06-style{min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;text-align:center;padding:8px;border:1px solid #453662!important;border-radius:10px;background:#1a1b3a!important;color:#e8dcf9!important;box-shadow:none!important}
+.p06-style.selected{border-color:#b647f7!important;background:#32204f!important;box-shadow:0 0 10px #862bd55c!important}
+.p06-style small{font-size:10px;line-height:1.4}
+.p06-style-icon{font-size:26px;color:#b897f5}
+.p06-source{margin-top:17px;padding:12px;border:1px solid #403363;border-radius:10px;background:#17172f;display:grid;gap:6px}
+.p06-source strong{font-size:12px;color:#f1e9fb}.p06-source small{font-size:11px;color:#bfadd9}
+.p06-preview{height:390px;display:grid;place-items:center;border:1px solid #453467;border-radius:13px;background:linear-gradient(140deg,#1b2450,#292359 55%,#101a3a);overflow:hidden}
+.p06-preview img{width:100%;height:100%;object-fit:contain;background:#090f1e}
+.p06-empty-preview{text-align:center;max-width:340px;padding:22px}
+.p06-empty-icon{display:block;font-size:50px;color:#b185e8;margin-bottom:13px}
+.p06-empty-preview strong{display:block;font-size:17px;color:#f0e8ff}
+.p06-empty-preview p{font-size:12px;color:#c0b6d2;line-height:1.6;margin-top:9px}
+.p06-image-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.p06-image-actions button{flex:1 1 auto;background:#20213c!important;border:1px solid #463969!important;color:#e1d4f7!important;font-size:11px;box-shadow:none!important}
+.p06-image-actions button:disabled{opacity:.45;cursor:not-allowed}
+.p06-variants-heading{margin-top:21px}
+.p06-variants,.p06-history{display:flex;gap:9px;overflow-x:auto;min-height:105px}
+.p06-thumb{flex:0 0 132px;padding:5px!important;background:#191b3a!important;border:1px solid #433464!important;border-radius:10px!important;box-shadow:none!important;color:#dfd5ee!important;overflow:hidden;text-align:left}
+.p06-thumb.selected{border-color:#c157ff!important;box-shadow:0 0 12px #862bec80!important}
+.p06-thumb img{display:block;width:100%;height:82px;object-fit:cover;border-radius:6px}
+.p06-thumb small{display:block;padding:5px 0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:10px}
+.p06-empty-gallery{display:grid;place-items:center;min-height:91px;width:100%;padding:14px;border:1px dashed #4a3d70;border-radius:10px;color:#bfb0d3;font-size:12px;line-height:1.5;text-align:center}
+.p06-ratios,.p06-counts{display:flex;gap:5px}
+.p06-ratios button,.p06-counts button{flex:1;min-width:0;padding:10px 5px;background:#201e3a!important;border:1px solid #46376a!important;box-shadow:none!important;color:#cfc2e7!important;font-size:11px}
+.p06-ratios button.selected,.p06-counts button.selected{background:linear-gradient(120deg,#7824c8,#ad37ef)!important;color:white!important;border-color:#b951ff!important}
+.p06-field input[type=range]{accent-color:#c051ff;padding:0}
+.p06-field output{justify-self:end;font-size:11px;color:#d5b8fb}
+.p06-build-brief{display:block;width:100%;padding:15px;background:linear-gradient(125deg,#7923c9,#b12deb)!important;border:1px solid #ba49fd!important;color:white!important;font-size:14px;box-shadow:0 5px 20px #8b2cd44d!important}
+.p06-disclaimer{margin:10px 0 20px;color:#b1a4c8;font-size:11px;line-height:1.5}
+.p06-settings .p06-history{flex-wrap:wrap;min-height:88px}
+.p06-settings .p06-thumb{flex-basis:calc(50% - 5px)}
+.p06-settings .p06-thumb img{height:68px}
+.p06-feedback{padding:12px 15px;border-top:1px solid #3b305d;background:#161530;color:#c4b3da;font-size:11px;line-height:1.5}
+@media(max-width:1320px){.p06-body{grid-template-columns:minmax(220px,1fr) minmax(350px,1.5fr)}.p06-settings{grid-column:1/-1;border-left:0;border-top:1px solid #39305e;display:grid;grid-template-columns:repeat(2,1fr);gap:10px 20px}.p06-settings .p06-heading,.p06-build-brief,.p06-disclaimer,.p06-history{grid-column:1/-1}}
+@media(max-width:860px){.p06-body{grid-template-columns:1fr}.p06-prompt-panel{border-right:0;border-bottom:1px solid #39305e}.p06-settings{display:block}.p06-preview{height:330px}}
+@media(max-width:480px){.p06-tabs{padding:8px}.p06-tabs button{padding:8px 9px}.p06-style-grid{grid-template-columns:repeat(2,1fr)}.p06-body>section,.p06-body>aside{padding:11px}.p06-preview{height:280px}.p06-ratios button{font-size:10px}}
