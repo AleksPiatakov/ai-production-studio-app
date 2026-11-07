@@ -1,7 +1,7 @@
 /* P-07 Voice Studio (approved): characters | dialogue | settings and saved takes below.
    All takes are sourced from line.audioDrafts; there are no synthetic results in app. */
 body:has(.p07-workspace) #content{max-width:none;padding:20px 22px}
-.p07-workspace{display:grid;grid-template-columns:minmax(180px,225px) minmax(0,1fr) minmax(230px,290px);gap:0;border:1px solid #3d3063;border-radius:13px;overflow:hidden;background:#0b1126;color:#f4edff}
+.p07-workspace{grid-column:1/-1;display:grid;grid-template-columns:minmax(180px,225px) minmax(0,1fr) minmax(230px,290px);gap:0;border:1px solid #3d3063;border-radius:13px;overflow:hidden;background:#0b1126;color:#f4edff}
 .p07-workspace>.audio-plan{background:#0e142b!important;border:none!important;border-radius:0!important;min-width:0;padding:17px!important;margin:0!important}
 .p07-workspace .audio-plan .route-head h3{color:#f3eaff}
 .p07-workspace .audio-plan .route-head p,.p07-workspace .audio-guide{color:#c4b5dc!important}
@@ -37,7 +37,7 @@ body:has(.p07-workspace) #content{max-width:none;padding:20px 22px}
 .p07-counts,.p07-diversity{display:flex;gap:5px}
 .p07-counts button,.p07-diversity button{flex:1;min-width:0;border:1px solid #48356c!important;background:#241e3f!important;box-shadow:none!important;color:#d5c9e7!important;padding:9px 5px;font-size:11px}
 .p07-counts button.active,.p07-diversity button.active{background:linear-gradient(110deg,#7826c5,#a935e9)!important;color:#fff!important;border-color:#ac4afa!important}
-.p07-variants-panel{border:1px solid #493275;border-radius:13px;background:#11152d;padding:17px;margin-top:15px}
+.p07-variants-panel{grid-column:1/-1;border:1px solid #493275;border-radius:13px;background:#11152d;padding:17px;margin-top:15px}
 .p07-variants-header{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .p07-variants-header strong{display:block;font-size:16px;color:#f4ecff}
 .p07-variants-header small{display:block;margin-top:6px;font-size:11px;color:#bcaed1}
