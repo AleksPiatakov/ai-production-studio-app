@@ -1,0 +1,56 @@
+/* P-07 Voice Studio (approved): characters | dialogue | settings and saved takes below.
+   All takes are sourced from line.audioDrafts; there are no synthetic results in app. */
+body:has(.p07-workspace) #content{max-width:none;padding:20px 22px}
+.p07-workspace{display:grid;grid-template-columns:minmax(180px,225px) minmax(0,1fr) minmax(230px,290px);gap:0;border:1px solid #3d3063;border-radius:13px;overflow:hidden;background:#0b1126;color:#f4edff}
+.p07-workspace>.audio-plan{background:#0e142b!important;border:none!important;border-radius:0!important;min-width:0;padding:17px!important;margin:0!important}
+.p07-workspace .audio-plan .route-head h3{color:#f3eaff}
+.p07-workspace .audio-plan .route-head p,.p07-workspace .audio-guide{color:#c4b5dc!important}
+.p07-workspace .audio-guide{background:#231a42!important;border-color:#493073!important}
+.p07-character-rail,.p07-settings-panel{padding:15px 12px;background:#0c1027;border-right:1px solid #39315d;min-width:0}
+.p07-settings-panel{background:#0d122a;border-left:1px solid #39315d;border-right:none}
+.p07-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #3d345f}
+.p07-heading strong{color:#f3e9ff;font-size:14px}
+.p07-heading small{color:#b6a6d0;font-size:11px}
+.p07-character-rail>button{width:100%;display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:10px;background:#1c1b3a!important;border:1px solid #39315b!important;border-radius:10px;box-shadow:none!important;color:#f2ecff!important;text-align:left}
+.p07-character-rail>button:hover{border-color:#9e41f5!important}
+.p07-character-rail>button strong,.p07-character-rail>button small{display:block}
+.p07-character-rail>button strong{font-size:13px}
+.p07-character-rail>button small{font-size:11px;color:#bcb0d5;line-height:1.35;margin-top:3px}
+.p07-avatar{display:grid;place-items:center;flex:0 0 38px;height:38px;border-radius:10px;background:linear-gradient(125deg,#6626b6,#ad3be5);color:#fff;font-size:24px}
+.p07-workspace .audio-line{cursor:pointer;transition:border-color .15s,background .15s}
+.p07-workspace .audio-line:hover,.p07-workspace .audio-line:focus-visible{border-color:#9446d8!important}
+.p07-workspace .audio-line.active{background:#241b43!important;border-color:#ac43f2!important;box-shadow:inset 3px 0 #b13ff1!important}
+.p07-workspace .audio-line .audio-copy>p{color:#eeeafa!important}
+.p07-workspace .audio-meta{color:#c7b8e0!important}
+.p07-settings-panel .p07-selected-name{display:grid;gap:4px;margin-bottom:12px}
+.p07-settings-panel .p07-selected-name strong{color:#f6eaff;font-size:16px}
+.p07-settings-panel .p07-selected-name small{color:#bcadd3;font-size:11px}
+.p07-quote{background:#211b3a;border:1px solid #3e3163;border-radius:10px;padding:13px;color:#f2e9ff;font-size:13px;line-height:1.5}
+.p07-key-values{margin:13px 0}
+.p07-key-values>div{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #3c305d;font-size:12px}
+.p07-key-values dt{color:#b8abc9}.p07-key-values dd{color:#f0e8fb;font-weight:700;text-align:right;margin:0}
+.p07-setting-button{width:100%;border-color:#7638b6!important;background:#35224f!important;color:#eee1ff!important;font-size:12px}
+.p07-take-plan{margin-top:22px;padding:13px;border:1px solid #4b3477;background:#1d1a39;border-radius:11px}
+.p07-take-plan strong{color:#f6ecff;font-size:13px}
+.p07-take-plan p{margin:13px 0 7px;color:#c6bbd8;font-size:11px;line-height:1.5}
+.p07-take-plan small{display:block;margin-top:14px;color:#ac9dc6;font-size:11px;line-height:1.5}
+.p07-counts,.p07-diversity{display:flex;gap:5px}
+.p07-counts button,.p07-diversity button{flex:1;min-width:0;border:1px solid #48356c!important;background:#241e3f!important;box-shadow:none!important;color:#d5c9e7!important;padding:9px 5px;font-size:11px}
+.p07-counts button.active,.p07-diversity button.active{background:linear-gradient(110deg,#7826c5,#a935e9)!important;color:#fff!important;border-color:#ac4afa!important}
+.p07-variants-panel{border:1px solid #493275;border-radius:13px;background:#11152d;padding:17px;margin-top:15px}
+.p07-variants-header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.p07-variants-header strong{display:block;font-size:16px;color:#f4ecff}
+.p07-variants-header small{display:block;margin-top:6px;font-size:11px;color:#bcaed1}
+.p07-new-take{background:linear-gradient(120deg,#7325c0,#a22de4)!important;color:white!important;border-color:#a842ec!important;box-shadow:0 0 13px #7427c84a!important}
+.p07-takes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px}
+.p07-take{min-width:0;display:grid;gap:9px;padding:13px;border:1px solid #463463;border-radius:11px;background:#1c1c3b;color:#e8def7}
+.p07-take-name{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px}
+.p07-take-status{border:1px solid #4a4171;border-radius:6px;background:#292446;color:#cdb9ee;padding:4px 7px;font-size:10px}
+.p07-take-status.needs-review{border-color:#b9773d;background:#463022;color:#ffd0a4}
+.p07-take audio{width:100%;height:35px;min-width:0}
+.p07-take small{font-size:11px;color:#bfb1d5}
+.p07-review-warning{color:#fbd2a8;font-size:11px;line-height:1.4}
+.p07-empty,.p07-plan-note{color:#b5a4d1;font-size:12px;line-height:1.55}
+.p07-plan-note{margin:14px 0 0}
+@media(max-width:1250px){.p07-workspace{grid-template-columns:185px minmax(0,1fr)}.p07-settings-panel{grid-column:1/-1;border-left:0;border-top:1px solid #413465}.p07-takes{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.p07-workspace{display:block}.p07-character-rail{border-right:0;border-bottom:1px solid #413465}.p07-character-rail>button{display:inline-flex;max-width:220px;margin-right:6px}.p07-workspace>.audio-plan{padding:13px!important}.p07-takes{grid-template-columns:1fr}.p07-variants-header{flex-direction:column;align-items:stretch}.p07-settings-panel{border-left:0}}
