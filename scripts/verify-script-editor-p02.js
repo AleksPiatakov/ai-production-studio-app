@@ -80,7 +80,7 @@ const path = require('node:path');
   const previewCols=await page.locator('#screen-script .p02-edit-layout').evaluate(element=>getComputedStyle(element).gridTemplateColumns.split(' ').length);
   if(previewCols!==3)throw new Error('Static P-02 preview must match approved three-column layout');
   await page.locator('#screen-script #demo-script-reader').waitFor({state:'visible'});
-  if(await page.locator('#screen-script .aps-screenplay-dialogue').count()!==3)throw new Error('Online P-02 demo must show the same formatted dialogue cards');
+  if(await page.locator('#screen-script .aps-screenplay-dialogue').count()!==4)throw new Error('Online P-02 demo must show all four formatted dialogue cards');
   if(await page.locator('#screen-script #demo-script-text').isVisible())throw new Error('Demo must not show a redundant textarea');
   await page.screenshot({path:path.join(output,'p02-approved-online.png'),fullPage:true});
   await page.locator('#demo-script-focus').click();
