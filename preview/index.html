@@ -163,7 +163,12 @@ body:has(#screen-script.active) .preview-warning{display:none}
    </section>
   </article>
  </div>
- <div class="preview-screen" id="screen-images"><div id="preview-image-studio"></div></div>
+ <div class="preview-screen" id="screen-images"><div id="preview-image-studio"></div></div><dialog id="p06-preview-brief-dialog" aria-label="Підготовлений запит — демонстрація">
+  <form method="dialog" style="display:grid;gap:12px;max-width:min(560px,90vw);padding:18px;background:#11172e;color:#f1e8ff;border:1px solid #7a3db4;border-radius:14px">
+    <strong>Підготовлений запит на зображення · демо</strong>
+    <pre style="white-space:pre-wrap;overflow-wrap:anywhere;color:#d8ccec;font:13px/1.5 ui-monospace,monospace"></pre>
+    <button type="submit" style="background:#7a2ec9;color:#fff">Закрити</button>
+  </form></dialog>
  <div class="preview-screen" id="screen-shot"><div id="preview-shot-workspace"></div></div>
  <div class="preview-screen" id="screen-models"><div class="preview-main-card"><p class="eyebrow">ЦЕНТР AI-МОДЕЛЕЙ</p><h3>Мої моделі</h3><p>Онлайн-прев’ю не підключається до локальних моделей. Реєстр і генерація працюватимуть у настільній програмі.</p></div></div>
  <div class="preview-screen" id="screen-assistant"><div class="preview-main-card"><p class="eyebrow">AI-ПОМІЧНИК ПРОЄКТУ</p><h3>Помічник у межах проєкту</h3><p>Модальне вікно, рішення і версії будуть підключені в основному застосунку. Демо не передає приватні дані.</p></div></div>
@@ -205,6 +210,15 @@ document.getElementById('preview-image-studio').innerHTML=window.APSImageStudio.
  assets:[]
 });
 document.getElementById('preview-image-studio').addEventListener('click',event=>{
+ const root=document.getElementById('preview-image-studio');
+ const action=event.target.closest('[data-p06-action="prepare-brief"]');
+ if(action){
+  const prompt=root.querySelector('#p06-prompt')?.value||'';
+  const dialog=document.getElementById('p06-preview-brief-dialog');
+  dialog.querySelector('pre').textContent='Опис кадру: '+prompt+'\n\nСтатус: демонстраційна чернетка; модель не підключена.\nЖодна генерація зображення не виконувалася.';
+  dialog.showModal();
+  return;
+ }
  const route=event.target.closest('[data-p06-route]');
  if(route){document.querySelector('.preview-controls [data-screen="'+(route.dataset.p06Route==='storyboard'?'storyboard':route.dataset.p06Route==='script'?'script':'project')+'"]')?.click()}
 });
