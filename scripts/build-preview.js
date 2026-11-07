@@ -22,6 +22,8 @@ fs.copyFileSync(path.join(root, 'public', 'project-dashboard.js'), path.join(out
 fs.copyFileSync(path.join(root, 'public', 'script-editor-p02.css'), path.join(output, 'script-editor-p02.css'));
 fs.copyFileSync(path.join(root, 'public', 'p02-approved-layout.css'), path.join(output, 'p02-approved-layout.css'));
 fs.copyFileSync(path.join(root, 'public', 'p04-approved-storyboard.css'), path.join(output, 'p04-approved-storyboard.css'));
+fs.copyFileSync(path.join(root, 'public', 'p06-image-studio.css'), path.join(output, 'p06-image-studio.css'));
+fs.copyFileSync(path.join(root, 'public', 'p06-image-studio.js'), path.join(output, 'p06-image-studio.js'));
 fs.copyFileSync(path.join(root, 'public', 'mobile-studio.css'), path.join(output, 'mobile-studio.css'));
 fs.copyFileSync(path.join(root, 'public', 'image-studio-p06.css'), path.join(output, 'image-studio-p06.css'));
 fs.copyFileSync(path.join(root, 'public', 'image-studio-p06.js'), path.join(output, 'image-studio-p06.js'));
