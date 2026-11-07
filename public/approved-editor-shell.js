@@ -18,12 +18,12 @@
     if(view!=='editor')return;
     let rail=aside.querySelector('#aps-approved-nav');
     if(!rail){rail=document.createElement('div');rail.id='aps-approved-nav';aside.prepend(rail)}
-    const projects=Array.isArray(window.projects)?window.projects:(typeof projects!=='undefined'?projects:[]);
+    const projectList=typeof projects!=='undefined' && Array.isArray(projects)?projects:[];
     const current=typeof activeId!=='undefined'?activeId:'';
     rail.innerHTML='<div class="aps-nav-brand"><span aria-hidden="true">▣</span><div><strong>AI Production<br>Studio</strong><small>Творчий простір</small></div></div>'+
       '<div class="aps-nav-project-picker"><label for="aps-nav-project-select">ПОТОЧНИЙ ПРОЄКТ</label>'+
       '<select id="aps-nav-project-select" aria-label="Вибрати проєкт">'+
-      projects.map(p=>'<option value="'+esc(p.id)+'" '+(p.id===current?'selected':'')+'>'+esc(p.name)+'</option>').join('')+
+      projectList.map(p=>'<option value="'+esc(p.id)+'" '+(p.id===current?'selected':'')+'>'+esc(p.name)+'</option>').join('')+
       '</select></div>'+
       '<nav class="aps-nav-main" aria-label="Глобальні розділи студії">'+
       routes.map(([id,icon,title])=>'<button type="button" data-aps-destination="'+id+'"><span aria-hidden="true">'+icon+'</span>'+title+'</button>').join('')+
