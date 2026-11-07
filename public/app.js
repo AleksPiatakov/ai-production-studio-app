@@ -1,6 +1,6 @@
 let projects=[], activeId, active, continuity, view='overview', activeEpisodeId=null, activeSceneId=null, activeShotId=null;
 let workspaceMode=localStorage.getItem('ai-video-studio:workspace-mode')||'guided';
-let sidebarCollapsed=localStorage.getItem('ai-video-studio:sidebar-collapsed')==='true';
+let sidebarCollapsed=localStorage.getItem('ai-video-studio:sidebar-collapsed')===null ? window.matchMedia('(max-width:620px)').matches : localStorage.getItem('ai-video-studio:sidebar-collapsed')==='true';
 let scriptFontSize=Math.min(18,Math.max(13,Number(localStorage.getItem('ai-video-studio:script-font-size'))||15));
 let assistantInfo={configured:false,engine:'local-planner'}, assistantDraft=null, assistantBusy=false, assistantError='', assistantInstruction='', returnToAssistantFocus=false;
 let annotationTool='arrow', annotationColor='#ffcc66', annotationItems=[], annotationDraft=null, annotationRedraw=null, voiceNotices={}, imageBriefText='', autopilotBusy=false, autopilotError='', editorState=null, editorNotice='', editorError='';
