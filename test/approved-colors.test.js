@@ -21,3 +21,13 @@ test('legacy white inputs are overridden by approved dark surfaces',()=>{
   assert.match(css,/background-color:var\(--aps-control\)!important/);
   assert.match(css,/color:var\(--aps-ink\)!important/);
 });
+
+test('approved shell has visible navy and violet surfaces with cache refresh',()=>{
+  assert.match(css,/Visible shared shell/);
+  assert.match(css,/--canvas:#090d20/);
+  assert.match(css,/--violet:#9a27f0/);
+  assert.match(css,/body \.p01-dashboard \.p01-module/);
+  assert.match(css,/body \.preview-rail button\.active/);
+  assert.match(app,/approved-color-unification\.css\?v=20261107b/);
+  assert.match(preview,/approved-color-unification\.css\?v=20261107b/);
+});
