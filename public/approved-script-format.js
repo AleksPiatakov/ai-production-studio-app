@@ -6,9 +6,10 @@
     if(!text)return 'blank';
     if(/^(?:СЦЕНА|SCENE)\s+\d+/iu.test(text))return 'scene';
     if(/^(?:ЛОКАЦІЯ|LOCATION|МІСЦЕ|МЕТА СЦЕНИ|ЦІЛЬ СЦЕНИ)\s*:/iu.test(text))return 'detail';
+    if(/^(?:ДІЯ|КАМЕРА|ПЛАН|РУХ КАМЕРИ)\s*:/iu.test(text))return 'action';
     if(/^(?:[А-ЯІЇЄҐA-Z][А-ЯІЇЄҐA-Zа-яіїєґa-z\s().–—-]{1,40})\s*:\s*.+$/u.test(text))return 'dialogue';
     if(/^\((?:[^)]{1,70})\)$/.test(text))return 'direction';
-    if(/^(?:ДІЯ|КАМЕРА|ПЛАН|РУХ КАМЕРИ)\s*:/iu.test(text))return 'action';
+
     return 'prose';
   }
   function renderLines(text){
