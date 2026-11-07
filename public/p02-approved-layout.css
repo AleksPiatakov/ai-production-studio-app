@@ -176,3 +176,24 @@ body.is-editor:not(.p02-focus) .p02-approved-layout .p02-edit-layout .editor-mai
 @media(max-width:700px){
  .p02-editor .p02-approved-layout>.p02-edit-layout{display:flex!important;flex-direction:column}
 }
+
+/* Approved horizontal project navigation, only for screenplay workspace. */
+.p02-approved-layout .p02-project-tabs{
+ display:flex;align-items:center;gap:4px;flex:0 0 auto;min-height:54px;
+ padding:7px 14px;background:#0a1024;border-bottom:1px solid var(--approved-stroke);
+ overflow-x:auto;scrollbar-width:thin
+}
+.p02-approved-layout .p02-project-tabs button{
+ flex:0 0 auto;border:1px solid transparent;box-shadow:none;background:transparent!important;
+ color:#c6bdd8!important;font-size:12px;font-weight:700;padding:10px 13px;border-radius:9px
+}
+.p02-approved-layout .p02-project-tabs button:hover{color:#fff!important;border-color:#534082;background:#26203e!important}
+.p02-approved-layout .p02-project-tabs button.active{
+ background:linear-gradient(115deg,#6721ae,#9c2cde)!important;
+ border-color:#9934e0;color:#fff!important;box-shadow:0 0 11px #7625cc66!important
+}
+body.is-editor.p02-focus .p02-project-tabs{display:none!important}
+@media(max-width:700px){
+ .p02-approved-layout .p02-project-tabs{padding:6px 10px;min-height:44px}
+ .p02-approved-layout .p02-project-tabs button{padding:7px 9px;font-size:11px}
+}
