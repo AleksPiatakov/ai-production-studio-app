@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>AI Production Studio — UI Preview</title>
-<link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./editor.css"><link rel="stylesheet" href="./actions.css"><link rel="stylesheet" href="./contrast.css"><link rel="stylesheet" href="./voice-editor.css"><link rel="stylesheet" href="./workspace-dialog.css"><link rel="stylesheet" href="./studio-theme.css"><link rel="stylesheet" href="./script-editor-p02.css"><link rel="stylesheet" href="./p02-approved-layout.css"><link rel="stylesheet" href="./p04-approved-storyboard.css"><link rel="stylesheet" href="./mobile-studio.css"><link rel="stylesheet" href="./image-studio-p06.css"><link rel="stylesheet" href="./shot-workspace-p05.css">
+<link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./editor.css"><link rel="stylesheet" href="./actions.css"><link rel="stylesheet" href="./contrast.css"><link rel="stylesheet" href="./voice-editor.css"><link rel="stylesheet" href="./workspace-dialog.css"><link rel="stylesheet" href="./studio-theme.css"><link rel="stylesheet" href="./script-editor-p02.css"><link rel="stylesheet" href="./p02-approved-layout.css"><link rel="stylesheet" href="./p04-approved-storyboard.css"><link rel="stylesheet" href="./p06-image-studio.css"><link rel="stylesheet" href="./mobile-studio.css"><link rel="stylesheet" href="./image-studio-p06.css"><link rel="stylesheet" href="./shot-workspace-p05.css">
 <style>
 /* Preview-specific mock only: no local data, model execution or API. */
 .preview-note{font-size:11px;color:#c9bbf9;background:#262039;border:1px solid #5e4b86;border-radius:8px;padding:7px 10px}
@@ -30,6 +30,8 @@
 .preview-sidebar-item.active{background:var(--violet-soft);border:1px solid rgba(162,138,245,.4)}
 .preview-sidebar-item small{display:block;color:var(--muted)}
 .preview-warning{margin-top:14px;border-left:3px solid var(--violet);padding-left:10px;color:var(--muted);font-size:12px}
+body:has(#screen-image.active) #content{max-width:none;padding:0;margin:0;width:100%}
+body:has(#screen-image.active) #content>.hero,body:has(#screen-image.active) .preview-warning{display:none}
 body:has(#screen-storyboard.active) #content{max-width:none;padding:0;margin:0;width:100%}
 body:has(#screen-storyboard.active) #content>.hero{display:none}
 body:has(#screen-storyboard.active) .preview-warning{display:none}
@@ -64,7 +66,7 @@ body:has(#screen-script.active) .preview-warning{display:none}
 <body>
 <header>
  <div class="header-brand"><button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-expanded="true">☰ <span>Сховати</span></button><div><p class="eyebrow">ЛОКАЛЬНА ТВОРЧА СТУДІЯ · ПРЕВ'Ю</p><h1>AI Production Studio</h1></div></div>
- <div class="preview-controls" role="group" aria-label="Демо-екрани"><button class="active" data-screen="project" type="button">Проєкт</button><button data-screen="models" type="button">Моделі</button><button data-screen="script" type="button">Сценарій P-02</button><button data-screen="storyboard" type="button">Сторіборд P-04</button><button data-screen="images" type="button">Image Studio P-06</button><button data-screen="shot" type="button">Кадр P-05</button><button data-screen="assistant" type="button">Помічник</button></div>
+ <div class="preview-controls" role="group" aria-label="Демо-екрани"><button class="active" data-screen="project" type="button">Проєкт</button><button data-screen="models" type="button">Моделі</button><button data-screen="script" type="button">Сценарій P-02</button><button data-screen="storyboard" type="button">Сторіборд P-04</button><button data-screen="image" type="button">Image Studio P-06</button><button data-screen="images" type="button">Image Studio P-06</button><button data-screen="shot" type="button">Кадр P-05</button><button data-screen="assistant" type="button">Помічник</button></div>
  <span class="preview-note">ДЕМО ІНТЕРФЕЙСУ · БЕЗ ДАНИХ</span>
 </header>
 <main id="preview-layout">
@@ -165,6 +167,7 @@ body:has(#screen-script.active) .preview-warning{display:none}
  </div>
  <div class="preview-screen" id="screen-images"><div id="preview-image-studio"></div></div>
  <div class="preview-screen" id="screen-shot"><div id="preview-shot-workspace"></div></div>
+ <div class="preview-screen" id="screen-image"><div id="p06-preview-mount"></div></div>
  <div class="preview-screen" id="screen-models"><div class="preview-main-card"><p class="eyebrow">ЦЕНТР AI-МОДЕЛЕЙ</p><h3>Мої моделі</h3><p>Онлайн-прев’ю не підключається до локальних моделей. Реєстр і генерація працюватимуть у настільній програмі.</p></div></div>
  <div class="preview-screen" id="screen-assistant"><div class="preview-main-card"><p class="eyebrow">AI-ПОМІЧНИК ПРОЄКТУ</p><h3>Помічник у межах проєкту</h3><p>Модальне вікно, рішення і версії будуть підключені в основному застосунку. Демо не передає приватні дані.</p></div></div>
  <p class="preview-warning" id="preview-feedback" role="status">Відкрито демонстрацію екрана P-01. Кнопки модулів показують майбутню навігацію, а не запускають генерацію.</p>
@@ -196,7 +199,7 @@ body:has(#screen-script.active) .preview-warning{display:none}
 })();
 </script>
 <script src="./image-studio-p06.js"></script>
-<script src="./project-dashboard.js"></script>
+<script src="./project-dashboard.js"></script><script src="./p06-image-studio.js"></script>
 <script>
 document.getElementById('preview-image-studio').innerHTML=window.APSImageStudio.render({
  scene:{title:'Загадковий міст'},
@@ -248,6 +251,17 @@ document.getElementById('preview-dashboard').innerHTML=window.APSProjectDashboar
   document.getElementById('demo-p04-duration').textContent=durations[i];
   document.getElementById('demo-p04-camera').textContent=cameras[i];
  }));
+})();
+</script>
+<script>
+(()=>{
+ const root=document.getElementById('p06-preview-mount');
+ function refresh(){
+   root.innerHTML=window.APSImageStudio.render({projectName:'Міст із Світла · демо',assets:[],demo:true});
+   root.querySelector('.p06-studio').p06Refresh=refresh;
+   window.APSImageStudio.bind(root.querySelector('.p06-studio'),{showBrief:()=>{root.querySelector('#p06-feedback').textContent='Запит підготовлено (демо). Жодна AI-модель не запускалася.';}});
+ }
+ refresh();
 })();
 </script>
 </body>
