@@ -99,3 +99,22 @@
   .p01-dashboard .p01-module-grid{grid-template-columns:1fr}
   #screen-storyboard .p04-strip-item {flex:0 0 116px}
 }
+
+/* At phone widths scene thumbnails must not begin outside the viewport.
+   Use a two-column scene picker, and keep filmstrip horizontally swipable. */
+@media(max-width:700px){
+ #screen-storyboard .desk-scenes,
+ .storyboard-workspace .desk-scenes{
+   display:grid!important;
+   grid-template-columns:repeat(2,minmax(0,1fr))!important;
+   gap:8px!important;overflow:visible!important;
+   min-height:0!important;align-items:stretch
+ }
+ #screen-storyboard .desk-scenes .desk-label,
+ .storyboard-workspace .desk-scenes .desk-label{grid-column:1/-1;flex:none!important}
+ #screen-storyboard .desk-scenes .desk-scene,
+ .storyboard-workspace .desk-scenes .desk-scene{
+   flex:none!important;max-width:none!important;width:100%!important;
+   margin:0!important;min-width:0!important
+ }
+}
