@@ -111,3 +111,11 @@ body.is-editor.p02-focus .p02-approved-layout>.editor-actions{display:flex!impor
  .p02-approved-layout .p02-project-context>span:last-child{display:none}
  .p02-approved-layout .editor-body-label textarea{min-height:270px!important}
 }
+
+/* Override legacy write-only defaults by ID specificity in approved normal mode. */
+body.is-editor:not(.p02-focus) #script-workspace-form.p02-approved-layout .editor-title,
+body.is-editor:not(.p02-focus) #script-workspace-form.p02-approved-layout .editor-writing-label{display:flex!important}
+body.is-editor #script-workspace-form.p02-approved-layout .editor-actions{display:flex!important}
+body.is-editor #script-workspace-form.p02-approved-layout .editor-body-label textarea{background:#0e1328!important;border:1px solid var(--approved-stroke)!important}
+body.is-editor #script-workspace-form.p02-approved-layout .editor-main{overflow:auto!important}
+body.is-editor:not(.p02-focus) .p02-approved-layout .p02-edit-layout .editor-main{min-width:0}
