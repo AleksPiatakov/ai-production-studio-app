@@ -40,6 +40,14 @@ const path = require('node:path');
     if(!(await mobile.locator('#app-sidebar').isVisible()))throw new Error('Mobile navigation cannot open');
     await mobile.locator('#sidebar-toggle').click();
     await mobile.close();
+    // The online build must use the same P-01 renderer as the local app.
+    const online=await browser.newPage({viewport:{width:1440,height:900}});
+    online.on('pageerror',error=>errors.push('online: '+error.message));
+    await online.goto('file://'+path.resolve(process.cwd(),'preview-dist','index.html'),{waitUntil:'load',timeout:30000});
+    if(await online.locator('.p01-module').count()!==6)throw new Error('Online preview does not render six shared dashboard cards');
+    if(await online.locator('.p01-dashboard').count()!==1)throw new Error('Online preview dashboard renderer did not load');
+    await online.screenshot({path:path.join(output,'online-dashboard-desktop.png'),fullPage:true});
+    await online.close();
     if(errors.length)throw new Error('Page errors: '+errors.join('; '));
     console.log('Dashboard E2E OK: 6 module cards; 3x2 desktop; working navigation; mobile screenshot; no JS errors.');
   } finally {await browser.close();}

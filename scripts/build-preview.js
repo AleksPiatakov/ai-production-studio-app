@@ -18,5 +18,6 @@ for (const name of requiredStyles) {
   if (!fs.existsSync(source)) throw new Error('Missing preview CSS: ' + source);
   fs.copyFileSync(source, path.join(output, name));
 }
+fs.copyFileSync(path.join(root, 'public', 'project-dashboard.js'), path.join(output, 'project-dashboard.js'));
 fs.writeFileSync(path.join(output, 'robots.txt'), 'User-agent: *\nDisallow: /\n');
 console.log('Preview built with synthetic data. Static files:', fs.readdirSync(output).length);
