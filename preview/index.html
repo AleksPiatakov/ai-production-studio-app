@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>AI Production Studio — UI Preview</title>
-<link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./editor.css"><link rel="stylesheet" href="./actions.css"><link rel="stylesheet" href="./contrast.css"><link rel="stylesheet" href="./voice-editor.css"><link rel="stylesheet" href="./workspace-dialog.css"><link rel="stylesheet" href="./studio-theme.css"><link rel="stylesheet" href="./script-editor-p02.css"><link rel="stylesheet" href="./p02-approved-layout.css">
+<link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./editor.css"><link rel="stylesheet" href="./actions.css"><link rel="stylesheet" href="./contrast.css"><link rel="stylesheet" href="./voice-editor.css"><link rel="stylesheet" href="./workspace-dialog.css"><link rel="stylesheet" href="./studio-theme.css"><link rel="stylesheet" href="./script-editor-p02.css"><link rel="stylesheet" href="./p02-approved-layout.css"><link rel="stylesheet" href="./p04-approved-storyboard.css">
 <style>
 /* Preview-specific mock only: no local data, model execution or API. */
 .preview-note{font-size:11px;color:#c9bbf9;background:#262039;border:1px solid #5e4b86;border-radius:8px;padding:7px 10px}
@@ -30,6 +30,10 @@
 .preview-sidebar-item.active{background:var(--violet-soft);border:1px solid rgba(162,138,245,.4)}
 .preview-sidebar-item small{display:block;color:var(--muted)}
 .preview-warning{margin-top:14px;border-left:3px solid var(--violet);padding-left:10px;color:var(--muted);font-size:12px}
+body:has(#screen-storyboard.active) #content{max-width:none;padding:0;margin:0;width:100%}
+body:has(#screen-storyboard.active) #content>.hero{display:none}
+body:has(#screen-storyboard.active) .preview-warning{display:none}
+body:has(#screen-storyboard.active) .director-desk{min-height:510px}
 body:has(#screen-script.active) #content{max-width:none;padding:0;margin:0;width:100%}
 body:has(#screen-script.active) #content>.hero{display:none}
 body:has(#screen-script.active) #screen-script{margin:0;padding:0}
@@ -60,7 +64,7 @@ body:has(#screen-script.active) .preview-warning{display:none}
 <body>
 <header>
  <div class="header-brand"><button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-expanded="true">☰ <span>Сховати</span></button><div><p class="eyebrow">ЛОКАЛЬНА ТВОРЧА СТУДІЯ · ПРЕВ'Ю</p><h1>AI Production Studio</h1></div></div>
- <div class="preview-controls" role="group" aria-label="Демо-екрани"><button class="active" data-screen="project" type="button">Проєкт</button><button data-screen="models" type="button">Моделі</button><button data-screen="script" type="button">Сценарій P-02</button><button data-screen="assistant" type="button">Помічник</button></div>
+ <div class="preview-controls" role="group" aria-label="Демо-екрани"><button class="active" data-screen="project" type="button">Проєкт</button><button data-screen="models" type="button">Моделі</button><button data-screen="script" type="button">Сценарій P-02</button><button data-screen="storyboard" type="button">Сторіборд P-04</button><button data-screen="assistant" type="button">Помічник</button></div>
  <span class="preview-note">ДЕМО ІНТЕРФЕЙСУ · БЕЗ ДАНИХ</span>
 </header>
 <main id="preview-layout">
@@ -115,6 +119,50 @@ body:has(#screen-script.active) .preview-warning{display:none}
     <footer class="editor-actions"><span id="demo-script-count">Демо · без API</span><span>Локальне редагування та збереження — лише в програмі на Mac</span></footer>
    </article></div>
  </div>
+ <div class="preview-screen" id="screen-storyboard">
+  <article class="card full storyboard-workspace">
+   <nav class="p04-project-tabs" aria-label="Розділи проєкту">
+     <button type="button" data-screen="project">Огляд</button><button type="button" data-screen="script">Сценарій</button>
+     <button type="button" class="active" aria-current="page">Сторіборд</button><button type="button" data-screen="project">Аніматик</button>
+     <button type="button" data-screen="project">Сцени</button><button type="button" data-screen="project">Персонажі</button>
+     <button type="button" data-screen="project">Матеріали</button><button type="button" data-screen="project">Виробництво</button>
+   </nav>
+   <div class="storyboard-title"><div><p class="eyebrow">СЦЕНА 2 · ДЕМОНСТРАЦІЯ</p><h3>Загадковий міст</h3><p>Оберіть кадр. Демонстраційні зображення не генеруються.</p></div><div class="actions"><span class="tag">3 кадри · чернетка</span></div></div>
+   <div class="director-desk">
+    <section class="desk-scenes"><p class="desk-label">СЦЕНИ ЕПІЗОДУ</p>
+      <button type="button" class="desk-scene"><span>1</span><strong>Лісова стежка</strong><small>0:45 · 2 кадри</small></button>
+      <button type="button" class="desk-scene selected"><span>2</span><strong>Загадковий міст</strong><small>0:50 · 3 кадри</small></button>
+      <button type="button" class="desk-scene"><span>3</span><strong>Зустріч із Бурштином</strong><small>0:40 · 2 кадри</small></button>
+    </section>
+    <section class="desk-canvas p04-shot-workspace">
+      <div class="canvas-meta"><span>Сцена 2 · Кадр <b id="demo-p04-count">1</b> із 3</span><span class="tag">Чернетка</span></div>
+      <div class="shot-screen"><div class="shot-overlay"><span id="demo-p04-shot-label">Кадр 1 · 0:05</span><strong id="demo-p04-description">Мира бачить міст у золотому світлі</strong></div></div>
+      <div class="canvas-actions"><span class="tag">Зображення ще не створено</span></div>
+    </section>
+    <aside class="desk-inspector p04-shot-settings"><p class="desk-label">ОПИС КАДРУ</p><h4 id="demo-p04-inspector-title">Кадр 1</h4>
+      <div class="inspect-row"><span>Тривалість</span><strong id="demo-p04-duration">0:05</strong></div>
+      <div class="inspect-row"><span>Ракурс</span><strong id="demo-p04-camera">Середній план</strong></div>
+      <div class="inspect-row"><span>Рух камери</span><strong>Легкий наїзд</strong></div>
+      <div class="inspect-row"><span>Емоція</span><strong>Подив і надія</strong></div>
+      <div class="scene-purpose"><span>Референси</span><p>Референси залишаються у локальній бібліотеці</p></div>
+    </aside>
+    <aside class="p04-assistant-dock" aria-label="AI Помічник проєкту">
+      <div class="p04-ai-heading"><span class="p04-ai-symbol" aria-hidden="true">✧</span><div><strong>AI Помічник проєкту</strong><small>Міст із Світла</small></div></div>
+      <div class="p04-ai-tabs"><span class="active">Чат</span><span>Пропозиції</span><span>Завдання</span><span>Пам'ять</span></div>
+      <div class="p04-ai-box"><p class="eyebrow">ПЕРЕВІРКА КАДРУ</p><h4>Контекст і рекомендації</h4><p>У настільній програмі помічник аналізує лише дані поточного проєкту. Демонстрація не звертається до AI.</p></div>
+      <div class="p04-ai-box"><p class="eyebrow">ПАРАМЕТРИ СЦЕНИ</p><div><span>Сцена</span><strong>Загадковий міст</strong></div><div><span>Кадрів</span><strong>3</strong></div></div>
+      <div class="p04-ai-bottom">Погоджені дані не змінюються без підтвердження</div>
+    </aside>
+   </div>
+   <section class="p04-filmstrip"><div class="p04-strip-title"><strong>Сцена 2 · 3 кадри</strong><span class="tag">Тестове прев'ю</span></div>
+     <div class="p04-strip-items">
+       <button type="button" class="p04-strip-item active" data-demo-p04-shot="1"><span class="p04-shot-number">1</span><span class="p04-image-pending">Кадр 1<small>Референс не додано</small></span><small>0:05 · Середній план</small></button>
+       <button type="button" class="p04-strip-item" data-demo-p04-shot="2"><span class="p04-shot-number">2</span><span class="p04-image-pending">Кадр 2<small>Референс не додано</small></span><small>0:07 · Загальний план</small></button>
+       <button type="button" class="p04-strip-item" data-demo-p04-shot="3"><span class="p04-shot-number">3</span><span class="p04-image-pending">Кадр 3<small>Референс не додано</small></span><small>0:06 · Крупний план</small></button>
+     </div>
+   </section>
+  </article>
+ </div>
  <div class="preview-screen" id="screen-models"><div class="preview-main-card"><p class="eyebrow">ЦЕНТР AI-МОДЕЛЕЙ</p><h3>Мої моделі</h3><p>Онлайн-прев’ю не підключається до локальних моделей. Реєстр і генерація працюватимуть у настільній програмі.</p></div></div>
  <div class="preview-screen" id="screen-assistant"><div class="preview-main-card"><p class="eyebrow">AI-ПОМІЧНИК ПРОЄКТУ</p><h3>Помічник у межах проєкту</h3><p>Модальне вікно, рішення і версії будуть підключені в основному застосунку. Демо не передає приватні дані.</p></div></div>
  <p class="preview-warning" id="preview-feedback" role="status">Відкрито демонстрацію екрана P-01. Кнопки модулів показують майбутню навігацію, а не запускають генерацію.</p>
@@ -136,6 +184,22 @@ document.getElementById('preview-dashboard').innerHTML=window.APSProjectDashboar
 </script>
 <script>
 (()=>{const buttons=[...document.querySelectorAll('[data-screen]')],panels=[...document.querySelectorAll('.preview-screen')];function select(id){panels.forEach(p=>p.classList.toggle('active',p.id==='screen-'+id));buttons.forEach(b=>b.classList.toggle('active',b.dataset.screen===id));document.getElementById('preview-feedback').textContent=id==='project'?'Відкрито демонстрацію екрана P-01.':'Це демонстрація без підключення до локальної програми.';}buttons.forEach(b=>b.addEventListener('click',()=>select(b.dataset.screen)));document.getElementById('sidebar-toggle').addEventListener('click',()=>{const main=document.getElementById('preview-layout');const collapsed=main.classList.toggle('sidebar-collapsed');document.getElementById('sidebar-toggle').setAttribute('aria-expanded',String(!collapsed))});document.querySelectorAll('[data-module]').forEach(button=>button.addEventListener('click',()=>{document.getElementById('preview-feedback').textContent='Модуль «'+button.dataset.module+'» буде доступний в основному застосунку. Це лише дизайн-прев’ю.'}));})();
+</script>
+<script>
+(()=>{
+ const descriptions=['Мира бачить міст у золотому світлі','Загальний план мосту над прірвою','Реакція Мири — подив і надія'];
+ const durations=['0:05','0:07','0:06'],cameras=['Середній план','Загальний план','Крупний план'];
+ document.querySelectorAll('[data-demo-p04-shot]').forEach(button=>button.addEventListener('click',()=>{
+  const i=Number(button.dataset.demoP04Shot)-1;
+  document.querySelectorAll('[data-demo-p04-shot]').forEach(b=>b.classList.toggle('active',b===button));
+  document.getElementById('demo-p04-count').textContent=String(i+1);
+  document.getElementById('demo-p04-shot-label').textContent='Кадр '+(i+1)+' · '+durations[i];
+  document.getElementById('demo-p04-description').textContent=descriptions[i];
+  document.getElementById('demo-p04-inspector-title').textContent='Кадр '+(i+1);
+  document.getElementById('demo-p04-duration').textContent=durations[i];
+  document.getElementById('demo-p04-camera').textContent=cameras[i];
+ }));
+})();
 </script>
 </body>
 </html>
