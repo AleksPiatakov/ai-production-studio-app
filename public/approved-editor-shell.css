@@ -1,0 +1,65 @@
+/* Left global rail, approved P-02 reference. Only active in actual script editor;
+   other modules are left unchanged until their own approved layout is migrated. */
+#aps-approved-nav{display:none}
+body.aps-approved-editor-shell #app-sidebar{
+ padding:0!important;background:#090e21!important;border-right:1px solid #2c2448!important
+}
+body.aps-approved-editor-shell #app-sidebar>*:not(#aps-approved-nav){display:none!important}
+body.aps-approved-editor-shell #aps-approved-nav{
+ display:flex;flex-direction:column;min-height:100%;height:100%;
+ background:linear-gradient(165deg,#0a0e22 0%,#0b1126 60%,#16102b 100%);
+ color:#f7eeff
+}
+.aps-nav-brand{display:flex;align-items:center;gap:10px;padding:19px 13px;border-bottom:1px solid #292341}
+.aps-nav-brand>span{
+ display:grid;place-items:center;min-width:43px;height:43px;border-radius:11px;
+ color:#f1cbff;font-size:26px;background:linear-gradient(125deg,#5b137f,#a22be2);
+ box-shadow:0 0 18px #9421d45f;border:1px solid #9c49db
+}
+.aps-nav-brand strong{display:block;font-size:15px;line-height:1.2;color:#fff}
+.aps-nav-brand small{color:#ab9abf;font-size:10px}
+.aps-nav-project-picker{padding:14px 12px 12px;display:grid;gap:8px}
+.aps-nav-project-picker label{font-size:10px;font-weight:800;letter-spacing:.085em;color:#a995ce}
+.aps-nav-project-picker select{
+ display:block;width:100%;min-width:0;max-width:100%;padding:11px 8px;
+ background:#161933!important;color:#f3e5ff!important;border:1px solid #423364!important;
+ border-radius:9px!important;font-size:11px!important
+}
+.aps-nav-main{display:grid;gap:6px;padding:12px 10px;overflow-y:auto}
+.aps-nav-main button{
+ display:flex;gap:12px;align-items:center;min-height:46px;width:100%;
+ background:transparent!important;color:#dfd4ee!important;text-align:left;
+ border:1px solid transparent!important;border-radius:9px!important;box-shadow:none!important;
+ font-size:12px;font-weight:700;padding:10px 12px
+}
+.aps-nav-main button span{width:24px;font-size:21px;text-align:center;color:#d6adff}
+.aps-nav-main button:hover{background:#2e1a49!important;border-color:#7b38b0!important}
+.aps-nav-main button[data-aps-destination="overview"]{
+ background:linear-gradient(90deg,#4e247e,#32224e)!important;
+ color:#fff!important;border-color:#6b3298!important
+}
+.aps-nav-bottom{
+ display:flex;gap:12px;align-items:center;margin-top:auto;
+ padding:14px 12px;border-top:1px solid #393059;
+ color:#e7d9f5;font-size:12px;line-height:1.4
+}
+.aps-nav-bottom>span:first-child{color:#ae66f5;font-size:21px}
+.aps-nav-bottom small{font-size:10px;color:#aaa0bf}
+@media(max-width:980px){
+ body.aps-approved-editor-shell #app-sidebar{display:none!important}
+ body.aps-approved-editor-shell main{grid-template-columns:minmax(0,1fr)!important}
+}
+
+/* The approved editor has ONE project header. The legacy global masthead was
+   an extra 72px strip that is absent from the approved screenplay PNG. */
+body.aps-approved-editor-shell.is-editor:not(.p02-focus)>header{display:none!important}
+body.aps-approved-editor-shell.is-editor:not(.p02-focus)>main{
+ height:100dvh!important;min-height:0!important
+}
+body.aps-approved-editor-shell.is-editor:not(.p02-focus) #app-sidebar{
+ height:100dvh!important;max-height:100dvh!important
+}
+body.aps-approved-editor-shell.is-editor:not(.p02-focus) #content{height:100dvh!important}
+@media(max-width:980px){
+ body.aps-approved-editor-shell.is-editor:not(.p02-focus)>main{height:100dvh!important}
+}

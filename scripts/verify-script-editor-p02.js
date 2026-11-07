@@ -21,7 +21,7 @@ const path = require('node:path');
   const episode=await requestJson('/api/projects/'+project+'/episodes',{
    title:'P02 Smoke Episode',seasonNumber:1,episodeNumber:1,targetMinutes:7,status:'development',theme:'',logline:''
   });
-  const original='ВСТУП\n\nСЦЕНА 1. ЛІС — ДЕНЬ\nОпис лісу.\n\nСЦЕНА 2. МІСТ — ДЕНЬ\nОпис моста.';
+  const original='ВСТУП\n\nСЦЕНА 1. ЛІС — ДЕНЬ\nОпис лісу.\n\nСЦЕНА 2. МІСТ — ДЕНЬ\nОпис моста.\nМИРА: Це він? Той самий міст?';
   const script=await requestJson('/api/projects/'+project+'/scripts',{
    episodeId:episode.id,title:'P02 Test Script',logline:'Тест обох режимів',body:original,status:'draft'
   });
@@ -34,9 +34,16 @@ const path = require('node:path');
   const originalVisible=await page.locator('#script-workspace-body').inputValue();
   if(originalVisible!==original)throw new Error('Whole episode text mismatch');
   await page.locator('.p02-ai-panel').waitFor({state:'visible',timeout:5000});
-  if(!(await page.locator('body>header').isVisible()))throw new Error('Approved normal script mode must preserve application header');
+  if(await page.locator('body>header').isVisible())throw new Error('Approved screenplay must not include a duplicate global masthead');
+  if(!(await page.locator('.p02-project-context').isVisible()))throw new Error('Approved project header is missing');
   const columns=await page.locator('.p02-edit-layout').evaluate(element=>getComputedStyle(element).gridTemplateColumns.split(' ').length);
   if(columns!==3)throw new Error('Approved P-02 must have scenes, editor and AI panel (3 columns), got '+columns);
+  await page.locator('#aps-screenplay-reader').waitFor({state:'visible'});
+  if(await page.locator('#aps-screenplay-reader .aps-screenplay-scene').count()!==2)throw Error('Approved screenplay needs two visible scene headers');
+  if(await page.locator('#aps-screenplay-reader .aps-screenplay-dialogue').count()!==1)throw Error('Approved screenplay needs a character dialogue card');
+  if(await page.locator('#script-workspace-body').isVisible())throw Error('Reading view should conceal raw editor');
+  const readText=await page.locator('#aps-screenplay-reader').innerText();
+  if(!readText.includes('Це він? Той самий міст?'))throw Error('Reading view omitted dialogue');
   await page.screenshot({path:path.join(output,'p02-whole-episode.png'),fullPage:true});
   await page.locator('[data-p02-mode="scene"]').click();
   const sceneCount=await page.locator('#p02-scene-items button').count();
@@ -44,7 +51,11 @@ const path = require('node:path');
   await page.locator('[data-p02-scene="2"]').click();
   const selected=await page.locator('#script-workspace-body').inputValue();
   if(!selected.includes('СЦЕНА 2.')||selected.includes('СЦЕНА 1.'))throw new Error('Scene-only display is wrong');
+  await page.locator('[data-aps-script-mode="edit"]').click();
+  if(!(await page.locator('#script-workspace-body').isVisible()))throw Error('Editor should be visible in edit mode');
   await page.locator('#script-workspace-body').fill(selected.replace('Опис моста.','Опис моста, який світиться.'));
+  await page.locator('[data-aps-script-mode="read"]').click();
+  if(!(await page.locator('#aps-screenplay-reader').innerText()).includes('Опис моста, який світиться.'))throw Error('Reading view did not update after edit');
   await page.locator('[data-p02-focus]').click();
   if(!(await page.locator('body').evaluate(el=>el.classList.contains('p02-focus'))))throw new Error('Focus not enabled');
   if(await page.locator('.p02-ai-panel').isVisible())throw new Error('Focus must hide AI sidebar');
@@ -68,6 +79,9 @@ const path = require('node:path');
   await previewPanel.waitFor({state:'visible',timeout:5000});
   const previewCols=await page.locator('#screen-script .p02-edit-layout').evaluate(element=>getComputedStyle(element).gridTemplateColumns.split(' ').length);
   if(previewCols!==3)throw new Error('Static P-02 preview must match approved three-column layout');
+  await page.locator('#screen-script #demo-script-reader').waitFor({state:'visible'});
+  if(await page.locator('#screen-script .aps-screenplay-dialogue').count()!==4)throw new Error('Online P-02 demo must show all four formatted dialogue cards');
+  if(await page.locator('#screen-script #demo-script-text').isVisible())throw new Error('Demo must not show a redundant textarea');
   await page.screenshot({path:path.join(output,'p02-approved-online.png'),fullPage:true});
   await page.locator('#demo-script-focus').click();
   if(await previewPanel.isVisible())throw new Error('Online focus must hide assistant sidebar');

@@ -10,6 +10,8 @@
  function render(){
   const box=$('#demo-script-text');if(!box)return;
   box.value=mode==='whole'?scenes.join('\n'):scenes[index];
+  const reader=$('#demo-script-reader');
+  if(reader)reader.innerHTML=window.APSApprovedScriptFormat.renderLines(box.value);
   $('#demo-script-count').textContent=box.value.trim().split(/\s+/).filter(Boolean).length+' слів · демонстрація';
   $('#demo-scene-selector').value=String(index);
   $('#demo-scene-selector').disabled=mode==='whole';
