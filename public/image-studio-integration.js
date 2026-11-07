@@ -50,6 +50,7 @@
    const selected=images.find(a=>a.id===selectedAssetId)||images[0];
    switch(button.dataset.p06Action){
     case 'edit-shot':if(scene&&shot)openShot(scene.id,shot.id);break;
+    case 'prepare-brief':if(scene&&shot)openShotImageBrief(scene.id,shot.id);break;
     case 'upload':openImageUpload();break;
     case 'open-image':if(selected)showReference(selected.id);break;
     case 'asset-details':if(selected)openAsset(selected.id);break;
