@@ -119,3 +119,60 @@ body.is-editor #script-workspace-form.p02-approved-layout .editor-actions{displa
 body.is-editor #script-workspace-form.p02-approved-layout .editor-body-label textarea{background:#0e1328!important;border:1px solid var(--approved-stroke)!important}
 body.is-editor #script-workspace-form.p02-approved-layout .editor-main{overflow:auto!important}
 body.is-editor:not(.p02-focus) .p02-approved-layout .p02-edit-layout .editor-main{min-width:0}
+
+/* Legacy actions.css explicitly paints the old editor white.
+   The approved P-02 palette must win those !important selectors. */
+.p02-editor .editor-shell,
+.editor-page-frame.p02-editor .editor-shell{
+ background:#0b1024!important;
+ border-color:var(--approved-stroke)!important;
+ box-shadow:none!important
+}
+.p02-editor .editor-topbar,
+.p02-editor .p02-approved-layout>.editor-topbar{
+ background:#0c1127!important;
+ color:#f5edff!important;
+ border-color:var(--approved-stroke)!important
+}
+.p02-editor .editor-path,
+.p02-editor .editor-topbar .back-link,
+.p02-editor .editor-topbar .editor-font-tools,
+.p02-editor .editor-topbar .editor-word-count{color:#c9bee2!important}
+.p02-editor .editor-topbar button:not(.primary){
+ background:#242241!important;
+ border-color:#403b65!important;
+ color:#d9d2f0!important
+}
+.p02-editor .editor-topbar .tag{background:#302044!important;color:#dfc3ff!important;border-color:#733bab!important}
+.p02-editor .editor-page-frame .editor-title,
+.editor-page-frame.p02-editor .editor-title,
+.editor-page-frame.p02-editor .editor-writing-label strong{color:#e9deff!important}
+.editor-page-frame.p02-editor .editor-title input,
+.editor-page-frame.p02-editor .editor-main input,
+.editor-page-frame.p02-editor .editor-main textarea,
+.editor-page-frame.p02-editor .editor-main select{
+ background:#10162c!important;
+ border-color:var(--approved-stroke)!important;
+ color:#f1eafb!important
+}
+.editor-page-frame.p02-editor .editor-writing-label small{color:#c1b3dc!important}
+.editor-page-frame.p02-editor .editor-actions{background:#0d1227!important;border-color:var(--approved-stroke)!important;color:#b9acce!important}
+#screen-script .p02-approved-layout #demo-scene-items button{
+ display:grid;gap:6px;width:100%;min-height:71px;
+ border:1px solid #38325b!important;border-radius:10px!important;
+ background:#1a1d3b!important;color:#eeeaff!important;
+ text-align:left;padding:12px!important;box-shadow:none!important;
+ font-size:12px
+}
+#screen-script .p02-approved-layout #demo-scene-items button.active{
+ background:linear-gradient(125deg,#371a63,#22143d)!important;
+ border-color:#b04dee!important;
+ box-shadow:0 0 11px #7e2bce44!important
+}
+#screen-script .p02-approved-layout #demo-scene-items button small{color:#b7a9d5!important}
+#screen-script .p02-approved-layout .editor-title,
+#screen-script .p02-approved-layout .editor-writing-label,
+#screen-script .p02-approved-layout .editor-writing-label strong{color:#eee6ff!important}
+@media(max-width:700px){
+ .p02-editor .p02-approved-layout>.p02-edit-layout{display:flex!important;flex-direction:column}
+}
