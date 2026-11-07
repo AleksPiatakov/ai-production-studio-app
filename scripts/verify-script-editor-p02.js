@@ -26,7 +26,8 @@ const path = require('node:path');
    episodeId:episode.id,title:'P02 Test Script',logline:'Тест обох режимів',body:original,status:'draft'
   });
   await page.goto(base+'/',{waitUntil:'networkidle'});
-  await page.evaluate(({scriptId,episodeId})=>{
+  await page.evaluate(async ({scriptId,episodeId})=>{
+   await load('animated-faith-stories');
    activeEpisodeId=episodeId;openScript(scriptId);
   },{scriptId:script.id,episodeId:episode.id});
   await page.locator('[data-p02-mode="whole"]').waitFor();
