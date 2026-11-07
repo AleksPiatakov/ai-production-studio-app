@@ -130,3 +130,29 @@ body:has(.p07-workspace) #content{max-width:none;padding:20px 22px}
  .p07-workspace .audio-line{min-width:0}
  .p07-settings-panel{grid-column:auto!important;grid-row:auto!important}
 }
+
+/* Previous audio-view panels remain functional, but must use the same dark
+   approved palette as the P-07 workspace instead of legacy daylight cards. */
+body:has(.p07-workspace) #content>.grid>.card.full{
+ background:#151a33!important;
+ border:1px solid #423461!important;
+ color:#efe9fa!important;
+ box-shadow:none!important
+}
+body:has(.p07-workspace) #content>.grid>.card.full h3,
+body:has(.p07-workspace) #content>.grid>.card.full h4,
+body:has(.p07-workspace) #content>.grid>.card.full strong{color:#f4ebff!important}
+body:has(.p07-workspace) #content>.grid>.card.full .muted,
+body:has(.p07-workspace) #content>.grid>.card.full p,
+body:has(.p07-workspace) #content>.grid>.card.full small,
+body:has(.p07-workspace) #content>.grid>.card.full span{color:#c5b4da!important}
+body:has(.p07-workspace) #content>.grid>.card.full .item{
+ background:#22203b!important;
+ border:1px solid #4a3868!important;
+ color:#f0e8fb!important
+}
+body:has(.p07-workspace) #content>.grid>.card.full button:not(.primary){
+ background:#32264f!important;
+ border-color:#624389!important;
+ color:#e8daff!important
+}
