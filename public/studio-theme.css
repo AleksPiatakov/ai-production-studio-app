@@ -68,7 +68,7 @@ body:has(.dashboard-hero) .route-card{
 }
 body:has(.dashboard-hero) .route-card h3{color:var(--ink)}
 body:has(.dashboard-hero) .route-head .tag{background:var(--violet-soft);border-color:rgba(162,138,245,.3);color:#ded3ff}
-body:has(.dashboard-hero) .route-steps{grid-template-columns:repeat(4,minmax(0,1fr))}
+body:has(.dashboard-hero) .route-steps{grid-template-columns:repeat(3,minmax(0,1fr))}
 body:has(.dashboard-hero) .route-step{background:#292735;border-color:var(--line);color:var(--ink)}
 body:has(.dashboard-hero) .route-step:hover{background:#343044;border-color:rgba(162,138,245,.6)}
 body:has(.dashboard-hero) .route-step strong{color:var(--ink)}
@@ -78,6 +78,19 @@ body:has(.dashboard-hero) .route-step.ready{background:rgba(65,151,124,.13);bord
 body:has(.dashboard-hero) .next-action{background:linear-gradient(100deg,rgba(116,89,170,.17),rgba(27,26,38,.9));border-color:rgba(162,138,245,.28)}
 body:has(.dashboard-hero) .next-action h3{color:var(--ink)}
 body:has(.dashboard-hero) .next-action .muted{color:var(--muted)}
+/* P-01 progress counter: contrast.css was retaining a light card. */
+body:has(.dashboard-hero) .season-progress{
+  background:#292735;
+  border-color:rgba(162,138,245,.30);
+  color:var(--ink);
+}
+body:has(.dashboard-hero) .season-progress-total{border-right-color:var(--line)}
+body:has(.dashboard-hero) .season-progress-total strong{color:#c1b0ff}
+body:has(.dashboard-hero) .season-progress-total span{color:#c9c3df}
+body:has(.dashboard-hero) .season-progress-copy strong{color:#eeeaf8}
+body:has(.dashboard-hero) .season-progress-copy small{color:#b1aac9}
+body:has(.dashboard-hero) .season-progress-track{background:#454154}
+body:has(.dashboard-hero) .season-progress-track i{background:linear-gradient(90deg,#8970da,#b4a1fb)}
 @media(max-width:1050px){
   body:has(.dashboard-hero) .route-steps{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
