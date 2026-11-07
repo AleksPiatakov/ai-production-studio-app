@@ -23,10 +23,10 @@ const fs=require('node:fs');
     await page.screenshot({path:path.join(out,'phone-'+width+'-'+screen+'.png'),fullPage:true});
     if(screen==='script'){
       const textarea=page.locator('#demo-script-text');
-      if(!(await textarea.isVisible()))throw Error('Mobile screenplay text hidden');
+      if(!(await page.locator('#demo-script-reader').isVisible()))throw Error('Mobile approved screenplay reading surface hidden');
       await page.locator('#screen-script [data-demo-script-mode="scene"]').click();
       await page.locator('#demo-scene-selector').selectOption('1');
-      if(!(await textarea.inputValue()).includes('СЦЕНА 2'))throw Error('Mobile scene selection broken');
+      if(!(await page.locator('#demo-script-reader').innerText()).includes('СЦЕНА 2'))throw Error('Mobile scene selection broken');
       await page.locator('#demo-script-focus').click();
       if(!(await page.locator('#screen-script').evaluate(el=>el.classList.contains('demo-p02-focus'))))throw Error('Mobile focus did not open');
       if(await page.locator('#screen-script .p02-ai-panel').isVisible())throw Error('Mobile focus assistant not hidden');
