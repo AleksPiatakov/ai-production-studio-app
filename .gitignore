@@ -45,3 +45,6 @@ ai-production-studio-docs/
 public/assets/
 assets/
 docs/
+
+# Generated static preview build
+preview-dist/
