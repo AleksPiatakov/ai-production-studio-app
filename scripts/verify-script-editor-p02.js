@@ -48,7 +48,7 @@ const path = require('node:path');
   await page.locator('[data-p02-mode="whole"]').click();
   const full=await page.locator('#script-workspace-body').inputValue();
   if(!full.includes('Опис лісу.')||!full.includes('Опис моста, який світиться.'))throw new Error('Edits not synchronized to full episode');
-  await page.locator('#script-workspace-form button[type="submit"]').last().click();
+  await page.locator('#script-workspace-form').evaluate(form=>form.requestSubmit());
   await page.waitForFunction(()=>!!document.querySelector('.editor-success'),null,{timeout:15000});
   const response=await page.request.get(base+'/api/projects/'+project);
   if(!response.ok())throw new Error('Project read failed');
