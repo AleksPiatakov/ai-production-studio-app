@@ -1,0 +1,55 @@
+name: Publish approved UI preview to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "preview/**"
+      - "public/**"
+      - "scripts/build-preview.js"
+      - ".github/workflows/github-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Build public-safe static preview
+        run: node scripts/build-preview.js
+      - name: Verify preview index and absence of local project data
+        run: |
+          test -f preview-dist/index.html
+          if find preview-dist -type f \( -name '*.sqlite' -o -name '*.db' -o -name '.env*' -o -name '*.pem' \) | grep .; then
+            echo "Sensitive file found in preview output"
+            exit 1
+          fi
+          echo "Static preview files:"
+          find preview-dist -type f | sort
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload static preview
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: preview-dist
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
