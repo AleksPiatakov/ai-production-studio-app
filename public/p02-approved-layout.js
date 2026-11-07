@@ -8,6 +8,20 @@
   const layout=form?.querySelector('.p02-edit-layout');
   if(!form||!layout)return;
   form.classList.add('p02-approved-layout');
+  if(!form.querySelector('.p02-project-tabs')){
+   const nav=document.createElement('nav');
+   nav.className='p02-project-tabs';
+   nav.setAttribute('aria-label','Розділи поточного проєкту');
+   const sections=[
+    ['Огляд','overview'],['Сценарій','editor'],['Епізоди','episodes'],
+    ['Сцени','storyboard'],['Персонажі','assets'],
+    ['Локації','assets'],['Матеріали','assets'],
+    ['Виробництво','production'],['Нотатки','versions']
+   ];
+   nav.innerHTML=sections.map(([label,destination])=>'<button type="button" data-p02-destination="'+destination+'"'+(destination==='editor'?' class="active" aria-current="page"':'')+'>'+label+'</button>').join('');
+   form.querySelector('.editor-topbar')?.insertAdjacentElement('afterend',nav);
+   nav.addEventListener('click',event=>{const button=event.target.closest('[data-p02-destination]');if(!button)return;if(button.dataset.p02Destination==='editor')return;goToView(button.dataset.p02Destination)});
+  }
   if(!form.querySelector('.p02-project-context')){
    const episodeId=editorState?.scriptId?(active.scripts||[]).find(s=>s.id===editorState.scriptId)?.episodeId:editorState?.initial?.episodeId;
    const episode=(active.episodes||[]).find(e=>e.id===episodeId);
