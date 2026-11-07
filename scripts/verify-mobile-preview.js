@@ -14,6 +14,7 @@ const fs=require('node:fs');
    const errors=[];
    page.on('pageerror',error=>errors.push(error.message));
    await page.goto('file://'+path.resolve('preview-dist','index.html'),{waitUntil:'load'});
+   if(!(await page.locator('#preview-layout').evaluate(el=>el.classList.contains('sidebar-collapsed'))))throw Error('Phone sidebar must start collapsed');
    for(const [screen,selector] of [['project','#preview-dashboard'],['script','#screen-script .p02-edit-layout'],['storyboard','#screen-storyboard .director-desk']]){
     await page.locator('.preview-controls [data-screen="'+screen+'"]').click();
     await page.locator(selector).waitFor({state:'visible',timeout:10000});
@@ -33,6 +34,10 @@ const fs=require('node:fs');
       await page.locator('#demo-script-focus').click();
     }
     if(screen==='storyboard'){
+      const firstScene=page.locator('#screen-storyboard .desk-scene').first();
+      if(!(await firstScene.isVisible()))throw Error('Mobile scene list hidden');
+      const sceneBounds=await firstScene.boundingBox();
+      if(!sceneBounds||sceneBounds.x+sceneBounds.width>width+2)throw Error('Mobile scene choice offscreen: '+JSON.stringify(sceneBounds));
       await page.locator('[data-demo-p04-shot="2"]').click();
       if((await page.locator('#demo-p04-inspector-title').innerText())!=='Кадр 2')throw Error('Mobile shot selection broken');
     }
