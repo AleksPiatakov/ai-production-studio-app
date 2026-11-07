@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>AI Production Studio — UI Preview</title>
+<link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/editor.css"><link rel="stylesheet" href="/actions.css"><link rel="stylesheet" href="/contrast.css"><link rel="stylesheet" href="/voice-editor.css"><link rel="stylesheet" href="/workspace-dialog.css"><link rel="stylesheet" href="/studio-theme.css">
+<style>
+/* Preview-specific mock only: no local data, model execution or API. */
+.preview-note{font-size:11px;color:#c9bbf9;background:#262039;border:1px solid #5e4b86;border-radius:8px;padding:7px 10px}
+.preview-controls{display:flex;gap:7px;align-items:center}
+.preview-controls button{border:1px solid var(--line);color:var(--muted);background:#23212f}
+.preview-controls button.active{background:var(--violet-soft);border-color:var(--violet);color:#fff}
+.preview-screen{display:none}.preview-screen.active{display:block}
+.preview-main-card{border:1px solid var(--line);border-radius:15px;padding:22px;background:linear-gradient(150deg,#23212d,#1b1b26);box-shadow:var(--shadow)}
+.preview-main-card h3{margin:6px 0 10px;color:var(--ink)}
+.preview-main-card p{color:var(--muted)}
+.preview-panel-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0}
+.preview-module{background:#292735;color:var(--ink);text-align:left;border:1px solid var(--line);min-height:114px}
+.preview-module:hover,.preview-module:focus-visible{background:#343044;border-color:var(--violet)}
+.preview-module strong,.preview-module small{display:block}.preview-module strong{margin:10px 0 5px;font-size:15px}.preview-module small{color:var(--muted);font-size:12px}
+.preview-icon{font-size:20px;color:#b9a5f7}
+.preview-bottom{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.preview-box{padding:17px;border:1px solid var(--line);border-radius:12px;background:#24222f}
+.preview-box h3{margin-bottom:10px;color:var(--ink)}.preview-box p{color:var(--muted);font-size:13px}
+.preview-list{display:grid;gap:9px}.preview-list>div{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding-bottom:7px}
+.preview-list small{color:var(--muted)}.preview-status{color:#b4a0ff;font-size:12px}
+.preview-link{color:#c0aff7}
+.preview-sidebar-item{width:100%;background:transparent;text-align:left;box-shadow:none;color:#c7c0db}
+.preview-sidebar-item.active{background:var(--violet-soft);border:1px solid rgba(162,138,245,.4)}
+.preview-sidebar-item small{display:block;color:var(--muted)}
+.preview-warning{margin-top:14px;border-left:3px solid var(--violet);padding-left:10px;color:var(--muted);font-size:12px}
+@media(max-width:950px){.preview-panel-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.preview-panel-grid,.preview-bottom{grid-template-columns:1fr}.preview-note{display:none}}
+</style>
+</head>
+<body>
+<header>
+ <div class="header-brand"><button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-expanded="true">☰ <span>Сховати</span></button><div><p class="eyebrow">ЛОКАЛЬНА ТВОРЧА СТУДІЯ · ПРЕВ'Ю</p><h1>AI Production Studio</h1></div></div>
+ <div class="preview-controls" role="group" aria-label="Демо-екрани"><button class="active" data-screen="project" type="button">Проєкт</button><button data-screen="models" type="button">Моделі</button><button data-screen="assistant" type="button">Помічник</button></div>
+ <span class="preview-note">ДЕМО ІНТЕРФЕЙСУ · БЕЗ ДАНИХ</span>
+</header>
+<main id="preview-layout">
+ <aside id="app-sidebar"><div class="side-title"><h2>Проєкти</h2></div><nav><button class="project active preview-sidebar-item" type="button">Демонстраційний проєкт<small>Приклад · без особистих даних</small></button></nav><p class="nav-label">ПРОЄКТНІ МОДУЛІ</p><nav><button class="project nav-project preview-sidebar-item active" data-screen="project" type="button"><span class="nav-icon">⌂</span> Робочий стіл</button><button class="project nav-project preview-sidebar-item" data-screen="assistant" type="button"><span class="nav-icon">✦</span> AI-помічник</button></nav><p class="side-note">Це лише перегляд дизайну. Реальні матеріали залишаються на твоєму Mac.</p></aside>
+ <section id="content">
+ <div class="hero dashboard-hero"><div><p class="eyebrow">ДЕМО ПРОЄКТ · ПІДГОТОВКА МАТЕРІАЛІВ</p><h2>Робочий стіл</h2><p>Усі творчі модулі одного проєкту — в одному місці.</p></div><span class="tag">UI Preview</span></div>
+ <div class="preview-screen active" id="screen-project">
+  <div class="preview-main-card">
+   <div class="route-head"><div><p class="eyebrow">ПРОЄКТНИЙ РОБОЧИЙ ПРОСТІР</p><h3>Виробництво епізоду</h3><p>Підготуй сценарій, персонажів, зображення, голоси та відеоматеріали.</p></div><span class="tag">Демонстрація</span></div>
+   <div class="preview-panel-grid">
+    <button class="preview-module" type="button" data-module="Сценарій"><span class="preview-icon">✎</span><strong>Сценарій</strong><small>Епізоди, сцени та діалоги</small></button>
+    <button class="preview-module" type="button" data-module="Персонажі"><span class="preview-icon">♙</span><strong>Персонажі</strong><small>Біблія персонажів і стилю</small></button>
+    <button class="preview-module" type="button" data-module="Сторіборд"><span class="preview-icon">▦</span><strong>Сторіборд</strong><small>Плани, кадри та референси</small></button>
+    <button class="preview-module" type="button" data-module="Зображення"><span class="preview-icon">▧</span><strong>Зображення</strong><small>Кадри, варіанти, затвердження</small></button>
+    <button class="preview-module" type="button" data-module="Голос і звук"><span class="preview-icon">◖))</span><strong>Голос і звук</strong><small>Репліки, музика й ефекти</small></button>
+    <button class="preview-module" type="button" data-module="Відео"><span class="preview-icon">▣</span><strong>Відео</strong><small>Кліпи, аніматик, DaVinci</small></button>
+   </div>
+   <div class="preview-bottom">
+    <section class="preview-box"><p class="eyebrow">НЕЩОДАВНІ ЕПІЗОДИ</p><h3>Матеріали проєкту</h3><div class="preview-list"><div>Епізод 01 <small>Чернетка</small></div><div>Епізод 02 <small>Заплановано</small></div></div></section>
+    <section class="preview-box"><p class="eyebrow">НЕЩОДАВНІ РЕСУРСИ</p><h3>Готовність до роботи</h3><div class="preview-list"><div>Сценарій <span class="preview-status">У роботі</span></div><div>Кадри й голоси <span class="preview-status">Не затверджено</span></div></div></section>
+   </div>
+  </div>
+ </div>
+ <div class="preview-screen" id="screen-models"><div class="preview-main-card"><p class="eyebrow">ЦЕНТР AI-МОДЕЛЕЙ</p><h3>Мої моделі</h3><p>Онлайн-прев’ю не підключається до локальних моделей. Реєстр і генерація працюватимуть у настільній програмі.</p></div></div>
+ <div class="preview-screen" id="screen-assistant"><div class="preview-main-card"><p class="eyebrow">AI-ПОМІЧНИК ПРОЄКТУ</p><h3>Помічник у межах проєкту</h3><p>Модальне вікно, рішення і версії будуть підключені в основному застосунку. Демо не передає приватні дані.</p></div></div>
+ <p class="preview-warning" id="preview-feedback" role="status">Відкрито демонстрацію екрана P-01. Кнопки модулів показують майбутню навігацію, а не запускають генерацію.</p>
+ </section>
+</main>
+<script>
+(()=>{const buttons=[...document.querySelectorAll('[data-screen]')],panels=[...document.querySelectorAll('.preview-screen')];function select(id){panels.forEach(p=>p.classList.toggle('active',p.id==='screen-'+id));buttons.forEach(b=>b.classList.toggle('active',b.dataset.screen===id));document.getElementById('preview-feedback').textContent=id==='project'?'Відкрито демонстрацію екрана P-01.':'Це демонстрація без підключення до локальної програми.';}buttons.forEach(b=>b.addEventListener('click',()=>select(b.dataset.screen)));document.getElementById('sidebar-toggle').addEventListener('click',()=>{const main=document.getElementById('preview-layout');const collapsed=main.classList.toggle('sidebar-collapsed');document.getElementById('sidebar-toggle').setAttribute('aria-expanded',String(!collapsed))});document.querySelectorAll('[data-module]').forEach(button=>button.addEventListener('click',()=>{document.getElementById('preview-feedback').textContent='Модуль «'+button.dataset.module+'» буде доступний в основному застосунку. Це лише дизайн-прев’ю.'}));})();
+</script>
+</body>
+</html>
