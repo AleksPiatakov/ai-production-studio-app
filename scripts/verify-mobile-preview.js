@@ -16,7 +16,7 @@ const fs=require('node:fs');
    await page.goto('file://'+path.resolve('preview-dist','index.html'),{waitUntil:'load'});
    if(!(await page.locator('#preview-layout').evaluate(el=>el.classList.contains('sidebar-collapsed'))))throw Error('Phone sidebar must start collapsed');
    for(const [screen,selector] of [['project','#preview-dashboard'],['script','#screen-script .p02-edit-layout'],['storyboard','#screen-storyboard .director-desk']]){
-    await page.locator('.preview-controls [data-screen="'+screen+'"]').click();
+    await page.evaluate(screen => window.previewNavigate(screen), screen);
     await page.locator(selector).waitFor({state:'visible',timeout:10000});
     const overflow=await page.evaluate(()=>({viewport:document.documentElement.clientWidth,bodyWidth:document.body.scrollWidth,rootWidth:document.documentElement.scrollWidth}));
     if(overflow.bodyWidth>overflow.viewport+2||overflow.rootWidth>overflow.viewport+2)throw Error('Horizontal page overflow on '+screen+' at '+width+': '+JSON.stringify(overflow));
