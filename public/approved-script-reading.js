@@ -83,5 +83,5 @@
   const priorRender=render;
   render=function(){priorRender();setup();};
   setup();
-  window.APSApprovedScriptReading={renderLines,classify};
+  window.APSApprovedScriptReading={renderLines,classify:window.APSApprovedScriptFormat.classify};
 })();
