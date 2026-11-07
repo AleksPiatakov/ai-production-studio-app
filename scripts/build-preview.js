@@ -31,5 +31,6 @@ fs.copyFileSync(path.join(root, 'preview', 'script-editor-demo.js'), path.join(o
 fs.copyFileSync(path.join(root, 'public', 'shot-workspace-p05.js'), path.join(output, 'shot-workspace-p05.js'));
 fs.copyFileSync(path.join(root, 'public', 'shot-workspace-p05.css'), path.join(output, 'shot-workspace-p05.css'));
 fs.copyFileSync(path.join(root, 'public', 'p07-voice-takes.css'), path.join(output, 'p07-voice-takes.css'));
+fs.copyFileSync(path.join(root, 'public', 'approved-color-unification.css'), path.join(output, 'approved-color-unification.css'));
 fs.writeFileSync(path.join(output, 'robots.txt'), 'User-agent: *\nDisallow: /\n');
 console.log('Preview built with synthetic data. Static files:', fs.readdirSync(output).length);
