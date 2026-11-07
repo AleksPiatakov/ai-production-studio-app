@@ -54,3 +54,79 @@ body:has(.p07-workspace) #content{max-width:none;padding:20px 22px}
 .p07-plan-note{margin:14px 0 0}
 @media(max-width:1250px){.p07-workspace{grid-template-columns:185px minmax(0,1fr)}.p07-settings-panel{grid-column:1/-1;border-left:0;border-top:1px solid #413465}.p07-takes{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.p07-workspace{display:block}.p07-character-rail{border-right:0;border-bottom:1px solid #413465}.p07-character-rail>button{display:inline-flex;max-width:220px;margin-right:6px}.p07-workspace>.audio-plan{padding:13px!important}.p07-takes{grid-template-columns:1fr}.p07-variants-header{flex-direction:column;align-items:stretch}.p07-settings-panel{border-left:0}}
+
+/* Critical visual fidelity: legacy .card.full spans all grid columns, moving
+   the actual dialogue panel and settings to later rows. Pin all three slots. */
+@media(min-width:1251px){
+ .p07-workspace>.p07-character-rail{grid-column:1!important;grid-row:1!important}
+ .p07-workspace>.audio-plan{grid-column:2!important;grid-row:1!important}
+ .p07-workspace>.p07-settings-panel{grid-column:3!important;grid-row:1!important}
+}
+@media(min-width:761px) and (max-width:1250px){
+ .p07-workspace>.p07-character-rail{grid-column:1!important;grid-row:1!important}
+ .p07-workspace>.audio-plan{grid-column:2!important;grid-row:1!important}
+ .p07-workspace>.p07-settings-panel{grid-column:1/-1!important;grid-row:2!important}
+}
+.p07-workspace>.audio-plan{grid-column:auto!important;min-width:0;max-width:none}
+.p07-workspace .audio-line,
+.p07-workspace .audio-line:hover{
+ background:#1b203b!important;
+ border:1px solid #3b335d!important;
+ color:#f2e9ff!important;
+ box-shadow:none!important
+}
+.p07-workspace .audio-line.active,
+.p07-workspace .audio-line.active:hover{
+ background:#281d48!important;
+ border-color:#ad47f5!important;
+ box-shadow:inset 3px 0 #b039ee!important
+}
+.p07-workspace .audio-line p,
+.p07-workspace .audio-copy p,
+.p07-workspace .audio-copy strong,
+.p07-workspace .audio-meta strong,
+.p07-workspace .audio-plan h3,
+.p07-workspace .audio-plan h4{
+ color:#f1eafa!important
+}
+.p07-workspace .audio-line small,
+.p07-workspace .audio-meta span,
+.p07-workspace .audio-copy small{color:#c8b6df!important}
+.p07-workspace .audio-line button:not(.primary){
+ color:#f0dfff!important;
+ background:#30264c!important;
+ border-color:#594078!important
+}
+.p07-workspace .episode-voices,
+.p07-workspace .episode-voices-head,
+.p07-workspace .episode-voices-list,
+.p07-workspace .episode-voice,
+.p07-workspace .episode-voice-card,
+.p07-workspace .voice-settings-quick{
+ background:#141a32!important;
+ border-color:#49336d!important;
+ color:#efe7ff!important;
+ box-shadow:none!important
+}
+.p07-workspace .episode-voices h4,
+.p07-workspace .episode-voices strong,
+.p07-workspace .episode-voices-list strong,
+.p07-workspace .voice-settings-quick strong{color:#f4ebff!important}
+.p07-workspace .episode-voices p,
+.p07-workspace .episode-voices-list small,
+.p07-workspace .voice-settings-quick small{color:#c6b6da!important}
+.p07-workspace .episode-voices button,
+.p07-workspace .voice-settings-quick button{color:#f1ddff!important;background:#382557!important;border-color:#68469b!important}
+.p07-workspace .audio-plan .route-head h3{color:#f2e9ff!important}
+.p07-workspace .audio-plan .route-head .tag{background:#32214b!important;color:#d6baff!important}
+.p07-workspace .audio-plan .route-head>div{min-width:0}
+.p07-workspace .audio-plan .audio-render-control{color:#d4c4e5!important}
+@media(max-width:700px){
+ body:has(.p07-workspace) #app-sidebar{display:none!important}
+ body:has(.p07-workspace) main,
+ body:has(.p07-workspace) main.sidebar-collapsed{display:block!important;grid-template-columns:1fr!important}
+ body:has(.p07-workspace) #content{width:100%!important;padding:10px!important}
+ .p07-workspace>.audio-plan{grid-column:auto!important;grid-row:auto!important}
+ .p07-workspace .audio-line{min-width:0}
+ .p07-settings-panel{grid-column:auto!important;grid-row:auto!important}
+}
