@@ -65,3 +65,14 @@ body:has(.p06-studio) #content>.grid{display:block}
  .p06-variant{flex-basis:115px}
  .p06-variant img{height:76px}
 }
+
+/* Phone preview uses an independent sidebar; never cover Image Studio with it. */
+@media(max-width:700px){
+ body:has(#screen-images.active) #preview-layout{display:block!important}
+ body:has(#screen-images.active) #app-sidebar{display:none!important}
+ body:has(#screen-images.active) #content{display:block!important;width:100%!important;max-width:none!important;min-width:0!important;padding:0!important;margin:0!important}
+ body:has(#screen-images.active) #content>.hero{display:none!important}
+ body:has(#screen-images.active) .preview-warning{display:none}
+ #screen-images{width:100%!important;min-width:0!important;overflow:hidden}
+ #screen-images .p06-studio{width:100%!important;max-width:none}
+}
