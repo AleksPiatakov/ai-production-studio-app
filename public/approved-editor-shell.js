@@ -3,6 +3,7 @@
    Every clickable route uses an existing local view or selectProject action. */
 (()=>{
   const routes=[
+    ['projects','▱','Проєкти'],
     ['overview','⌂','Робочий стіл'],
     ['assistants','✧','AI Помічники'],
     ['models','▣','AI Моделі'],
@@ -14,8 +15,8 @@
   function setup(){
     const aside=document.getElementById('app-sidebar');
     if(!aside)return;
-    document.body.classList.toggle('aps-approved-editor-shell',view==='editor');
-    if(view!=='editor')return;
+    document.body.classList.toggle('aps-approved-editor-shell',view==='editor'||view==='projects');
+    if(view!=='editor'&&view!=='projects')return;
     let rail=aside.querySelector('#aps-approved-nav');
     if(!rail){rail=document.createElement('div');rail.id='aps-approved-nav';aside.prepend(rail)}
     const projectList=typeof projects!=='undefined' && Array.isArray(projects)?projects:[];
