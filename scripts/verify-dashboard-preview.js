@@ -11,10 +11,15 @@ const path = require('node:path');
   const page = await browser.newPage({viewport:{width:1440,height:900},deviceScaleFactor:1});
   const errors=[];
   page.on('pageerror',error=>errors.push(error.message));
+  page.on('console',message=>{if(message.type()==='error')errors.push('console: '+message.text())});
   try {
     await page.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle',timeout:30000});
     const modules=page.locator('.p01-module');
-    await modules.first().waitFor({timeout:15000});
+    try {await modules.first().waitFor({timeout:15000})} catch (error) {
+      await page.screenshot({path:path.join(output,'diagnostic-dashboard.png'),fullPage:true});
+      console.error('Current URL:',page.url(),'Page text:',(await page.locator('body').innerText()).slice(0,1600),'JS errors:',errors);
+      throw error;
+    }
     const count=await modules.count();
     if(count!==6)throw new Error('Expected six project cards, got '+count);
     const locations=await modules.evaluateAll(elements=>elements.map(element=>{const r=element.getBoundingClientRect();return {x:Math.round(r.x),y:Math.round(r.y),w:Math.round(r.width),h:Math.round(r.height)};}));
