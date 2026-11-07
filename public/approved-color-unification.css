@@ -1,0 +1,104 @@
+/* Approved dark UI compatibility layer.
+   Corrects legacy light palette ONLY, preserving layouts and the P-02/P-04/P-05/P-06/P-07 approved component styling.
+   Specification v0.4 §§4–6. Shared by local app and public-safe Pages preview. */
+:root{
+  color-scheme:dark;
+  --aps-bg:#090d20;
+  --aps-panel:#10162b;
+  --aps-raised:#191a35;
+  --aps-control:#171a32;
+  --aps-border:rgba(144,124,221,.30);
+  --aps-ink:#f3effb;
+  --aps-muted:#bcb3d3;
+  --aps-accent:#a28af5;
+}
+html,body{color-scheme:dark}
+body{color:var(--aps-ink)}
+/* Generic inputs inherited white surfaces and dark-on-white text from first MVP. */
+body input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+body select,body textarea{
+  background-color:var(--aps-control)!important;
+  color:var(--aps-ink)!important;
+  border-color:var(--aps-border)!important;
+  caret-color:#d7baff;
+}
+body input::placeholder,body textarea::placeholder{color:#aaa2c0!important}
+body input:disabled,body select:disabled,body textarea:disabled{
+  opacity:.65;
+  cursor:not-allowed;
+}
+body input:focus-visible,body select:focus-visible,body textarea:focus-visible{
+  outline:2px solid #b69afb!important;outline-offset:1px;
+}
+/* Shared workspace elements not already assigned to a dedicated approved design. */
+body .grid>.card:not(.p01-dashboard):not(.storyboard-workspace):not(.voice-editor-page),
+body .studio-layer,
+body .autopilot-card,
+body .route-card,
+body .assistant-card,
+body .advisor-card,
+body .voice-editor-page,
+body .manifest-editor,
+body .episode-voices{
+  background:var(--aps-panel)!important;
+  border-color:var(--aps-border)!important;
+  color:var(--aps-ink)!important;
+}
+body .grid>.card h3,body .assistant-card h3,body .studio-layer h3,
+body .manifest-editor h3,body .voice-editor-page h3{color:var(--aps-ink)!important}
+body .studio-layer p,body .advisor-card p,body .assistant-card p,
+body .voice-editor-page p{color:var(--aps-muted)}
+body .studio-list>section,
+body .assistant-context span,
+body .assistant-materials,
+body .assistant-material-grid section,
+body .voice-editor-section,
+body .voice-advanced,
+body .episode-voice-card,
+body .season-progress,
+body .season-episode,
+body .version-current,
+body .version-summary span{
+  background:var(--aps-raised)!important;
+  border-color:var(--aps-border)!important;
+  color:var(--aps-ink)!important;
+}
+body .advisor-head,body .advisor-context-strip,body .advisor-thread,
+body .advisor-message,body .advisor-suggestions,body .advisor-composer{
+  background:var(--aps-panel)!important;
+  border-color:var(--aps-border)!important;
+  color:var(--aps-ink)!important;
+}
+body .advisor-message.user{background:#2b2147!important}
+body .advisor-message.assistant{background:#191a35!important}
+body .advisor-card strong,body .assistant-card strong,body .voice-editor-page strong,
+body .episode-voice-card strong,body .season-episode strong{color:var(--aps-ink)!important}
+body .advisor-card small,body .assistant-card small,body .voice-editor-page small,
+body .season-episode small{color:var(--aps-muted)!important}
+body .workspace-mode,body .route-step,body .next-action,
+body .conveyor,body .autopilot-context span,body .autopilot-note{
+  background:var(--aps-raised)!important;border-color:var(--aps-border)!important;color:var(--aps-ink)!important;
+}
+body .route-step strong,body .next-action h3{color:var(--aps-ink)!important}
+body .route-step small,body .next-action .muted{color:var(--aps-muted)!important}
+/* Editor and dialog backgrounds previously painted white by !important rules. */
+body .editor-topbar,body .editor-sidebar,body .editor-main,
+body .editor-details,body .editor-context,body .editor-context .editor-stat,
+body .editor-page-frame .editor-actions,
+dialog.workspace-dialog,dialog.workspace-dialog #modal-title,
+dialog.workspace-dialog #modal-fields fieldset,dialog.workspace-dialog menu{
+  background:var(--aps-panel)!important;
+  border-color:var(--aps-border)!important;
+  color:var(--aps-ink)!important;
+}
+body .editor-page-frame .editor-main textarea{background:var(--aps-control)!important;color:var(--aps-ink)!important}
+dialog.workspace-dialog label,dialog.workspace-dialog legend{color:var(--aps-ink)!important}
+body .tag{background:rgba(162,138,245,.13);border-color:var(--aps-border);color:#d9c9fa}
+body button:not(.primary):not(.p01-module):not(.p04-strip-item):not(.p07-demo-person):not(.preview-sidebar-item):hover{border-color:rgba(162,138,245,.50)}
+/* Dedicated approved screen color rules intentionally win with their more specific
+   selectors; never turn a project content panel into a light theme. */
+#screen-script .p02-approved-layout,
+#screen-storyboard .storyboard-workspace,
+#screen-shot .p05-shot-workspace,
+#screen-images .p06-image-studio,
+#screen-voice .p07-workspace{color-scheme:dark}
