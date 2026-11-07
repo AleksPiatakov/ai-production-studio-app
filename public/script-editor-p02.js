@@ -45,7 +45,38 @@
     const focus=$('[data-p02-focus]');
     if(focus){focus.classList.toggle('active',state.focus);focus.setAttribute('aria-pressed',String(state.focus));focus.textContent=state.focus?'Повернути панелі':'Режим зосередження'}
     const items=$('#p02-scene-items');
-    if(items)items.innerHTML=sections.map((item,i)=>`<button type="button" data-p02-scene="${i}" class="${i===state.sceneIndex&&state.mode==='scene'?'active':''}" aria-current="${i===state.sceneIndex&&state.mode==='scene'?'true':'false'}"><span>${safe(item.title)}</span><small>${i+1} із ${sections.length}</small></button>`).join('');
+    if(items){
+      const script=(active?.scripts||[]).find(s=>s.id===editorState?.scriptId);
+      const episodeId=script?.episodeId||editorState?.initial?.episodeId||activeEpisodeId;
+      const sceneData=(active?.scenes||[]).filter(s=>s.episodeId===episodeId);
+      const assets=active?.assets||[];
+      const safeImage=asset=>asset&&typeof asset.uri==='string'&&/^\/assets\/[a-z0-9_./-]+\.(?:png|jpe?g|webp)(?:\?.*)?$/i.test(asset.uri);
+      const related=item=>{
+        const match=item.title.match(/^(?:СЦЕНА|SCENE)\s*(\d+)/i);
+        if(!match)return null;
+        const scene=sceneData.find(s=>Number(s.order)===Number(match[1]));
+        if(!scene)return null;
+        const ids=[
+          ...(scene.keyImageAssetId?[scene.keyImageAssetId]:[]),
+          ...(scene.referenceAssetIds||[]),
+          ...(scene.shots||[]).flatMap(shot=>[
+            ...(shot.keyImageAssetId?[shot.keyImageAssetId]:[]),
+            ...(shot.referenceAssetIds||[])
+          ])
+        ];
+        return {scene,asset:ids.map(id=>assets.find(a=>a.id===id)).find(safeImage)};
+      };
+      items.innerHTML=sections.map((item,i)=>{
+        const linked=related(item);
+        const thumbnail=linked?.asset
+          ?'<img class="p02-scene-thumb" alt="Референс сцени" loading="lazy" src="'+safe(linked.asset.uri)+'">'
+          :'<span class="p02-scene-thumb is-empty" aria-hidden="true">▧</span>';
+        const duration=linked?.scene?.durationSeconds;
+        return `<button type="button" data-p02-scene="${i}" class="${i===state.sceneIndex&&state.mode==='scene'?'active':''}" aria-current="${i===state.sceneIndex&&state.mode==='scene'?'true':'false'}">
+          ${thumbnail}<span class="p02-scene-meta"><strong>${safe(item.title)}</strong><small>${duration?Math.floor(duration/60)+':'+String(duration%60).padStart(2,'0'):i+1+' із '+sections.length}</small></span>
+        </button>`;
+      }).join('');
+    }
     const sceneSelect=$('#p02-scene-select');
     if(sceneSelect){
       sceneSelect.innerHTML=sections.map((item,i)=>`<option value="${i}" ${i===state.sceneIndex?'selected':''}>${safe(item.title)}</option>`).join('');
