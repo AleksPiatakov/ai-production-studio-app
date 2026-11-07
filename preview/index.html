@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>AI Production Studio — UI Preview</title>
-<link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./editor.css"><link rel="stylesheet" href="./actions.css"><link rel="stylesheet" href="./contrast.css"><link rel="stylesheet" href="./voice-editor.css"><link rel="stylesheet" href="./workspace-dialog.css"><link rel="stylesheet" href="./studio-theme.css"><link rel="stylesheet" href="./script-editor-p02.css">
+<link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./editor.css"><link rel="stylesheet" href="./actions.css"><link rel="stylesheet" href="./contrast.css"><link rel="stylesheet" href="./voice-editor.css"><link rel="stylesheet" href="./workspace-dialog.css"><link rel="stylesheet" href="./studio-theme.css"><link rel="stylesheet" href="./script-editor-p02.css"><link rel="stylesheet" href="./p02-approved-layout.css">
 <style>
 /* Preview-specific mock only: no local data, model execution or API. */
 .preview-note{font-size:11px;color:#c9bbf9;background:#262039;border:1px solid #5e4b86;border-radius:8px;padding:7px 10px}
@@ -30,6 +30,21 @@
 .preview-sidebar-item.active{background:var(--violet-soft);border:1px solid rgba(162,138,245,.4)}
 .preview-sidebar-item small{display:block;color:var(--muted)}
 .preview-warning{margin-top:14px;border-left:3px solid var(--violet);padding-left:10px;color:var(--muted);font-size:12px}
+body:has(#screen-script.active) #content{max-width:none;padding:0;margin:0;width:100%}
+body:has(#screen-script.active) #content>.hero{display:none}
+body:has(#screen-script.active) #screen-script{margin:0;padding:0}
+body:has(#screen-script.active) .preview-warning{display:none}
+#screen-script .p02-approved-layout{background:#0b1024!important}
+#screen-script .p02-project-tabs{display:flex;overflow-x:auto}
+#screen-script.demo-p02-focus .p02-project-tabs{display:none!important}
+#screen-script:not(.demo-p02-focus) .p02-approved-layout>.p02-edit-layout{height:min(620px,67vh);min-height:460px}
+#screen-script .p02-approved-layout .editor-main{display:flex;flex-direction:column;min-height:0}
+#screen-script .p02-approved-layout #demo-script-text{flex:1;min-height:320px!important;background:#0e1328!important;border-color:rgba(144,124,221,.26)!important;color:#f6efff}
+#screen-script .p02-approved-layout .editor-title{display:flex}
+#screen-script .p02-approved-layout>.editor-actions{display:flex}
+#screen-script.demo-p02-focus .p02-ai-panel{display:none!important}
+#screen-script.demo-p02-focus .p02-approved-layout>.p02-edit-layout{grid-template-columns:265px minmax(0,1fr)!important;height:calc(100dvh - 185px)}
+#screen-script.demo-p02-focus .p02-approved-layout .editor-main{min-height:0}
 #screen-script .editor-page-frame{width:100%;max-width:none}
 #screen-script.demo-p02-focus{position:fixed;z-index:40;inset:0;display:block!important;overflow:auto;padding:16px;background:#0c0b15}
 #screen-script.demo-p02-focus .editor-page-frame{max-width:1550px;margin:auto}
@@ -54,8 +69,19 @@
  <div class="hero dashboard-hero"><div><p class="eyebrow">ДЕМО ПРОЄКТ · ПІДГОТОВКА МАТЕРІАЛІВ</p><h2>Робочий стіл</h2><p>Усі творчі модулі одного проєкту — в одному місці.</p></div><span class="tag">UI Preview</span></div>
  <div class="preview-screen active" id="screen-project"><div id="preview-dashboard"></div></div>
  <div class="preview-screen" id="screen-script">
-   <div class="editor-page-frame p02-editor"><article class="editor-shell">
-    <div class="editor-topbar"><strong>Сценарій · Епізод 1 · Остання ніч міста ліхтарів</strong><span class="tag">Чернетка · демо</span></div>
+   <div class="editor-page-frame p02-editor"><article class="editor-shell p02-approved-layout">
+    <div class="editor-topbar"><div class="p02-project-context"><span class="p02-context-logo" aria-hidden="true">▣</span><strong>Міст із Світла</strong><span>Сезон 1 · Епізод 1: Остання ніч міста ліхтарів</span><span class="p02-context-state">● Чернетка</span></div><span class="tag">Демо</span></div>
+    <nav class="p02-project-tabs" aria-label="Розділи проєкту">
+      <button type="button" data-screen="project">Огляд</button>
+      <button type="button" data-screen="script" class="active" aria-current="page">Сценарій</button>
+      <button type="button" data-screen="project">Епізоди</button>
+      <button type="button" data-screen="project">Сцени</button>
+      <button type="button" data-screen="project">Персонажі</button>
+      <button type="button" data-screen="project">Локації</button>
+      <button type="button" data-screen="project">Матеріали</button>
+      <button type="button" data-screen="project">Виробництво</button>
+      <button type="button" data-screen="project">Нотатки</button>
+    </nav>
     <div class="p02-commandbar">
       <div class="p02-segments" role="group" aria-label="Режими сценарію">
         <button type="button" class="active" data-demo-script-mode="whole">Увесь епізод</button>
@@ -78,6 +104,13 @@
         <textarea id="demo-script-text" readonly spellcheck="false"></textarea>
        </label>
       </section>
+      <aside class="p02-ai-panel" aria-label="AI Помічник проєкту">
+       <div class="p02-ai-title"><span class="p02-ai-avatar" aria-hidden="true">✧</span><div><strong>AI Помічник проєкту</strong><small>Міст із Світла · проєктний контекст</small></div></div>
+       <div class="p02-ai-tabs"><span class="active">Огляд</span><span>Пропозиції</span><span>Контекст</span></div>
+       <section class="p02-ai-card"><p class="eyebrow">ПОРАДИ ДЛЯ СЦЕНИ</p><h4>Контекст і пропозиції</h4><p>У локальній програмі AI-помічник працює лише в межах поточного проєкту. Це візуальна демонстрація, без генерації відповідей.</p><button type="button" class="p02-ai-open" data-screen="assistant">✧ Переглянути помічника</button></section>
+       <section class="p02-ai-card"><p class="eyebrow">КОНТЕКСТ СЦЕНИ</p><div class="p02-ai-row"><span>Епізод</span><strong>Остання ніч міста ліхтарів</strong></div><div class="p02-ai-row"><span>Сцен у плані</span><strong>3</strong></div><div class="p02-ai-row"><span>Тема</span><strong>Довіра та надія</strong></div></section>
+       <div class="p02-ai-footer"><span>Зміни потребують затвердження</span><span aria-hidden="true">✧</span></div>
+      </aside>
     </div>
     <footer class="editor-actions"><span id="demo-script-count">Демо · без API</span><span>Локальне редагування та збереження — лише в програмі на Mac</span></footer>
    </article></div>
