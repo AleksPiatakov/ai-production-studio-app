@@ -49,3 +49,17 @@ body.aps-approved-editor-shell #aps-approved-nav{
  body.aps-approved-editor-shell #app-sidebar{display:none!important}
  body.aps-approved-editor-shell main{grid-template-columns:minmax(0,1fr)!important}
 }
+
+/* The approved editor has ONE project header. The legacy global masthead was
+   an extra 72px strip that is absent from the approved screenplay PNG. */
+body.aps-approved-editor-shell.is-editor:not(.p02-focus)>header{display:none!important}
+body.aps-approved-editor-shell.is-editor:not(.p02-focus)>main{
+ height:100dvh!important;min-height:0!important
+}
+body.aps-approved-editor-shell.is-editor:not(.p02-focus) #app-sidebar{
+ height:100dvh!important;max-height:100dvh!important
+}
+body.aps-approved-editor-shell.is-editor:not(.p02-focus) #content{height:100dvh!important}
+@media(max-width:980px){
+ body.aps-approved-editor-shell.is-editor:not(.p02-focus)>main{height:100dvh!important}
+}
