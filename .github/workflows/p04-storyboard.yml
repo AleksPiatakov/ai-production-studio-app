@@ -34,6 +34,8 @@ jobs:
             sleep 1
           done
           curl -fsS http://127.0.0.1:4173/api/health
+      - name: Build static storyboard preview
+        run: node scripts/build-preview.js
       - name: Check approved storyboard
         run: node scripts/verify-storyboard-p04.js
       - name: Attach screenshots
