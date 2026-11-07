@@ -41,6 +41,9 @@ const fs=require('node:fs'),path=require('node:path');
     throw Error('P07 columns out of order: '+JSON.stringify(geometry));
   if(geometry.color==='rgb(247, 251, 254)'||geometry.color==='rgb(255, 255, 255)')
     throw Error('Legacy daylight audio-line styling leaked into P07');
+  const extraPanelColor=await page.locator('#voice-profiles').evaluate(el=>getComputedStyle(el).backgroundColor);
+  if(extraPanelColor==='rgb(255, 255, 255)'||extraPanelColor==='rgb(242, 247, 251)')
+    throw Error('Legacy white voice profiles leaked into P07: '+extraPanelColor);
   await page.screenshot({path:path.join(output,'p07-real-takes-desktop.png'),fullPage:true});
   await page.locator('[data-p07-count="5"]').click();
   if(!(await page.locator('.p07-plan-note').innerText()).includes('5 варіант'))throw Error('Variant count control is not wired');
