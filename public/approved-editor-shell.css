@@ -63,3 +63,57 @@ body.aps-approved-editor-shell.is-editor:not(.p02-focus) #content{height:100dvh!
 @media(max-width:980px){
  body.aps-approved-editor-shell.is-editor:not(.p02-focus)>main{height:100dvh!important}
 }
+
+/* Phase A — approved studio navigation on every workspace.
+   The script editor retains its dedicated fullscreen treatment above. */
+body.aps-approved-studio-shell:not(.aps-approved-editor-shell) > main:not(.sidebar-collapsed){
+  grid-template-columns:220px minmax(0,1fr);
+}
+body.aps-approved-studio-shell #app-sidebar{
+  padding:0!important;
+  background:#090e21!important;
+  border-right:1px solid #2c2448!important;
+}
+body.aps-approved-studio-shell #app-sidebar > *:not(#aps-approved-nav){
+  display:none!important;
+}
+body.aps-approved-studio-shell #aps-approved-nav{
+  display:flex;
+  flex-direction:column;
+  min-height:100%;
+  background:linear-gradient(165deg,#0a0e22 0%,#0b1126 60%,#16102b 100%);
+  color:#f7eeff;
+}
+body.aps-approved-studio-shell .aps-nav-main button[data-aps-destination="overview"]{
+  background:transparent!important;
+  border-color:transparent!important;
+}
+body.aps-approved-studio-shell .aps-nav-main button.active,
+body.aps-approved-studio-shell .aps-nav-main button[aria-current="page"]{
+  background:linear-gradient(90deg,#4e247e,#32224e)!important;
+  color:#fff!important;
+  border-color:#6b3298!important;
+}
+body.aps-global-zone .aps-nav-project-picker{
+  display:none;
+}
+body.aps-approved-studio-shell:not(.aps-approved-editor-shell) > header{
+  min-height:68px;
+  padding-block:10px;
+  background:#0c1023;
+  border-bottom-color:#2c2448;
+}
+body.aps-approved-studio-shell:not(.aps-approved-editor-shell) #content{
+  min-width:0;
+}
+body.aps-approved-studio-shell .aps-nav-main button:focus-visible,
+body.aps-approved-studio-shell .aps-nav-project-picker select:focus-visible{
+  outline:2px solid #c8a4ff;
+  outline-offset:2px;
+}
+@media(max-width:980px){
+  body.aps-approved-studio-shell.aps-approved-editor-shell #app-sidebar{display:none!important}
+}
+
+/* Navigation sections are defined by Master Specification §3. */
+.aps-nav-label{margin:11px 10px 5px;color:#a995ce;font-size:10px;font-weight:800;letter-spacing:.08em}
