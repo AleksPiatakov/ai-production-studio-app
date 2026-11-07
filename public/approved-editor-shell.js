@@ -14,8 +14,11 @@
   function setup(){
     const aside=document.getElementById('app-sidebar');
     if(!aside)return;
-    document.body.classList.toggle('aps-approved-editor-shell',view==='editor');
-    if(view!=='editor')return;
+    const isEditor=view==='editor';
+    const globalZone=['models','queue','assistants'].includes(view);
+    document.body.classList.add('aps-approved-studio-shell');
+    document.body.classList.toggle('aps-approved-editor-shell',isEditor);
+    document.body.classList.toggle('aps-global-zone',globalZone);
     let rail=aside.querySelector('#aps-approved-nav');
     if(!rail){rail=document.createElement('div');rail.id='aps-approved-nav';aside.prepend(rail)}
     const projectList=typeof projects!=='undefined' && Array.isArray(projects)?projects:[];
@@ -26,7 +29,7 @@
       projectList.map(p=>'<option value="'+esc(p.id)+'" '+(p.id===current?'selected':'')+'>'+esc(p.name)+'</option>').join('')+
       '</select></div>'+
       '<nav class="aps-nav-main" aria-label="Глобальні розділи студії">'+
-      routes.map(([id,icon,title])=>'<button type="button" data-aps-destination="'+id+'"><span aria-hidden="true">'+icon+'</span>'+title+'</button>').join('')+
+      routes.map(([id,icon,title])=>'<button type="button" data-aps-destination="'+id+'" '+(view===id?'class="active" aria-current="page"':'')+'><span aria-hidden="true">'+icon+'</span>'+title+'</button>').join('')+
       '</nav>'+
       '<div class="aps-nav-bottom"><span aria-hidden="true">◉</span><span>Локальний проєкт<br><small>Дані зберігаються на цьому Mac</small></span></div>';
     rail.querySelectorAll('[data-aps-destination]').forEach(button=>{
