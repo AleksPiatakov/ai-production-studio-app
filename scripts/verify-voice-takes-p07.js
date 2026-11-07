@@ -30,6 +30,17 @@ const fs=require('node:fs'),path=require('node:path');
   if(await page.locator('.p07-take').count()!==2)throw Error('Must show exactly the two stored audio drafts');
   if(!await page.locator('.p07-review-warning').count())throw Error('Old text must mark take as needing review');
   if(await page.locator('.p07-take audio').count()!==2)throw Error('Take preview players missing');
+  const geometry=await page.locator('.p07-workspace').evaluate(element=>{
+    const blocks=['.p07-character-rail','.p07-lines-panel','.p07-settings-panel'].map(selector=>element.querySelector(selector).getBoundingClientRect());
+    const color=getComputedStyle(element.querySelector('.audio-line')).backgroundColor;
+    return {tops:blocks.map(r=>Math.round(r.top)),lefts:blocks.map(r=>Math.round(r.left)),color};
+  });
+  if(!(geometry.tops[0]===geometry.tops[1]&&geometry.tops[1]===geometry.tops[2]))
+    throw Error('Approved P07 columns must align in one row: '+JSON.stringify(geometry));
+  if(!(geometry.lefts[0]<geometry.lefts[1]&&geometry.lefts[1]<geometry.lefts[2]))
+    throw Error('P07 columns out of order: '+JSON.stringify(geometry));
+  if(geometry.color==='rgb(247, 251, 254)'||geometry.color==='rgb(255, 255, 255)')
+    throw Error('Legacy daylight audio-line styling leaked into P07');
   await page.screenshot({path:path.join(output,'p07-real-takes-desktop.png'),fullPage:true});
   await page.locator('[data-p07-count="5"]').click();
   if(!(await page.locator('.p07-plan-note').innerText()).includes('5 варіант'))throw Error('Variant count control is not wired');
@@ -41,6 +52,7 @@ const fs=require('node:fs'),path=require('node:path');
   await page.locator('.audio-line[data-p07-line="p07-line-a"]').click({position:{x:15,y:20}});
   if(await page.locator('.p07-take').count()!==2)throw Error('Switch back must restore real variants');
   await page.setViewportSize({width:390,height:844});
+  if(await page.locator('#app-sidebar').isVisible())throw Error('Mobile project sidebar must not cover P07');
   await page.screenshot({path:path.join(output,'p07-real-takes-mobile.png'),fullPage:true});
   await page.setViewportSize({width:1540,height:970});
   await page.goto('file://'+path.resolve('preview-dist/index.html'),{waitUntil:'load'});
