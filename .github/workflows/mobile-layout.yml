@@ -1,0 +1,42 @@
+name: Mobile studio layout
+
+on:
+  pull_request:
+    paths:
+      - 'public/**'
+      - 'preview/**'
+      - 'scripts/build-preview.js'
+      - 'scripts/verify-mobile-preview.js'
+      - '.github/workflows/mobile-layout.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  phone:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Unit tests
+        run: npm test
+      - name: Build safe static preview
+        run: node scripts/build-preview.js
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Verify phone layouts and interactions
+        run: node scripts/verify-mobile-preview.js
+      - name: Save automatic mobile screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phone-layout-evidence
+          path: preview-screenshots/phone-*.png
+          retention-days: 14
+          if-no-files-found: warn
