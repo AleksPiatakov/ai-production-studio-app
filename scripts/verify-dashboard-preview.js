@@ -29,8 +29,17 @@ const path = require('node:path');
     await page.locator('.dashboard-hero').waitFor({state:'detached',timeout:5000});
     await page.getByRole('button',{name:/робочий стіл/i}).first().click();
     await modules.first().waitFor();
-    await page.setViewportSize({width:390,height:844});
-    await page.screenshot({path:path.join(output,'real-dashboard-mobile.png'),fullPage:true});
+    // A fresh mobile session must collapse its sidebar by default.
+    const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
+    mobile.on('pageerror',error=>errors.push('mobile: '+error.message));
+    await mobile.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle',timeout:30000});
+    await mobile.locator('.p01-module').first().waitFor({timeout:15000});
+    if(!(await mobile.locator('main').evaluate(el=>el.classList.contains('sidebar-collapsed'))))throw new Error('Sidebar should default to collapsed on mobile');
+    await mobile.screenshot({path:path.join(output,'real-dashboard-mobile.png'),fullPage:true});
+    await mobile.locator('#sidebar-toggle').click();
+    if(!(await mobile.locator('#app-sidebar').isVisible()))throw new Error('Mobile navigation cannot open');
+    await mobile.locator('#sidebar-toggle').click();
+    await mobile.close();
     if(errors.length)throw new Error('Page errors: '+errors.join('; '));
     console.log('Dashboard E2E OK: 6 module cards; 3x2 desktop; working navigation; mobile screenshot; no JS errors.');
   } finally {await browser.close();}
