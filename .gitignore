@@ -1,0 +1,47 @@
+node_modules/
+data/
+.runtime/
+.DS_Store
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.p8
+*credentials*
+*secret*
+
+# Dependencies and temporary files
+node_modules/
+.DS_Store
+*.log
+tmp/
+temp/
+
+# Local databases and generated assets
+*.sqlite
+*.sqlite3
+*.db
+*.db-wal
+*.db-shm
+data/
+storage/
+generated/
+outputs/
+exports/
+
+# Personal projects and backups
+projects/
+backups/
+*.zip
+
+# Separate documentation repository
+ai-production-studio-docs/
+
+
+public/assets/
+assets/
+docs/

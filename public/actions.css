@@ -1,0 +1,65 @@
+/* Operational controls share one geometry, so every glyph is optically centered. */
+button.icon-button{display:inline-flex;align-items:center;justify-content:center;width:40px;min-width:40px;height:40px;padding:0;border-radius:12px;font-size:18px;line-height:1;vertical-align:middle;box-shadow:none}
+button.icon-button>span{display:grid;place-items:center;width:1em;height:1em;line-height:1;transform:translateY(-.03em)}
+button.icon-button.primary,button.icon-button[data-action="Створити"]{border-color:rgba(146,213,255,.7);background:linear-gradient(145deg,#8bd0fa,#58a7df);color:#071827;box-shadow:0 8px 20px rgba(80,158,218,.22)}
+button.icon-button[data-action="Додати голос"]{border-color:rgba(146,213,255,.7);background:linear-gradient(145deg,#8bd0fa,#58a7df);color:#071827;box-shadow:0 8px 20px rgba(80,158,218,.22)}
+button.icon-button[data-action="Додати мовну версію"]{border-color:rgba(194,175,255,.55);background:linear-gradient(145deg,#a996ee,#7966c7);color:#110f27;box-shadow:0 8px 20px rgba(112,88,191,.22)}
+button.icon-button[data-action="Редагувати"],button.icon-button[data-action="Параметри"]{border-color:rgba(127,159,211,.24);background:#2a426b;color:#e5efff}
+button.icon-button[data-action="Переглянути"],button.icon-button[data-action="Копіювати"],button.icon-button[data-action="Відкрити"]{border-color:rgba(158,139,255,.30);background:rgba(82,66,151,.30);color:#e5ddff}
+button.icon-button[data-action="Сховати"],button.icon-button[data-action="Показати"],button.icon-button[data-action="Назад"]{border-color:rgba(123,162,196,.28);background:rgba(46,72,106,.76);color:#d8ebfb}
+button.icon-button[data-action="Зберегти"],button.icon-button[data-action="Перевірити"],button.icon-button[data-action="Відновити"]{border-color:rgba(102,212,171,.30);background:rgba(49,119,105,.37);color:#c9f7e2}
+button.icon-button[data-action="Створити озвучку"]{border-color:rgba(145,195,255,.65);background:linear-gradient(145deg,#92cdf6,#66afe6);color:#071827}
+button.icon-button.danger-action,button.icon-button[data-action="Перемістити до кошика"]{border-color:rgba(242,128,151,.23);color:#ffc0cb;background:rgba(199,66,94,.19)}
+button.icon-button:hover{transform:translateY(-1px);filter:brightness(1.09)}
+button.icon-button[disabled]{opacity:.45}
+@media(max-width:600px){button.icon-button{width:38px;min-width:38px;height:38px}}
+
+/* Older script-card fallbacks used pseudo-icons.  The shared icon system now
+   owns those controls too, preventing a second glyph from shifting the first. */
+.script-document-actions button.icon-button{width:40px;min-width:40px;height:40px;font-size:18px}
+.script-document-actions button.icon-button::after{content:none}
+
+/* Fallback for the script library: these controls stay compact even if a
+   list is refreshed after the regular icon helper has already run. */
+.script-document-actions button[onclick^="openScript('"] ,
+.script-document-actions button[onclick^="setScriptVisibility("] {
+  width:38px; min-width:38px; height:38px; padding:0; font-size:0;
+}
+.script-document-actions button[onclick^="openScript('"]::after {
+  content:'✎'; font-size:18px; line-height:1;
+}
+.script-document-actions button[onclick*="'hidden'"]::after {
+  content:'👁'; font-size:18px; line-height:1;
+}
+.script-document-actions button[onclick*="'visible'"]::after {
+  content:'👁'; font-size:18px; line-height:1;
+}
+
+/* The production screens use the same daylight surfaces as the workspace. */
+.autopilot-card,.assistant-card,.audio-plan,.assembly-plan,.editor-shell,.editor-page-frame .editor-shell{background:linear-gradient(145deg,#ffffff,#f2f7fb)!important;border-color:rgba(46,76,111,.22)!important;box-shadow:0 12px 32px rgba(39,62,91,.10)!important}
+.autopilot-head h3,.assistant-head h3,.audio-plan h3,.assembly-plan h3,.editor-main h3,.editor-page-frame .editor-title,.editor-page-frame .editor-writing-label strong{color:#172d47!important}
+.autopilot-brief strong,.autopilot-options label{color:#324a65!important}
+.autopilot-head p,.autopilot-brief small,.autopilot-options label,.autopilot-context span,.autopilot-note,.assistant-head p,.audio-guide{color:#526981!important}
+.autopilot-brief textarea,.autopilot-options input,.autopilot-options select,.autopilot-context span,.conveyor,.assistant-context span,.assistant-result,.assistant-materials,.assistant-material-grid section{background:#f5f9fc!important;border-color:rgba(46,76,111,.18)!important}
+.conveyor span{background:#e3edf7!important;color:#47627e!important}.conveyor .active{background:#7dbce8!important;color:#10243a!important}.autopilot-context strong{color:#233c58!important}.autopilot-note{background:#fff7e8!important;border-left-color:#d09a43!important}
+.audio-line,.audio-line:hover,.assembly-status>div,.workflow .stage,.version-current,.version-summary span{background:#f7fbfe!important;border-color:rgba(46,76,111,.18)!important}.audio-copy p,.audio-meta strong,.assembly-status strong,.version-current strong{color:#1c354f!important}.audio-copy .audio-translation,.audio-copy small,.audio-meta>span:first-child,.assembly-status span,.version-current span,.version-summary span{color:#5c7189!important}
+.editor-topbar,.editor-sidebar,.editor-page-frame .editor-actions{background:#f5f9fc!important;border-color:rgba(46,76,111,.18)!important}.editor-path,.editor-page-frame .editor-title,.editor-writing-label small,.editor-page-frame .editor-title input,.editor-page-frame .editor-main input,.editor-page-frame .editor-main select,.editor-page-frame .editor-main textarea{color:#1b3049!important}.editor-page-frame .editor-main input,.editor-page-frame .editor-main select,.editor-page-frame .editor-main textarea,.editor-details,.editor-context,.editor-context .editor-stat{background:#ffffff!important;border-color:rgba(46,76,111,.22)!important}.editor-details summary,.editor-context summary,.editor-writing-label small,.editor-page-frame .editor-title{color:#526981!important}
+
+/* Image feedback is a canvas, not a contact sheet: one frame gets the room. */
+dialog.reference-dialog{width:calc(100vw - 24px);max-width:none;height:calc(100vh - 24px);max-height:none;margin:auto;padding:18px 22px;border:1px solid rgba(60,105,151,.35);border-radius:18px;background:#f6faff;color:#19324d;box-shadow:0 22px 70px rgba(20,43,68,.30)}
+dialog.reference-dialog::backdrop{background:rgba(10,24,40,.48);backdrop-filter:blur(3px)}
+dialog.reference-dialog #modal-form{height:100%;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:12px}
+dialog.reference-dialog #modal-title{margin:0;font-size:clamp(18px,1.65vw,25px);line-height:1.2;color:#19324d}
+dialog.reference-dialog #modal-fields{min-height:0;overflow:hidden}
+dialog.reference-dialog menu{margin:0;padding:10px 0 0;border-top:1px solid rgba(68,103,138,.18);display:flex;justify-content:flex-end;gap:8px}
+dialog.reference-dialog menu button.icon-button{font-size:0}.reference-dialog menu button.icon-button>span{font-size:18px}.reference-dialog menu button.icon-button::before,.reference-dialog menu button.icon-button::after{content:none!important}
+.reference-editor{height:100%;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:10px}
+.reference-editor-bar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.reference-editor .annotation-toolbar{display:flex;align-items:center;gap:7px;margin:0;padding:5px;border:1px solid rgba(63,105,145,.18);border-radius:12px;background:#edf4fa}
+.reference-editor .annotation-toolbar button,.reference-editor .annotation-color{width:38px;min-width:38px;height:38px;margin:0;padding:0;display:inline-grid;place-items:center;border-radius:9px;border:1px solid transparent;background:#fff;color:#224565;font-size:19px;line-height:1;box-shadow:none}
+.reference-editor .annotation-toolbar button:hover,.reference-editor .annotation-toolbar button.active{border-color:#5aaee7;background:#e0f3ff;color:#102b43}
+.reference-editor .annotation-color{position:relative;overflow:hidden;font-size:0;cursor:pointer}.reference-editor .annotation-color span{display:none}.reference-editor .annotation-color input{position:absolute;inset:0;width:100%;height:100%;padding:4px;border:0;background:transparent;cursor:pointer}
+.reference-editor .annotation-clear{color:#a43c54!important}.reference-mode{padding:7px 10px;border-radius:999px;background:#e5f1fb;color:#426582;font-size:13px;font-weight:700;white-space:nowrap}
+.reference-editor .reference-large{min-height:0;margin:0;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:7px}.reference-editor .annotator-stage{min-height:0;width:100%;height:100%;display:grid;place-items:center;overflow:hidden;border:1px solid rgba(55,91,125,.24);border-radius:14px;background:#dbe7f0}.reference-editor .annotator-stage img{display:block;width:100%;height:100%;max-height:none;object-fit:contain}.reference-editor .reference-large figcaption{margin:0;color:#5e7184;font-size:13px;line-height:1.35}
+.reference-editor-actions{display:flex;justify-content:flex-end;gap:8px}.reference-editor-actions button{margin:0}.reference-dialog button.icon-button[data-action="Готово"]{border-color:rgba(65,161,120,.48);background:#d8f4e5;color:#196342}
+@media(max-width:650px){dialog.reference-dialog{width:100vw;height:100vh;padding:14px;border-radius:0}.reference-editor-bar{align-items:flex-start}.reference-mode{display:none}.reference-editor .reference-large figcaption{display:none}}

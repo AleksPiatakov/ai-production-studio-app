@@ -1,0 +1,22 @@
+/* Document forms are workspaces, not cramped pop-ups. This shared layout is
+   applied to every substantial editor opened from the studio. */
+dialog.workspace-dialog{inset:0;width:100vw;max-width:none;height:100vh;max-height:none;margin:0;padding:0;border:0;border-radius:0;background:#f5f9fc;color:#1d3853;box-shadow:none}
+dialog.workspace-dialog::backdrop{background:rgba(9,27,45,.18);backdrop-filter:none}
+dialog.workspace-dialog #modal-form{height:100%;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:0}
+dialog.workspace-dialog #modal-title{display:flex;align-items:center;min-height:76px;margin:0;padding:0 32px;border-bottom:1px solid #c8dbe9;background:#fff;color:#193d5d;font-size:clamp(22px,2vw,31px);line-height:1.2}
+dialog.workspace-dialog #modal-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;gap:18px 22px;overflow:auto;box-sizing:border-box;width:min(1180px,100%);margin:0 auto;padding:30px 32px 42px}
+dialog.workspace-dialog #modal-fields>label,dialog.workspace-dialog #modal-fields>fieldset{min-width:0;margin:0;padding:0;color:#345875;font-size:13px;font-weight:780}
+dialog.workspace-dialog #modal-fields>label:has(textarea),dialog.workspace-dialog #modal-fields>fieldset,dialog.workspace-dialog #modal-fields>p,dialog.workspace-dialog #modal-fields>.voice-settings-intro,dialog.workspace-dialog #modal-fields>.line-voice-quote,dialog.workspace-dialog #modal-fields>.image-brief-intro,dialog.workspace-dialog #modal-fields>.actions{grid-column:1/-1}
+dialog.workspace-dialog #modal-fields fieldset{padding:20px;border:1px solid #c9dce9;border-radius:13px;background:#fff}
+dialog.workspace-dialog #modal-fields legend{color:#234f75;font-size:16px;font-weight:850}
+dialog.workspace-dialog #modal-fields label{color:#345875}
+dialog.workspace-dialog #modal-fields input,dialog.workspace-dialog #modal-fields select,dialog.workspace-dialog #modal-fields textarea{box-sizing:border-box;border-color:#a9c4d8;background:#fff;color:#1d3853;font-size:15px;line-height:1.45}
+dialog.workspace-dialog #modal-fields textarea{min-height:128px;resize:vertical}
+dialog.workspace-dialog #modal-fields input:focus,dialog.workspace-dialog #modal-fields select:focus,dialog.workspace-dialog #modal-fields textarea:focus{outline:3px solid rgba(72,157,211,.22);border-color:#4c9bd1}
+dialog.workspace-dialog #modal-fields small,dialog.workspace-dialog #modal-fields .muted{color:#5a7690}
+dialog.workspace-dialog menu{display:flex;justify-content:flex-end;gap:10px;margin:0;padding:16px 32px;border-top:1px solid #c8dbe9;background:#fff;box-shadow:0 -10px 26px rgba(35,73,105,.07)}
+dialog.workspace-dialog menu button{min-width:112px;min-height:42px;border:1px solid #9ab5c9;background:#e8f0f7;color:#1d4666;font-weight:780}
+dialog.workspace-dialog menu button:hover{background:#dceaf4;border-color:#6e9abb}
+dialog.workspace-dialog menu button:focus-visible{outline:3px solid rgba(72,157,211,.3);outline-offset:2px}
+dialog.workspace-dialog menu button.primary{background:#64b5e8;border-color:#469ed3;color:#123450}
+@media(max-width:720px){dialog.workspace-dialog #modal-title{min-height:64px;padding:0 18px;font-size:22px}dialog.workspace-dialog #modal-fields{grid-template-columns:1fr;gap:14px;padding:20px 18px 30px}dialog.workspace-dialog #modal-fields>label,dialog.workspace-dialog #modal-fields>fieldset{grid-column:1/-1}dialog.workspace-dialog menu{padding:13px 18px}dialog.workspace-dialog menu button{flex:1;min-width:0}}
