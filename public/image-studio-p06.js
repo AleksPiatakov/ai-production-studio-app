@@ -24,6 +24,7 @@
      <textarea id="p06-prompt" readonly aria-label="Збережений опис кадру" placeholder="Поки немає опису кадру">${esc(shotPrompt)}</textarea>
      <p class="p06-hint">Промпт прив'язаний до кадру. Його можна змінити через редагування кадру.</p>
      <button type="button" class="p06-secondary" data-p06-action="edit-shot" ${shot?'':'disabled'}>✎ Редагувати опис кадру</button>
+     <button type="button" class="p06-secondary p06-brief-action" data-p06-action="prepare-brief" ${shotPrompt.trim()?'':'disabled'}>✧ Підготувати запит на зображення</button>
      <label class="p06-field-label" for="p06-negative">Негативний промпт</label>
      <textarea id="p06-negative" readonly placeholder="Окреме поле зберігання ще не підключене"></textarea>
      <div class="p06-reference-block"><div class="p06-column-title"><strong>Референси з бібліотеки</strong><span>${assets.length}</span></div><div class="p06-reference-grid">${assets.slice(0,6).map(a=>`<button type="button" data-p06-asset="${esc(a.id)}" title="${esc(a.label)}"><img src="${esc(a.uri)}" alt="${esc(a.label)}"></button>`).join('')||'<p class="p06-empty">Додайте перше зображення</p>'}</div><button type="button" class="p06-secondary" data-p06-action="upload">＋ Завантажити референс</button></div>

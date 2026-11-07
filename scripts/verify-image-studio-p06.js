@@ -25,6 +25,18 @@ const fs=require('node:fs'),path=require('node:path');
   if(await page.locator('.p06-selected-image').count())throw Error('Fabricated image appeared');
   const cols=await page.locator('.p06-body').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length);
   if(cols!==3)throw Error('Expected approved desktop 3-column Image Studio, got '+cols);
+  // The in-memory fixture is not stored by the API: stub only this HTTP response.
+  // API contract is covered by server tests; browser test covers the real UI integration.
+  await page.route('**/api/projects/*/scenes/*/shots/*/image-brief',route=>route.fulfill({
+    status:200,contentType:'application/json',body:JSON.stringify({prompt:'Мира стоїть перед мостом.'})
+  }));
+  const prepare=page.locator('[data-p06-action="prepare-brief"]');
+  if(!(await prepare.isEnabled()))throw Error('Shot with saved image prompt must allow brief preparation');
+  await prepare.click();
+  await page.locator('#modal').waitFor({state:'visible',timeout:10000});
+  const briefText=await page.locator('#modal .image-brief-text').inputValue();
+  if(!briefText.includes('Мира стоїть'))throw Error('Prepared image brief omitted existing shot prompt');
+  await page.evaluate(()=>document.querySelector('#modal').close());
   await page.screenshot({path:path.join(out,'p06-desktop.png'),fullPage:true});
   await page.locator('[data-p06-action="edit-shot"]').click();
   if(!(await page.locator('#modal').isVisible()))throw Error('Image Studio failed to open real shot editor');
