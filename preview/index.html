@@ -182,7 +182,7 @@ document.getElementById('preview-image-studio').addEventListener('click',event=>
  const route=event.target.closest('[data-p06-route]');
  if(route){document.querySelector('.preview-controls [data-screen="'+(route.dataset.p06Route==='storyboard'?'storyboard':route.dataset.p06Route==='script'?'script':'project')+'"]')?.click()}
 });
-document.querySelector('#preview-image-studio #p06-shot')?.addEventListener('change',event=>{
+document.getElementById('preview-image-studio').addEventListener('change',event=>{if(event.target.id!=='p06-shot')return;
  const a=event.target.value==='demo-shot-b';
  document.getElementById('preview-image-studio').innerHTML=window.APSImageStudio.render({
  scene:{title:'Загадковий міст'},
@@ -195,7 +195,7 @@ document.querySelector('#preview-image-studio #p06-shot')?.addEventListener('cha
 <script src="./script-editor-demo.js"></script>
 
 <script>
-window.goToView=function(name){document.getElementById('preview-feedback').textContent='Відкрито демо-модуль «'+name+'». Реальна навігація працює лише в локальному застосунку.';};
+window.goToView=function(name){if(name==='imageStudio'){document.querySelector('.preview-controls [data-screen="images"]')?.click();return;}document.getElementById('preview-feedback').textContent='Відкрито демо-модуль «'+name+'». Реальна навігація працює лише в локальному застосунку.';};
 document.getElementById('preview-dashboard').innerHTML=window.APSProjectDashboard.render({
  name:'Демонстраційний проєкт',
  episodes:[{title:'Епізод 01',status:'draft'},{title:'Епізод 02',status:'planned'}],
