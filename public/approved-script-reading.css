@@ -21,9 +21,7 @@
  flex-basis:100%;font-size:11px;color:#a99cc0;line-height:1.45
 }
 .p02-approved-layout .editor-body-label.aps-reading{
- position:absolute!important;top:auto!important;left:-9999px!important;
- width:1px!important;height:1px!important;overflow:hidden!important;
- opacity:0!important;pointer-events:none!important
+ display:none!important
 }
 .p02-approved-layout .aps-screenplay-reader{
  display:block;min-height:400px;
