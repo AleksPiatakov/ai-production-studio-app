@@ -67,7 +67,7 @@ body:has(.p07-workspace) #content{max-width:none;padding:20px 22px}
  .p07-workspace>.audio-plan{grid-column:2!important;grid-row:1!important}
  .p07-workspace>.p07-settings-panel{grid-column:1/-1!important;grid-row:2!important}
 }
-.p07-workspace>.audio-plan{grid-column:auto!important;min-width:0;max-width:none}
+.p07-workspace>.audio-plan{grid-column:auto;min-width:0;max-width:none}
 .p07-workspace .audio-line,
 .p07-workspace .audio-line:hover{
  background:#1b203b!important;
