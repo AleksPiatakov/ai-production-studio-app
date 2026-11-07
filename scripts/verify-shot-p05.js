@@ -31,7 +31,7 @@ const {chromium}=require('playwright'), fs=require('node:fs'), path=require('nod
   if(!(await page.locator('#modal').isVisible()))throw Error('Edit shot failed to open existing modal');
   await page.evaluate(()=>document.querySelector('#modal').close());
   await page.goto('file://'+path.resolve('preview-dist','index.html'),{waitUntil:'load'});
-  await page.locator('.preview-controls [data-screen="shot"]').click();
+  await page.evaluate(() => window.previewNavigate('shot'));
   await page.locator('#screen-shot .p05-workspace').waitFor();
   const previewColumns=await page.locator('#screen-shot .p05-body').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length);
   if(previewColumns!==4)throw Error('P05 online desktop columns mismatch '+previewColumns);

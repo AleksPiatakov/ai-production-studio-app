@@ -59,7 +59,7 @@ const fs=require('node:fs'),path=require('node:path');
   await page.screenshot({path:path.join(output,'p07-real-takes-mobile.png'),fullPage:true});
   await page.setViewportSize({width:1540,height:970});
   await page.goto('file://'+path.resolve('preview-dist/index.html'),{waitUntil:'load'});
-  await page.locator('.preview-controls [data-screen="voice"]').click();
+  await page.locator('#app-sidebar [data-screen="voice"]').click();
   await page.locator('#screen-voice .p07-workspace').waitFor({state:'visible'});
   const previewCols=await page.locator('#screen-voice .p07-workspace').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length);
   if(previewCols!==3)throw Error('P07 online preview must show three approved columns, got '+previewCols);

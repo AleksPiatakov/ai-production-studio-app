@@ -43,7 +43,7 @@ const fs=require('node:fs'),path=require('node:path');
   await page.screenshot({path:path.join(out,'p06-shot-editor.png'),fullPage:true});
   await page.evaluate(()=>document.querySelector('#modal').close());
   await page.goto('file://'+path.resolve('preview-dist','index.html'),{waitUntil:'load'});
-  await page.locator('.preview-controls [data-screen="images"]').click();
+  await page.locator('#app-sidebar [data-screen="images"]').click();
   await page.locator('.p06-studio').waitFor();
   const pcols=await page.locator('#screen-images .p06-body').evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(' ').length);
   if(pcols!==3)throw Error('Online P06 missing approved 3 columns');

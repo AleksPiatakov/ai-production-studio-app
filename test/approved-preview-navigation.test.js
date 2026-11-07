@@ -1,0 +1,23 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+
+const html = fs.readFileSync(path.join(__dirname, '..', 'preview', 'index.html'), 'utf8');
+
+test('approved preview has no internal P-number demo toolbar', () => {
+  assert.doesNotMatch(html, /class="preview-controls"/);
+  assert.doesNotMatch(html, /aria-label="Демо-екрани"/);
+  assert.doesNotMatch(html, /<button[^>]*>[^<]*P-0[24567]<\/button>/);
+});
+
+test('approved compact navigation exposes real demo destinations without changing assets', () => {
+  for (const id of ['project','script','storyboard','images','voice','models','assistant']) {
+    assert.match(html, new RegExp('data-screen="'+id+'"'));
+    assert.match(html, new RegExp('id="screen-'+id+'"'));
+  }
+  assert.match(html, /window\.previewNavigate=select/);
+  assert.match(html, /window\.goToView=function\(name\)/);
+  assert.match(html, /window\.previewNavigate\(name\)/);
+  assert.match(html, /aria-current/);
+});
