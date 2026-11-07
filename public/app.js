@@ -384,6 +384,9 @@ async function askFloatingProjectAdvisor(event){
     advisorMessages.pop();advisorError=error.message;
   }finally{advisorBusy=false;render()}
 }
+// P-01: restore the canonical six-module dashboard after legacy route overrides.
+// The archived guided workflow remains accessible inside the new dashboard.
+overviewNextSteps=previousOverviewNextSteps;
 const floatingAdvisorRender=render;
 render=function(){
   floatingAdvisorRender();
