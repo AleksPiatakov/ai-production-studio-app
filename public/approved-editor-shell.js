@@ -2,14 +2,24 @@
    stays mounted and unchanged; this rail only replaces its editor presentation.
    Every clickable route uses an existing local view or selectProject action. */
 (()=>{
-  const routes=[
+  const projectRoutes=[
     ['overview','⌂','Робочий стіл'],
-    ['assistants','✧','AI Помічники'],
-    ['models','▣','AI Моделі'],
-    ['assets','▧','Бібліотека'],
-    ['queue','≡','Черга генерацій'],
+    ['script','✎','Сценарій'],
+    ['storyboard','▦','Сторіборд'],
+    ['imageStudio','▧','Зображення'],
+    ['audio','◖','Озвучування'],
+    ['assets','♙','Персонажі та ресурси'],
+    ['preview','▣','Відео та перевірка'],
     ['davinci','⇧','Експорт DaVinci']
   ];
+  const globalRoutes=[
+    ['models','◈','AI Моделі'],
+    ['queue','≡','Черга генерацій'],
+    ['assistants','✧','AI Помічники']
+  ];
+  const routeMarkup=routes=>routes.map(([id,icon,title])=>
+    '<button type="button" data-aps-destination="'+id+'" '+(view===id?'class="active" aria-current="page"':'')+'><span aria-hidden="true">'+icon+'</span>'+title+'</button>'
+  ).join('');
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function setup(){
     const aside=document.getElementById('app-sidebar');
@@ -28,8 +38,9 @@
       '<select id="aps-nav-project-select" aria-label="Вибрати проєкт">'+
       projectList.map(p=>'<option value="'+esc(p.id)+'" '+(p.id===current?'selected':'')+'>'+esc(p.name)+'</option>').join('')+
       '</select></div>'+
-      '<nav class="aps-nav-main" aria-label="Глобальні розділи студії">'+
-      routes.map(([id,icon,title])=>'<button type="button" data-aps-destination="'+id+'" '+(view===id?'class="active" aria-current="page"':'')+'><span aria-hidden="true">'+icon+'</span>'+title+'</button>').join('')+
+      '<nav class="aps-nav-main" aria-label="Розділи студії">'+
+      '<p class="aps-nav-label">МОДУЛІ ПРОЄКТУ</p>'+routeMarkup(projectRoutes)+
+      '<p class="aps-nav-label">ГЛОБАЛЬНІ ІНСТРУМЕНТИ</p>'+routeMarkup(globalRoutes)+
       '</nav>'+
       '<div class="aps-nav-bottom"><span aria-hidden="true">◉</span><span>Локальний проєкт<br><small>Дані зберігаються на цьому Mac</small></span></div>';
     rail.querySelectorAll('[data-aps-destination]').forEach(button=>{
