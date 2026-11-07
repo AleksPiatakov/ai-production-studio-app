@@ -44,28 +44,24 @@
  <aside id="app-sidebar"><div class="side-title"><h2>Проєкти</h2></div><nav><button class="project active preview-sidebar-item" type="button">Демонстраційний проєкт<small>Приклад · без особистих даних</small></button></nav><p class="nav-label">ПРОЄКТНІ МОДУЛІ</p><nav><button class="project nav-project preview-sidebar-item active" data-screen="project" type="button"><span class="nav-icon">⌂</span> Робочий стіл</button><button class="project nav-project preview-sidebar-item" data-screen="assistant" type="button"><span class="nav-icon">✦</span> AI-помічник</button></nav><p class="side-note">Це лише перегляд дизайну. Реальні матеріали залишаються на твоєму Mac.</p></aside>
  <section id="content">
  <div class="hero dashboard-hero"><div><p class="eyebrow">ДЕМО ПРОЄКТ · ПІДГОТОВКА МАТЕРІАЛІВ</p><h2>Робочий стіл</h2><p>Усі творчі модулі одного проєкту — в одному місці.</p></div><span class="tag">UI Preview</span></div>
- <div class="preview-screen active" id="screen-project">
-  <div class="preview-main-card">
-   <div class="route-head"><div><p class="eyebrow">ПРОЄКТНИЙ РОБОЧИЙ ПРОСТІР</p><h3>Виробництво епізоду</h3><p>Підготуй сценарій, персонажів, зображення, голоси та відеоматеріали.</p></div><span class="tag">Демонстрація</span></div>
-   <div class="preview-panel-grid">
-    <button class="preview-module" type="button" data-module="Сценарій"><span class="preview-icon">✎</span><strong>Сценарій</strong><small>Епізоди, сцени та діалоги</small></button>
-    <button class="preview-module" type="button" data-module="Персонажі"><span class="preview-icon">♙</span><strong>Персонажі</strong><small>Біблія персонажів і стилю</small></button>
-    <button class="preview-module" type="button" data-module="Сторіборд"><span class="preview-icon">▦</span><strong>Сторіборд</strong><small>Плани, кадри та референси</small></button>
-    <button class="preview-module" type="button" data-module="Зображення"><span class="preview-icon">▧</span><strong>Зображення</strong><small>Кадри, варіанти, затвердження</small></button>
-    <button class="preview-module" type="button" data-module="Голос і звук"><span class="preview-icon">◖))</span><strong>Голос і звук</strong><small>Репліки, музика й ефекти</small></button>
-    <button class="preview-module" type="button" data-module="Відео"><span class="preview-icon">▣</span><strong>Відео</strong><small>Кліпи, аніматик, DaVinci</small></button>
-   </div>
-   <div class="preview-bottom">
-    <section class="preview-box"><p class="eyebrow">НЕЩОДАВНІ ЕПІЗОДИ</p><h3>Матеріали проєкту</h3><div class="preview-list"><div>Епізод 01 <small>Чернетка</small></div><div>Епізод 02 <small>Заплановано</small></div></div></section>
-    <section class="preview-box"><p class="eyebrow">НЕЩОДАВНІ РЕСУРСИ</p><h3>Готовність до роботи</h3><div class="preview-list"><div>Сценарій <span class="preview-status">У роботі</span></div><div>Кадри й голоси <span class="preview-status">Не затверджено</span></div></div></section>
-   </div>
-  </div>
- </div>
+ <div class="preview-screen active" id="screen-project"><div id="preview-dashboard"></div></div>
  <div class="preview-screen" id="screen-models"><div class="preview-main-card"><p class="eyebrow">ЦЕНТР AI-МОДЕЛЕЙ</p><h3>Мої моделі</h3><p>Онлайн-прев’ю не підключається до локальних моделей. Реєстр і генерація працюватимуть у настільній програмі.</p></div></div>
  <div class="preview-screen" id="screen-assistant"><div class="preview-main-card"><p class="eyebrow">AI-ПОМІЧНИК ПРОЄКТУ</p><h3>Помічник у межах проєкту</h3><p>Модальне вікно, рішення і версії будуть підключені в основному застосунку. Демо не передає приватні дані.</p></div></div>
  <p class="preview-warning" id="preview-feedback" role="status">Відкрито демонстрацію екрана P-01. Кнопки модулів показують майбутню навігацію, а не запускають генерацію.</p>
  </section>
 </main>
+<script src="./project-dashboard.js"></script>
+<script>
+window.goToView=function(name){document.getElementById('preview-feedback').textContent='Відкрито демо-модуль «'+name+'». Реальна навігація працює лише в локальному застосунку.';};
+document.getElementById('preview-dashboard').innerHTML=window.APSProjectDashboard.render({
+ name:'Демонстраційний проєкт',
+ episodes:[{title:'Епізод 01',status:'draft'},{title:'Епізод 02',status:'planned'}],
+ assets:[{status:'approved'},{status:'draft'},{status:'draft'}],
+ characters:[{name:'Міра'},{name:'Бурштин'}],
+ progress:{scenes:[{},{}],shots:[{},{},{}],storyReady:false,voicesReady:false,shotsReady:false,reviewReady:false},
+ statusLabel:status=>({draft:'Чернетка',planned:'Заплановано',approved:'Затверджено'})[status]||status
+});
+</script>
 <script>
 (()=>{const buttons=[...document.querySelectorAll('[data-screen]')],panels=[...document.querySelectorAll('.preview-screen')];function select(id){panels.forEach(p=>p.classList.toggle('active',p.id==='screen-'+id));buttons.forEach(b=>b.classList.toggle('active',b.dataset.screen===id));document.getElementById('preview-feedback').textContent=id==='project'?'Відкрито демонстрацію екрана P-01.':'Це демонстрація без підключення до локальної програми.';}buttons.forEach(b=>b.addEventListener('click',()=>select(b.dataset.screen)));document.getElementById('sidebar-toggle').addEventListener('click',()=>{const main=document.getElementById('preview-layout');const collapsed=main.classList.toggle('sidebar-collapsed');document.getElementById('sidebar-toggle').setAttribute('aria-expanded',String(!collapsed))});document.querySelectorAll('[data-module]').forEach(button=>button.addEventListener('click',()=>{document.getElementById('preview-feedback').textContent='Модуль «'+button.dataset.module+'» буде доступний в основному застосунку. Це лише дизайн-прев’ю.'}));})();
 </script>
