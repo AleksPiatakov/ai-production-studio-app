@@ -20,6 +20,7 @@ for (const name of requiredStyles) {
 }
 fs.copyFileSync(path.join(root, 'public', 'project-dashboard.js'), path.join(output, 'project-dashboard.js'));
 fs.copyFileSync(path.join(root, 'public', 'script-editor-p02.css'), path.join(output, 'script-editor-p02.css'));
+fs.copyFileSync(path.join(root, 'public', 'p02-approved-layout.css'), path.join(output, 'p02-approved-layout.css'));
 fs.copyFileSync(path.join(root, 'preview', 'script-editor-demo.js'), path.join(output, 'script-editor-demo.js'));
 fs.writeFileSync(path.join(output, 'robots.txt'), 'User-agent: *\nDisallow: /\n');
 console.log('Preview built with synthetic data. Static files:', fs.readdirSync(output).length);
