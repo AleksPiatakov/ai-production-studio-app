@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>AI Production Studio — UI Preview</title>
-<link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./editor.css"><link rel="stylesheet" href="./actions.css"><link rel="stylesheet" href="./contrast.css"><link rel="stylesheet" href="./voice-editor.css"><link rel="stylesheet" href="./workspace-dialog.css"><link rel="stylesheet" href="./studio-theme.css"><link rel="stylesheet" href="./script-editor-p02.css"><link rel="stylesheet" href="./p02-approved-layout.css"><link rel="stylesheet" href="./p04-approved-storyboard.css"><link rel="stylesheet" href="./mobile-studio.css">
+<link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./editor.css"><link rel="stylesheet" href="./actions.css"><link rel="stylesheet" href="./contrast.css"><link rel="stylesheet" href="./voice-editor.css"><link rel="stylesheet" href="./workspace-dialog.css"><link rel="stylesheet" href="./studio-theme.css"><link rel="stylesheet" href="./script-editor-p02.css"><link rel="stylesheet" href="./p02-approved-layout.css"><link rel="stylesheet" href="./p04-approved-storyboard.css"><link rel="stylesheet" href="./mobile-studio.css"><link rel="stylesheet" href="./image-studio-p06.css">
 <style>
 /* Preview-specific mock only: no local data, model execution or API. */
 .preview-note{font-size:11px;color:#c9bbf9;background:#262039;border:1px solid #5e4b86;border-radius:8px;padding:7px 10px}
@@ -64,7 +64,7 @@ body:has(#screen-script.active) .preview-warning{display:none}
 <body>
 <header>
  <div class="header-brand"><button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-expanded="true">☰ <span>Сховати</span></button><div><p class="eyebrow">ЛОКАЛЬНА ТВОРЧА СТУДІЯ · ПРЕВ'Ю</p><h1>AI Production Studio</h1></div></div>
- <div class="preview-controls" role="group" aria-label="Демо-екрани"><button class="active" data-screen="project" type="button">Проєкт</button><button data-screen="models" type="button">Моделі</button><button data-screen="script" type="button">Сценарій P-02</button><button data-screen="storyboard" type="button">Сторіборд P-04</button><button data-screen="assistant" type="button">Помічник</button></div>
+ <div class="preview-controls" role="group" aria-label="Демо-екрани"><button class="active" data-screen="project" type="button">Проєкт</button><button data-screen="models" type="button">Моделі</button><button data-screen="script" type="button">Сценарій P-02</button><button data-screen="storyboard" type="button">Сторіборд P-04</button><button data-screen="images" type="button">Image Studio P-06</button><button data-screen="assistant" type="button">Помічник</button></div>
  <span class="preview-note">ДЕМО ІНТЕРФЕЙСУ · БЕЗ ДАНИХ</span>
 </header>
 <main id="preview-layout">
@@ -163,16 +163,39 @@ body:has(#screen-script.active) .preview-warning{display:none}
    </section>
   </article>
  </div>
+ <div class="preview-screen" id="screen-images"><div id="preview-image-studio"></div></div>
  <div class="preview-screen" id="screen-models"><div class="preview-main-card"><p class="eyebrow">ЦЕНТР AI-МОДЕЛЕЙ</p><h3>Мої моделі</h3><p>Онлайн-прев’ю не підключається до локальних моделей. Реєстр і генерація працюватимуть у настільній програмі.</p></div></div>
  <div class="preview-screen" id="screen-assistant"><div class="preview-main-card"><p class="eyebrow">AI-ПОМІЧНИК ПРОЄКТУ</p><h3>Помічник у межах проєкту</h3><p>Модальне вікно, рішення і версії будуть підключені в основному застосунку. Демо не передає приватні дані.</p></div></div>
  <p class="preview-warning" id="preview-feedback" role="status">Відкрито демонстрацію екрана P-01. Кнопки модулів показують майбутню навігацію, а не запускають генерацію.</p>
  </section>
 </main>
+<script src="./image-studio-p06.js"></script>
 <script src="./project-dashboard.js"></script>
+<script>
+document.getElementById('preview-image-studio').innerHTML=window.APSImageStudio.render({
+ scene:{title:'Загадковий міст'},
+ shots:[{id:'demo-shot-a',seconds:5,imagePrompt:'Мира дивиться на міст у золотому світлі; тепла кінематографічна атмосфера.'},{id:'demo-shot-b',seconds:7,imagePrompt:'Міст через ущелину у променях світанку.'}],
+ shot:{id:'demo-shot-a',seconds:5,imagePrompt:'Мира дивиться на міст у золотому світлі; тепла кінематографічна атмосфера.'},
+ assets:[]
+});
+document.getElementById('preview-image-studio').addEventListener('click',event=>{
+ const route=event.target.closest('[data-p06-route]');
+ if(route){document.querySelector('.preview-controls [data-screen="'+(route.dataset.p06Route==='storyboard'?'storyboard':route.dataset.p06Route==='script'?'script':'project')+'"]')?.click()}
+});
+document.getElementById('preview-image-studio').addEventListener('change',event=>{if(event.target.id!=='p06-shot')return;
+ const a=event.target.value==='demo-shot-b';
+ document.getElementById('preview-image-studio').innerHTML=window.APSImageStudio.render({
+ scene:{title:'Загадковий міст'},
+ shots:[{id:'demo-shot-a',seconds:5,imagePrompt:'Мира дивиться на міст у золотому світлі.'},{id:'demo-shot-b',seconds:7,imagePrompt:'Міст через ущелину у променях світанку.'}],
+ shot:{id:event.target.value,seconds:a?7:5,imagePrompt:a?'Міст через ущелину у променях світанку.':'Мира дивиться на міст у золотому світлі.'},
+ assets:[]
+ });
+});
+</script>
 <script src="./script-editor-demo.js"></script>
 
 <script>
-window.goToView=function(name){document.getElementById('preview-feedback').textContent='Відкрито демо-модуль «'+name+'». Реальна навігація працює лише в локальному застосунку.';};
+window.goToView=function(name){if(name==='imageStudio'){document.querySelector('.preview-controls [data-screen="images"]')?.click();return;}document.getElementById('preview-feedback').textContent='Відкрито демо-модуль «'+name+'». Реальна навігація працює лише в локальному застосунку.';};
 document.getElementById('preview-dashboard').innerHTML=window.APSProjectDashboard.render({
  name:'Демонстраційний проєкт',
  episodes:[{title:'Епізод 01',status:'draft'},{title:'Епізод 02',status:'planned'}],

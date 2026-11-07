@@ -1,0 +1,53 @@
+name: P-06 Approved Image Studio
+
+on:
+  pull_request:
+    paths:
+      - 'public/**'
+      - 'preview/**'
+      - 'scripts/build-preview.js'
+      - 'scripts/verify-image-studio-p06.js'
+      - '.github/workflows/p06-image-studio.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  visual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test local app
+        run: npm test
+      - name: Build demo-only online preview
+        run: node scripts/build-preview.js
+      - name: Install browser
+        run: |
+          npm install --no-save playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Start disposable app
+        run: |
+          node server/index.js > /tmp/p06-server.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -fsS http://127.0.0.1:4173/api/health >/dev/null && break
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:4173/api/health
+      - name: Check approved P-06
+        run: node scripts/verify-image-studio-p06.js
+      - name: Archive visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p06-image-studio-screenshots
+          path: preview-screenshots/p06-*.png
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Diagnostics on failure
+        if: failure()
+        run: tail -80 /tmp/p06-server.log
