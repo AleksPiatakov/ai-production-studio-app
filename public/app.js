@@ -20,42 +20,15 @@ function pageContent(){if(view==='autopilot')return autopilotPanel();if(view==='
 function episodeProgress(episode){const scenes=active.scenes.filter(scene=>scene.episodeId===episode?.id),shots=scenes.flatMap(scene=>scene.shots||[]),lines=scenes.flatMap(scene=>scene.dialogue||[]),assetsById=new Map((active.assets||[]).map(asset=>[asset.id,asset]));const storyReady=(active.scripts||[]).some(script=>(script.episodeId===episode?.id||!script.episodeId)&&script.status==='approved');const shotsReady=shots.length>0&&scenes.every(scene=>['approved','production'].includes(scene.status))&&shots.every(shot=>{const key=assetsById.get(shot.keyImageAssetId);return shot.status==='approved'&&key&&['image','reference'].includes(key.type)&&key.status==='approved'});const voicesReady=lines.length>0&&lines.every(line=>line.status==='approved'&&(line.audioDrafts||[]).some(audio=>audio.language===line.language&&audio.status==='approved'));const reviewReady=storyReady&&shotsReady&&voicesReady&&['approved','production','released'].includes(episode?.status);return {scenes,shots,lines,storyReady,scenesReady:scenes.length>0,shotsReady,voicesReady,reviewReady}}
 function overviewNextSteps(){
  const episode=(active.episodes||[]).find(item=>item.id===activeEpisodeId)||(active.episodes||[])[0];
- const p=episodeProgress(episode);
- const steps=[
-  {name:'Сценарій',ready:p.storyReady,view:'script',hint:'Текст, сцени й репліки'},
-  {name:'Аудіо',ready:p.voicesReady,view:'audio',hint:'Голоси та інтонації'},
-  {name:'Відеоряд',ready:p.shotsReady,view:'storyboard',hint:'Зображення та рух'},
-  {name:'Збірка',ready:p.reviewReady,view:'preview',hint:'Перевірка перед DaVinci'}
- ];
- const next=steps.find(step=>!step.ready)||steps[steps.length-1];
- const modules=[
-  {icon:'✎',title:'Сценарій',view:'script',description:'Епізоди, сцени та діалоги'},
-  {icon:'♙',title:'Персонажі',view:'assets',description:'Біблія персонажів і стилю'},
-  {icon:'▦',title:'Сторіборд',view:'storyboard',description:'Плани, кадри та референси'},
-  {icon:'▧',title:'Зображення',view:'assets',description:'Варіанти зображень і ресурси'},
-  {icon:'◖',title:'Голос і звук',view:'audio',description:'Озвучення, мови й голоси'},
-  {icon:'▣',title:'Відео',view:'preview',description:'Кліпи, перевірка, DaVinci'}
- ];
- const recentEpisodes=(active.episodes||[]).slice(-3).reverse();
- const assets=active.assets||[];
- const approvedAssets=assets.filter(asset=>asset.status==='approved').length;
- const characters=active.bibles?.characters||[];
- return `<article class="card full p01-dashboard">
-  <div class="p01-heading"><div><p class="eyebrow">ПРОЄКТНИЙ РОБОЧИЙ ПРОСТІР</p><h3>${esc(active.name)}</h3><p>Створення матеріалів від сценарію до підготовки монтажного пакета.</p></div><button class="p01-season-link" type="button" onclick="goToView('episodes')">Сезон і випуски →</button></div>
-  <div class="p01-module-grid" role="group" aria-label="Шість виробничих модулів">${modules.map(item=>`<button type="button" class="p01-module" onclick="goToView('${item.view}')"><span class="p01-module-icon" aria-hidden="true">${item.icon}</span><strong>${item.title}</strong><small>${item.description}</small></button>`).join('')}</div>
-  <div class="p01-lower-grid">
-   <section class="p01-panel"><div class="p01-panel-heading"><div><p class="eyebrow">НЕЩОДАВНІ ВИПУСКИ</p><h4>Сценарії та епізоди</h4></div><button onclick="goToView('episodes')" type="button">Усі випуски</button></div>
-    ${recentEpisodes.length?recentEpisodes.map(item=>`<button type="button" class="p01-list-item" onclick="goToView('episodes')"><span>${esc(item.title||'Без назви')}</span><small>${esc(label('status',item.status||'draft'))}</small></button>`).join(''):'<p class="empty">Випусків поки немає.</p>'}
-   </section>
-   <section class="p01-panel"><div class="p01-panel-heading"><div><p class="eyebrow">МАТЕРІАЛИ ПРОЄКТУ</p><h4>Ресурси й готовність</h4></div><button onclick="goToView('assets')" type="button">Бібліотека</button></div>
-    <div class="p01-list-item"><span>Ресурси</span><small>${assets.length} всього · ${approvedAssets} затверджено</small></div>
-    <div class="p01-list-item"><span>Персонажі</span><small>${characters.length} у біблії персонажів</small></div>
-    <div class="p01-list-item"><span>Поточний випуск</span><small>${p.scenes.length} сцен · ${p.shots.length} кадрів</small></div>
-   </section>
-  </div>
-  <div class="p01-next"><div><p class="eyebrow">НАСТУПНА ДІЯ</p><strong>${next.name} · ${next.hint}</strong><small>Усі зміни зберігаються як версії. Затверджені матеріали не перезаписуються.</small></div><button class="primary" type="button" onclick="goToView('${next.view}')">Продовжити</button></div>
-  <details class="p01-workflow-details"><summary>Показати виробничі етапи · ${steps.filter(step=>step.ready).length} із 4 готово</summary><div class="p01-workflow-steps">${steps.map((step,index)=>`<button type="button" class="p01-workflow-step ${step.ready?'ready':''}" onclick="goToView('${step.view}')">${step.ready?'✓':index+1}. ${step.name}<small>${step.hint}</small></button>`).join('')}</div></details>
- </article>`;
+ if(!window.APSProjectDashboard?.render)throw new Error('Project dashboard renderer not loaded');
+ return window.APSProjectDashboard.render({
+  name:active.name,
+  episodes:active.episodes||[],
+  assets:active.assets||[],
+  characters:active.bibles?.characters||[],
+  progress:episodeProgress(episode),
+  statusLabel:status=>label('status',status)
+ });
 }
 function autopilotPanel(){const characters=(active.bibles?.characters||[]).filter(item=>item.status==='approved');const styles=(active.bibles?.style||[]).filter(item=>item.status==='approved');return `<article class="card full autopilot-card"><div class="autopilot-head"><div><p class="eyebrow">АВТОПІЛОТ ЕПІЗОДУ · ЧЕРНЕТКА</p><h3>Одна команда → редагований план випуску</h3><p class="muted">Опишіть задум своїми словами або вставте текст із голосової нотатки. Студія створить сценарну чернетку, сцени та шоти — усе можна одразу редагувати.</p></div><span class="tag">без платної генерації</span></div><div class="conveyor"><span class="active">1. Ідея</span><span>2. Сценарій</span><span>3. Кадри</span><span>4. Рух</span><span>5. Голос</span><span>6. Збірка</span></div><label class="autopilot-brief"><strong>Що має відбутися у випуску?</strong><textarea id="autopilot-brief" placeholder="Наприклад: Лума знаходить згаслий ліхтарик друга, спочатку уважно вислуховує його, а потім вони разом повертають світло."></textarea><small>Автопілот не затверджує сюжет і не створює фінальні матеріали самостійно.</small></label><div class="autopilot-options"><label>Назва (необов’язково)<input id="autopilot-title" placeholder="Новий короткий випуск"></label><label>Тривалість, хв<input id="autopilot-minutes" type="number" min="0.5" max="20" step="0.5" value="1"></label><label>Формат кадру<select id="autopilot-format"><option>16:9</option><option>9:16</option><option>1:1</option></select></label><label>План руху<select id="autopilot-motion"><option value="animatic">Лише аніматик для перевірки</option><option value="selected-shots">Позначити кандидати на оживлення</option></select></label></div><div class="autopilot-context"><span>Персонажі: <strong>${characters.length?characters.map(item=>esc(item.name)).join(', '):'ще не затверджено'}</strong></span><span>Стиль: <strong>${styles.length?`${styles.length} правило(а)`:'ще не затверджено'}</strong></span><span>Збереження: <strong>автоматично у версіях</strong></span></div><div class="actions"><button class="primary" onclick="createAutopilotEpisode()" ${autopilotBusy?'disabled':''}>${autopilotBusy?'Створюємо план…':'Створити чернетку випуску'}</button><button onclick="goToView('script')">Працювати вручну</button></div>${autopilotError?`<p class="assistant-error">${esc(autopilotError)}</p>`:''}<p class="autopilot-note">Зараз працює локальний планувальник: він використовує вашу біблію персонажів, правила стилю та задум. Nano Banana Pro, Veo/Runway і ElevenLabs підключатимуться окремо — лише до вибраних вами кадрів і реплік.</p></article>`}
 async function createAutopilotEpisode(){const input={brief:$('#autopilot-brief')?.value||'',title:$('#autopilot-title')?.value||'',targetMinutes:$('#autopilot-minutes')?.value||1,format:$('#autopilot-format')?.value||'16:9',motionMode:$('#autopilot-motion')?.value||'animatic'};autopilotBusy=true;autopilotError='';render();try{const result=await api(`/api/projects/${encodeURIComponent(activeId)}/autopilot/episode`,{method:'POST',body:JSON.stringify(input)});activeEpisodeId=result.episode.id;view='episodes';workspaceMode='studio';localStorage.setItem('ai-video-studio:workspace-mode',workspaceMode);await load(activeId)}catch(error){autopilotError=error.message==='not found'?'Автопілот додано, але локальний сервер ще працює у попередній версії. Зупиніть його та запустіть npm start ще раз, потім оновіть сторінку.':error.message;autopilotBusy=false;render()} }
