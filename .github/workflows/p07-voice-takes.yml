@@ -1,0 +1,50 @@
+name: P-07 Voice Studio approved takes
+on:
+  pull_request:
+    paths:
+      - 'public/**'
+      - 'preview/**'
+      - 'scripts/verify-voice-takes-p07.js'
+      - 'scripts/build-preview.js'
+      - '.github/workflows/p07-voice-takes.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  voice-takes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Unit tests
+        run: npm test
+      - name: Build private-data-free preview
+        run: node scripts/build-preview.js
+      - name: Install browser
+        run: |
+          npm install --no-save playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Start disposable app
+        run: |
+          node server/index.js > /tmp/p07-server.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -fsS http://127.0.0.1:4173/api/health >/dev/null && break
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:4173/api/health
+      - name: Verify saved takes in Voice Studio
+        run: node scripts/verify-voice-takes-p07.js
+      - name: Upload rendered screens
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p07-voice-takes-screenshots
+          path: preview-screenshots/p07-*.png
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Server diagnostics
+        if: failure()
+        run: tail -80 /tmp/p07-server.log

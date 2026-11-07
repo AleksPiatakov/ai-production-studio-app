@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>AI Production Studio — UI Preview</title>
-<link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./editor.css"><link rel="stylesheet" href="./actions.css"><link rel="stylesheet" href="./contrast.css"><link rel="stylesheet" href="./voice-editor.css"><link rel="stylesheet" href="./workspace-dialog.css"><link rel="stylesheet" href="./studio-theme.css"><link rel="stylesheet" href="./script-editor-p02.css"><link rel="stylesheet" href="./p02-approved-layout.css"><link rel="stylesheet" href="./p04-approved-storyboard.css"><link rel="stylesheet" href="./mobile-studio.css"><link rel="stylesheet" href="./image-studio-p06.css"><link rel="stylesheet" href="./shot-workspace-p05.css">
+<link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./editor.css"><link rel="stylesheet" href="./actions.css"><link rel="stylesheet" href="./contrast.css"><link rel="stylesheet" href="./voice-editor.css"><link rel="stylesheet" href="./workspace-dialog.css"><link rel="stylesheet" href="./studio-theme.css"><link rel="stylesheet" href="./script-editor-p02.css"><link rel="stylesheet" href="./p02-approved-layout.css"><link rel="stylesheet" href="./p04-approved-storyboard.css"><link rel="stylesheet" href="./p07-voice-takes.css"><link rel="stylesheet" href="./mobile-studio.css"><link rel="stylesheet" href="./image-studio-p06.css"><link rel="stylesheet" href="./shot-workspace-p05.css">
 <style>
 /* Preview-specific mock only: no local data, model execution or API. */
 .preview-note{font-size:11px;color:#c9bbf9;background:#262039;border:1px solid #5e4b86;border-radius:8px;padding:7px 10px}
@@ -30,6 +30,12 @@
 .preview-sidebar-item.active{background:var(--violet-soft);border:1px solid rgba(162,138,245,.4)}
 .preview-sidebar-item small{display:block;color:var(--muted)}
 .preview-warning{margin-top:14px;border-left:3px solid var(--violet);padding-left:10px;color:var(--muted);font-size:12px}
+body:has(#screen-voice.active) #content{max-width:none;padding:0;margin:0;width:100%}
+body:has(#screen-voice.active) #content>.hero,body:has(#screen-voice.active) .preview-warning{display:none}
+#screen-voice .p07-workspace{min-height:500px}
+#screen-voice .p07-character-rail button{cursor:pointer}
+#screen-voice .audio-line.active{background:#281d47!important;border-color:#a848ef!important}
+#screen-voice .p07-variants-panel{margin:0;border-radius:0}
 body:has(#screen-storyboard.active) #content{max-width:none;padding:0;margin:0;width:100%}
 body:has(#screen-storyboard.active) #content>.hero{display:none}
 body:has(#screen-storyboard.active) .preview-warning{display:none}
@@ -64,7 +70,7 @@ body:has(#screen-script.active) .preview-warning{display:none}
 <body>
 <header>
  <div class="header-brand"><button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-expanded="true">☰ <span>Сховати</span></button><div><p class="eyebrow">ЛОКАЛЬНА ТВОРЧА СТУДІЯ · ПРЕВ'Ю</p><h1>AI Production Studio</h1></div></div>
- <div class="preview-controls" role="group" aria-label="Демо-екрани"><button class="active" data-screen="project" type="button">Проєкт</button><button data-screen="models" type="button">Моделі</button><button data-screen="script" type="button">Сценарій P-02</button><button data-screen="storyboard" type="button">Сторіборд P-04</button><button data-screen="images" type="button">Image Studio P-06</button><button data-screen="shot" type="button">Кадр P-05</button><button data-screen="assistant" type="button">Помічник</button></div>
+ <div class="preview-controls" role="group" aria-label="Демо-екрани"><button class="active" data-screen="project" type="button">Проєкт</button><button data-screen="models" type="button">Моделі</button><button data-screen="script" type="button">Сценарій P-02</button><button data-screen="storyboard" type="button">Сторіборд P-04</button><button data-screen="images" type="button">Image Studio P-06</button><button data-screen="shot" type="button">Кадр P-05</button><button data-screen="voice" type="button">Voice Studio P-07</button><button data-screen="assistant" type="button">Помічник</button></div>
  <span class="preview-note">ДЕМО ІНТЕРФЕЙСУ · БЕЗ ДАНИХ</span>
 </header>
 <main id="preview-layout">
@@ -163,7 +169,52 @@ body:has(#screen-script.active) .preview-warning{display:none}
    </section>
   </article>
  </div>
- <div class="preview-screen" id="screen-images"><div id="preview-image-studio"></div></div><dialog id="p06-preview-brief-dialog" aria-label="Підготовлений запит — демонстрація">
+ <div class="preview-screen" id="screen-voice">
+  <div class="p07-workspace">
+    <aside class="p07-character-rail">
+      <div class="p07-heading"><strong>Персонажі та голоси</strong></div>
+      <button type="button" class="p07-demo-person" data-p07-demo-character="mira"><span class="p07-avatar">♙</span><span><strong>Мира</strong><small>Головна героїня · UA</small></span></button>
+      <button type="button" class="p07-demo-person" data-p07-demo-character="amber"><span class="p07-avatar">♙</span><span><strong>Бурштин</strong><small>Мудрий сич · UA</small></span></button>
+    </aside>
+    <article class="audio-plan p07-lines-panel">
+      <div class="route-head"><div><p class="eyebrow">ЕПІЗОД 1 · СЦЕНА 2</p><h3>Загадковий міст</h3><p>Оберіть репліку для перегляду голосових параметрів</p></div><span class="tag">Демо · 2 репліки</span></div>
+      <div class="audio-lines">
+        <article class="audio-line active" tabindex="0" data-p07-demo-line="0">
+          <div class="audio-index">1</div><div class="audio-copy"><div class="audio-meta"><strong>Мира</strong><span class="tag">4.4 с</span></div>
+            <p>Я... готова. Навіть якщо не знаю, що чекає попереду.</p><small>Емоція: рішучість</small></div>
+          <button type="button" data-p07-demo-line-button="0">Обрати</button>
+        </article>
+        <article class="audio-line" tabindex="0" data-p07-demo-line="1">
+          <div class="audio-index">2</div><div class="audio-copy"><div class="audio-meta"><strong>Бурштин</strong><span class="tag">5.1 с</span></div>
+            <p>Світло веде тих, хто не боїться шукати істину.</p><small>Емоція: спокій</small></div>
+          <button type="button" data-p07-demo-line-button="1">Обрати</button>
+        </article>
+      </div>
+    </article>
+    <aside class="p07-settings-panel">
+      <div class="p07-heading"><strong>Голос та інтонація</strong><small id="p07-demo-counter">Репліка 1 із 2</small></div>
+      <div class="p07-inspector-content">
+        <div class="p07-selected-name"><strong id="p07-demo-name">Мира</strong><small>Голос персонажа</small></div>
+        <p class="p07-quote" id="p07-demo-quote">Я... готова. Навіть якщо не знаю, що чекає попереду.</p>
+        <dl class="p07-key-values"><div><dt>Мова</dt><dd>UA</dd></div><div><dt>Дублі</dt><dd>0 (демо)</dd></div></dl>
+      </div>
+      <div class="p07-take-plan"><strong>План дублів</strong><p>Кількість варіантів</p>
+       <div class="p07-counts"><button type="button" data-p07-demo-count="1" >1</button><button type="button" data-p07-demo-count="2" >2</button><button type="button" data-p07-demo-count="3" class="active">3</button><button type="button" data-p07-demo-count="4" >4</button><button type="button" data-p07-demo-count="5" >5</button></div>
+       <p>Різноманітність</p><div class="p07-diversity">
+       <button type="button" data-p07-demo-variation="low">Низька</button>
+       <button type="button" data-p07-demo-variation="medium" class="active">Середня</button>
+       <button type="button" data-p07-demo-variation="high">Висока</button></div>
+       <small>Параметри лише для творчого плану. Онлайн-прев’ю не викликає TTS.</small>
+      </div>
+    </aside>
+  </div>
+  <section class="p07-variants-panel"><div class="p07-variant-content">
+    <div class="p07-variants-header"><div><strong>Дублі та варіанти</strong><small id="p07-demo-take-label">Мира · 0 реальних записів</small></div><span class="tag">Генератор не підключений до демо</span></div>
+    <div class="p07-takes"><p class="p07-empty">У демонстраційній версії немає аудіофайлів. Дублі з’являються тільки після реального синтезу й зберігаються у локальному проєкті.</p></div>
+    <p class="p07-plan-note" id="p07-demo-plan">План: 3 варіанти · середня різноманітність. Жодна генерація не запускається.</p>
+  </div></section>
+ </div>
+<div class="preview-screen" id="screen-images"><div id="preview-image-studio"></div></div><dialog id="p06-preview-brief-dialog" aria-label="Підготовлений запит — демонстрація">
   <form method="dialog" style="display:grid;gap:12px;max-width:min(560px,90vw);padding:18px;background:#11172e;color:#f1e8ff;border:1px solid #7a3db4;border-radius:14px">
     <strong>Підготовлений запит на зображення · демо</strong>
     <pre style="white-space:pre-wrap;overflow-wrap:anywhere;color:#d8ccec;font:13px/1.5 ui-monospace,monospace"></pre>
@@ -264,5 +315,30 @@ document.getElementById('preview-dashboard').innerHTML=window.APSProjectDashboar
  }));
 })();
 </script>
-</body>
+<script>
+(()=>{
+  const names=['Мира','Бурштин'],texts=['Я... готова. Навіть якщо не знаю, що чекає попереду.','Світло веде тих, хто не боїться шукати істину.'];
+  const state={line:0,count:3,variation:'medium'};
+  const root=document.getElementById('screen-voice');if(!root)return;
+  function refresh(){
+    root.querySelectorAll('[data-p07-demo-line]').forEach(x=>x.classList.toggle('active',Number(x.dataset.p07DemoLine)===state.line));
+    root.querySelector('#p07-demo-counter').textContent='Репліка '+(state.line+1)+' із 2';
+    root.querySelector('#p07-demo-name').textContent=names[state.line];
+    root.querySelector('#p07-demo-quote').textContent=texts[state.line];
+    root.querySelector('#p07-demo-take-label').textContent=names[state.line]+' · 0 реальних записів';
+    root.querySelectorAll('[data-p07-demo-count]').forEach(x=>x.classList.toggle('active',Number(x.dataset.p07DemoCount)===state.count));
+    root.querySelectorAll('[data-p07-demo-variation]').forEach(x=>x.classList.toggle('active',x.dataset.p07DemoVariation===state.variation));
+    root.querySelector('#p07-demo-plan').textContent='План: '+state.count+' варіанти · '+({low:'низька',medium:'середня',high:'висока'}[state.variation])+' різноманітність. Жодна генерація не запускається.';
+  }
+  root.addEventListener('click',e=>{
+    const card=e.target.closest('[data-p07-demo-line]'),person=e.target.closest('[data-p07-demo-character]'),count=e.target.closest('[data-p07-demo-count]'),variation=e.target.closest('[data-p07-demo-variation]');
+    if(card)state.line=Number(card.dataset.p07DemoLine);
+    if(person)state.line=person.dataset.p07DemoCharacter==='mira'?0:1;
+    if(count)state.count=Number(count.dataset.p07DemoCount);
+    if(variation)state.variation=variation.dataset.p07DemoVariation;
+    refresh();
+  });
+  refresh();
+})();
+</script></body>
 </html>
