@@ -231,11 +231,15 @@ const server = http.createServer(async (req, res) => {
       const project = projectTemplate({ id: randomUUID(), ...input });
       const layout = projectLayout(dataDirectory, project.id);
       const previousData = store.read();
+      const verifyWrites = previousData.studio?.settings?.files?.verifyWrites !== false;
       try {
         store.update(data => data.projects.push(project));
-        const verification = verifyProjectPackage(project, layout);
-        if (!verification.verified) throw new Error('project package verification failed');
-        return send(res, 201, { ...project, creation: { storageVerified: true, root: project.storage.root, manifest: project.storage.manifest, database: project.storage.database, directories: preflight.requiredDirectories } });
+        let verification = null;
+        if (verifyWrites) {
+          verification = verifyProjectPackage(project, layout);
+          if (!verification.verified) throw new Error('project package verification failed');
+        }
+        return send(res, 201, { ...project, creation: { storageVerified: verifyWrites ? true : false, verificationSkipped: !verifyWrites, root: project.storage.root, manifest: project.storage.manifest, database: project.storage.database, directories: preflight.requiredDirectories } });
       } catch (error) {
         try { store.write(previousData); } catch {}
         try { fs.rmSync(layout.root, { recursive: true, force: true }); } catch {}
