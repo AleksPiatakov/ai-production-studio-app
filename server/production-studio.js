@@ -172,6 +172,7 @@ function decideProjectAssistantAction(project, actionId, decision, note = '') {
 }
 
 function publicModel(model) { return { ...model, configured: ['ready', 'available', 'connected', 'running'].includes(model.status) }; }
+function generationEvent(status, message) { return { id: randomUUID(), at: new Date().toISOString(), status, message: String(message || '') }; }
 function createGenerationJob(input, models) {
   const type = String(input.type || '');
   if (!['image', 'video', 'voice', 'music', 'ambient', 'sfx'].includes(type)) throw new Error('generation type must be image, video, voice, music, ambient, or sfx');
@@ -180,13 +181,28 @@ function createGenerationJob(input, models) {
   const model = models.find(item => item.id === input.modelId);
   if (!model) throw new Error('selected model is not registered');
   const status = ['ready','available','running'].includes(model.status) ? 'queued' : 'blocked';
-  return { id: randomUUID(), projectId, type, modelId: model.id, status, priority: ['low', 'normal', 'high'].includes(input.priority) ? input.priority : 'normal', prompt: String(input.prompt || '').trim(), parameters: input.parameters && typeof input.parameters === 'object' && !Array.isArray(input.parameters) ? { ...input.parameters } : {}, context: input.context && typeof input.context === 'object' && !Array.isArray(input.context) ? { ...input.context } : {}, inputAssetIds: Array.isArray(input.inputAssetIds) ? input.inputAssetIds : [], outputAssetId: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), executor: null, error: status === 'blocked' ? `Модель «${model.name}» не готова до виконання.` : null, note: 'Завдання зареєстровано. Виконання почнеться лише після підключення сумісного локального або GPU worker.' };
+  const note = 'Завдання зареєстровано. Виконання почнеться лише після підключення сумісного локального або GPU worker.';
+  const error = status === 'blocked' ? `Модель «${model.name}» не готова до виконання.` : null;
+  return { id: randomUUID(), projectId, type, modelId: model.id, status, priority: ['low', 'normal', 'high'].includes(input.priority) ? input.priority : 'normal', prompt: String(input.prompt || '').trim(), parameters: input.parameters && typeof input.parameters === 'object' && !Array.isArray(input.parameters) ? { ...input.parameters } : {}, context: input.context && typeof input.context === 'object' && !Array.isArray(input.context) ? { ...input.context } : {}, inputAssetIds: Array.isArray(input.inputAssetIds) ? input.inputAssetIds : [], outputAssetId: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), executor: null, error, note, attempt: Math.max(1, Number(input.attempt) || 1), retryOf: input.retryOf ? String(input.retryOf) : null, cancelRequestedAt: null, events: [generationEvent(status, error || note)] };
 }
 function transitionGenerationJob(job, nextStatus, note = '') {
   if (!jobStates.includes(nextStatus)) throw new Error('unsupported generation job status');
   if (!transitions[job.status]?.includes(nextStatus)) throw new Error(`cannot transition job from ${job.status} to ${nextStatus}`);
   if (terminalStates.has(job.status)) throw new Error('completed or cancelled jobs cannot be changed');
-  return { ...job, status: nextStatus, note: String(note || job.note), updatedAt: new Date().toISOString() };
+  const message = String(note || job.note || `Статус змінено на ${nextStatus}.`);
+  return { ...job, status: nextStatus, note: message, updatedAt: new Date().toISOString(), events: [...(job.events || []), generationEvent(nextStatus, message)] };
+}
+function retryGenerationJob(job, models) {
+  if (!['failed','blocked','cancelled'].includes(job.status)) throw new Error('only failed, blocked, or cancelled jobs can be retried');
+  const next = createGenerationJob({ projectId: job.projectId, type: job.type, modelId: job.modelId, priority: job.priority, prompt: job.prompt, parameters: job.parameters, context: job.context, inputAssetIds: job.inputAssetIds, attempt: Number(job.attempt || 1) + 1, retryOf: job.id }, models);
+  next.events[0].message = `Повторна спроба #${next.attempt} для задачі ${job.id.slice(0, 8)}. ${next.events[0].message}`;
+  return next;
+}
+function cancelGenerationJob(job, note = '') {
+  if (job.status === 'completed') throw new Error('completed job cannot be cancelled');
+  if (job.status === 'cancelled') throw new Error('job is already cancelled');
+  const message = String(note || (['preparing','running'].includes(job.status) ? 'Скасування запитано. Worker може завершувати поточний крок, але результат не буде прийнятий.' : 'Завдання скасовано до виконання.'));
+  return { ...job, status: 'cancelled', note: message, cancelRequestedAt: new Date().toISOString(), updatedAt: new Date().toISOString(), events: [...(job.events || []), generationEvent('cancelled', message)] };
 }
 function createAssetVersion(asset, input) {
   const version = String(input.version || '').trim() || `v${Date.now()}`;
@@ -201,7 +217,8 @@ function registerWorker(input) {
 }
 function claimGenerationJob(job, worker) {
   if (job.status !== 'queued' || !worker.capabilities.includes(job.type)) return null;
-  return { ...job, status: 'preparing', executor: { workerId: worker.id, workerName: worker.name, claimedAt: new Date().toISOString() }, updatedAt: new Date().toISOString(), note: `Завдання передано worker «${worker.name}».` };
+  const message = `Завдання передано worker «${worker.name}».`;
+  return { ...job, status: 'preparing', executor: { workerId: worker.id, workerName: worker.name, claimedAt: new Date().toISOString() }, updatedAt: new Date().toISOString(), note: message, events: [...(job.events || []), generationEvent('preparing', message)] };
 }
 function workerJobUpdate(job, worker, input) {
   if (job.executor?.workerId !== worker.id) throw new Error('job is not assigned to this worker');
@@ -210,8 +227,8 @@ function workerJobUpdate(job, worker, input) {
   return { ...updated, outputs, logsUri: input.logsUri ? String(input.logsUri) : job.logsUri || '', error: input.error ? String(input.error) : updated.status === 'failed' ? String(input.note || 'Worker повідомив про помилку.') : null };
 }
 function registerWorkerOutputs(project, job) {
-  if (job.status !== 'completed') return { assets: [], versions: [] };
-  const assets = [], versions = [];
+  if (job.status !== 'completed') return { assets: [], versions: [], outputAssetIds: [] };
+  const assets = [], versions = [], outputAssetIds = [];
   const typeFor = kind => ({ image: 'image', video: 'video', voice: 'audio', audio: 'audio', music: 'music', ambient: 'ambient', sfx: 'sfx' }[kind] || 'reference');
   for (const output of job.outputs || []) {
     if (!output.uri) continue;
@@ -223,9 +240,10 @@ function registerWorkerOutputs(project, job) {
     const asset = existing || { id: randomUUID(), type: assetType, scope: linkedShotId ? 'shot' : (linkedSceneId ? 'scene' : (isSound ? 'audio' : 'other')), linkedCharacterId: '', linkedSceneId, linkedShotId, label: `${job.type} · ${job.id.slice(0, 8)}`, uri: output.uri, version: '1.0.0', notes: 'Чернетковий результат, зареєстрований GPU Worker.', annotations: [], audioEdit: isSound ? { trimStart:0, trimEnd:0, fadeIn:0, fadeOut:0, volume:1 } : undefined, status: 'draft', currentVersionId: null, generatedByJobId: job.id };
     const version = { id: randomUUID(), assetId: asset.id, version: `worker-${job.id.slice(0, 8)}-${versions.length + 1}`, status: 'draft', createdAt: new Date().toISOString(), source: 'worker', uri: output.uri, prompt: job.prompt || '', model: job.modelId, seed: '', parameters: { checksum: output.checksum || '' }, parentVersionId: existing?.currentVersionId || null, notes: 'Результат worker-а. Потребує ручного перегляду й затвердження.', approvedAt: null, generationJobId: job.id };
     if (!existing) { asset.currentVersionId = version.id; assets.push(asset); }
+    outputAssetIds.push(asset.id);
     versions.push(version);
   }
-  return { assets, versions };
+  return { assets, versions, outputAssetIds };
 }
 
-module.exports = { normalizeStudio, defaultModelRegistry, defaultModelCatalog, defaultModelProfiles, modelSupports, updateModelProfiles, probeStudioModel, defaultStudioSettings, normalizeStudioSettings, updateStudioSettings, createProjectAssistantAction, decideProjectAssistantAction, publicModel, createGenerationJob, transitionGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs };
+module.exports = { normalizeStudio, defaultModelRegistry, defaultModelCatalog, defaultModelProfiles, modelSupports, updateModelProfiles, probeStudioModel, defaultStudioSettings, normalizeStudioSettings, updateStudioSettings, createProjectAssistantAction, decideProjectAssistantAction, publicModel, generationEvent, createGenerationJob, transitionGenerationJob, retryGenerationJob, cancelGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs };
