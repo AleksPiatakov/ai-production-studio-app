@@ -402,7 +402,7 @@ const floatingAdvisorRender=render;
 render=function(){
   floatingAdvisorRender();
   document.querySelector('.floating-advisor, .floating-advisor-launcher')?.remove();
-  if(active&&!['home','projects','models','queue','assistants','settings','advisor'].includes(view)){
+  if(active&&!['home','projects','models','queue','assistants','settings','advisor','assistantChanges'].includes(view)){
     document.body.insertAdjacentHTML('beforeend',floatingAdvisorMarkup());
     setupFloatingAdvisorInteraction();
   }
