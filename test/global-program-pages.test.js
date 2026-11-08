@@ -196,3 +196,21 @@ test('Pages preview mirrors P-02 independent side-panel controls',()=>{
   assert.match(demo,/scenes-collapsed/);
   assert.match(demo,/ai-collapsed/);
 });
+
+
+test('G-03 supports real engine choice and collapsible global context',()=>{
+  const ui=fs.readFileSync(path.join(root,'public','assistant-workspaces.js'),'utf8');
+  const server=fs.readFileSync(path.join(root,'server','index.js'),'utf8');
+  const assistant=fs.readFileSync(path.join(root,'server','assistant.js'),'utf8');
+  const css=fs.readFileSync(path.join(root,'public','global-studio-pages.css'),'utf8');
+  assert.match(ui,/setGlobalAssistantEngine/);
+  assert.match(ui,/toggleGlobalAssistantContext/);
+  assert.match(ui,/g03-engine-preference/);
+  assert.match(ui,/g03-context-collapsed/);
+  assert.match(ui,/enginePreference:globalAssistantState\.enginePreference/);
+  assert.match(server,/enginePreference: input\.enginePreference/);
+  assert.match(assistant,/enginePreference = 'auto'/);
+  assert.match(assistant,/local-planner/);
+  assert.match(assistant,/configured/);
+  assert.match(css,/global-ai-layout\.context-collapsed/);
+});
