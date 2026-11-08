@@ -223,7 +223,12 @@ function cancelGenerationJob(job, note = '') {
 }
 function createAssetVersion(asset, input) {
   const version = String(input.version || '').trim() || `v${Date.now()}`;
-  return { id: randomUUID(), assetId: asset.id, version, status: 'draft', createdAt: new Date().toISOString(), source: input.source || 'manual', uri: input.uri || asset.uri || '', prompt: input.prompt || '', model: input.model || '', seed: input.seed || '', parameters: input.parameters || {}, parentVersionId: input.parentVersionId || asset.currentVersionId || null, notes: input.notes || '', approvedAt: null };
+  const source = String(input.source || 'manual');
+  const model = String(input.model || '');
+  const checksum = String(input.checksum || input.parameters?.checksum || '');
+  const generationJobId = String(input.generationJobId || '');
+  const parameters = { ...(input.parameters || {}), ...(checksum ? { checksum } : {}) };
+  return { id: randomUUID(), assetId: asset.id, version, status: 'draft', createdAt: new Date().toISOString(), source, uri: input.uri || asset.uri || '', prompt: input.prompt || '', model, seed: input.seed || '', checksum, provenance: { source, model, generationJobId }, parameters, parentVersionId: input.parentVersionId || asset.currentVersionId || null, notes: input.notes || '', approvedAt: null, generationJobId: generationJobId || undefined };
 }
 function registerWorker(input) {
   const name = String(input.name || '').trim();
