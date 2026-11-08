@@ -17,12 +17,17 @@ test('global program pages are wired into the approved shell',()=>{
   assert.match(pages,/globalSettingsPanel/);
 });
 
-test('new project uses a real three-step wizard and local projects API',()=>{
+test('new project uses a real three-step wizard with storage preflight and verified package creation',()=>{
   assert.match(pages,/крок '\+projectWizard\.step\+' із 3/);
   assert.match(pages,/projectWizard\.step===1/);
   assert.match(pages,/projectWizard\.step===2/);
-  assert.match(pages,/api\('\/api\/projects'/);
+  assert.ok(pages.includes('/api/projects/preflight'));
+  assert.ok(pages.includes("api('/api/projects'"));
+  assert.match(pages,/storageVerified/);
+  assert.match(pages,/workspaceMode='guided'/);
   assert.match(pages,/AI не створює сценарій/);
+  assert.match(css,/\.wizard-storage-status/);
+  assert.match(css,/\.wizard-directory-list/);
 });
 
 test('settings expose five approved tabs without adding a second navigation system',()=>{
@@ -109,4 +114,13 @@ test('model setup persists configuration separately from readiness probes',()=>{
   assert.ok(server.includes('item.lastProbe'));
   assert.ok(server.includes('hasPiperVoice()'));
   assert.ok(server.includes('onlineWorkers'));
+});
+
+
+test('new project API preflights storage and verifies manifest and SQLite package',()=>{
+  const server=fs.readFileSync(path.join(root,'server','index.js'),'utf8');
+  assert.ok(server.includes("url.pathname === '/api/projects/preflight'"));
+  assert.ok(server.includes('projectCreationPreflight'));
+  assert.ok(server.includes('verifyProjectPackage'));
+  assert.ok(server.includes('storageVerified'));
 });
