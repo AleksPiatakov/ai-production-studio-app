@@ -29,7 +29,7 @@ function productionStudioPanel() {
     const statuses=['queued','preparing','running','paused','blocked','failed','completed','cancelled'];
     return `<article class="card full studio-layer queue-page"><div class="queue-page-head"><div><p class="eyebrow">ЧЕРГА ГЕНЕРАЦІЙ</p><h3>Єдиний журнал запланованих робіт</h3><p class="muted">Черга глобальна для всієї студії. Повтор створює нову спробу; скасування не видаляє історію.</p></div><span class="queue-total">${productionStudioState.jobs.length} всього</span></div>${error}
       <div class="studio-queue-filter"><label>Проєкт<select onchange="setStudioQueueProjectFilter(this.value)"><option value="all">Усі проєкти</option>${(projects||[]).map(project=>`<option value="${esc(project.id)}" ${studioQueueProjectFilter===project.id?'selected':''}>${esc(project.name)}</option>`).join('')}</select></label><label>Статус<select onchange="setStudioQueueStatusFilter(this.value)"><option value="all">Усі статуси</option>${statuses.map(status=>`<option value="${status}" ${studioQueueStatusFilter===status?'selected':''}>${esc(studioStatus(status))}</option>`).join('')}</select></label><span>${visible.length} показано</span></div>
-      <form class="studio-form queue-create-form" onsubmit="queueStudioGeneration(event)"><select name="projectId" aria-label="Проєкт">${projectOptions}</select><select name="type"><option value="image">Зображення</option><option value="video">Відео</option><option value="voice">Голос</option><option value="music">Музика</option><option value="ambient">Атмосфера</option><option value="sfx">SFX</option></select><select name="modelId">${productionStudioState.models.map(model => `<option value="${esc(model.id)}">${esc(model.name)} — ${esc(modelStatusLabel(model.status))}</option>`).join('')}</select><input name="prompt" placeholder="Опис завдання (необов’язково)"><button class="primary">Додати в чергу</button></form>
+      <form class="studio-form queue-create-form" onsubmit="queueStudioGeneration(event)"><select name="projectId" aria-label="Проєкт">${projectOptions}</select><select name="type" onchange="refreshQueueModelOptions(this.form)"><option value="image">Зображення</option><option value="video">Відео</option><option value="voice">Голос</option><option value="music">Музика</option><option value="ambient">Атмосфера</option><option value="sfx">SFX</option></select><select name="modelId">${queueModelOptions('image')}</select><input name="prompt" placeholder="Опис завдання (необов’язково)"><button class="primary">Додати в чергу</button></form>
       <div class="queue-list">${visible.map(queueJobCard).join('') || '<p class="global-empty">У вибраному фільтрі завдань немає.</p>'}</div></article>`;
   }
   if (view === 'davinci') return `<article class="card full studio-layer"><p class="eyebrow">DAVINCI RESOLVE</p><h3>Підготовка монтажного пакета</h3><p class="muted">Студія готує перевірені матеріали, субтитри й монтажний лист. Вона не створює автоматично проєкт Resolve та не виконує фінальний експорт.</p><div class="studio-list"><section><strong>Поточний шлях</strong><p>Сценарій → затверджені кадри та голоси → перевірка → ручне затвердження → DaVinci handoff.</p><button class="primary" onclick="goToView('preview')">Перевірити готовність випуску</button><button onclick="downloadDaVinciTimeline()">Завантажити монтажний CSV</button><button onclick="goToView('production')">Відкрити технічні інструменти</button></section></div></article>`;
@@ -136,6 +136,18 @@ async function saveModelProfiles(event){
   try{productionStudioState.profiles=await api('/api/studio/model-profiles',{method:'PUT',body:JSON.stringify(data)});render();}
   catch(error){productionStudioState.error=error.message;render()}
 }
+function queueModelOptions(type){
+  const compatible=productionStudioState.models.filter(model=>clientModelSupports(model,type));
+  if(!compatible.length)return '<option value="">Немає сумісної моделі</option>';
+  const preferred=productionStudioState.profiles?.[type]||'';
+  return compatible.map(model=>`<option value="${esc(model.id)}" ${model.id===preferred?'selected':''}>${esc(model.name)} — ${esc(modelStatusLabel(model.status))}</option>`).join('');
+}
+function refreshQueueModelOptions(form){
+  const type=form?.elements?.type?.value||'image',select=form?.elements?.modelId;if(!select)return;
+  select.innerHTML=queueModelOptions(type);
+  select.disabled=!productionStudioState.models.some(model=>clientModelSupports(model,type));
+}
+
 function queueProjectName(id){return (projects||[]).find(project=>project.id===id)?.name||id}
 function queueJobCard(job){
   const model=productionStudioState.models.find(item=>item.id===job.modelId);
