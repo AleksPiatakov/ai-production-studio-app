@@ -135,9 +135,11 @@ function normalizeStudio(data) {
   for (const project of data.projects || []) {
     project.productionSettings = { resolution: '1920x1080', aspectRatio: '16:9', fps: 24, plannedEpisodes: 1, ...(project.productionSettings || {}) };
     project.assetVersions = Array.isArray(project.assetVersions) ? project.assetVersions : [];
-    project.assistantWorkspace = { id: `project-assistant-${project.id}`, scope: 'project-only', autonomy: 'suggestions-only', memory: [], actions: [], ...(project.assistantWorkspace || {}) };
+    project.assistantWorkspace = { id: `project-assistant-${project.id}`, scope: 'project-only', autonomy: 'suggestions-only', memory: [], actions: [], tasks: [], documents: [], ...(project.assistantWorkspace || {}) };
     project.assistantWorkspace.memory = Array.isArray(project.assistantWorkspace.memory) ? project.assistantWorkspace.memory : [];
     project.assistantWorkspace.actions = Array.isArray(project.assistantWorkspace.actions) ? project.assistantWorkspace.actions : [];
+    project.assistantWorkspace.tasks = Array.isArray(project.assistantWorkspace.tasks) ? project.assistantWorkspace.tasks : [];
+    project.assistantWorkspace.documents = Array.isArray(project.assistantWorkspace.documents) ? project.assistantWorkspace.documents : [];
     project.storage = { layoutVersion: 2, root: `data/projects/${project.id}`, manifest: `data/projects/${project.id}/Project_Data/project.json`, database: `data/projects/${project.id}/Project_Data/project.sqlite`, assetDirectories: ['Assets/Images', 'Assets/Video', 'Assets/Voices', 'Assets/Music', 'Assets/SFX'], exportDirectory: 'Exports', backupDirectory: 'Backups', ...(project.storage || {}) };
   }
   return data;
