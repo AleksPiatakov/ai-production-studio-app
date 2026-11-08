@@ -206,3 +206,17 @@ test('generation jobs reject incompatible models',()=>{
   assert.equal(job.type,'voice');
   assert.equal(job.modelId,'voice-model');
 });
+
+
+test('G-10 worker claim honors maxConcurrentJobs',()=>{
+  const server=fs.readFileSync(path.join(__dirname,'../server/index.js'),'utf8');
+  const ui=fs.readFileSync(path.join(__dirname,'../public/production-studio-ui.js'),'utf8');
+  assert.match(server,/maxConcurrentJobs = Math\.max\(1, Math\.min\(4/);
+  assert.match(server,/\['preparing','running'\]\.includes\(item\.status\)/);
+  assert.match(server,/const limitReached = activeJobs >= maxConcurrentJobs/);
+  assert.match(server,/const job = limitReached \? null/);
+  assert.match(server,/limitReached, activeJobs, maxConcurrentJobs/);
+  assert.match(ui,/queue-concurrency/);
+  assert.match(ui,/activeJobs=productionStudioState\.jobs\.filter/);
+  assert.match(ui,/maxConcurrentJobs=Math\.max\(1,Number\(globalStudioSettings\?\.performance\?\.maxConcurrentJobs\)\|\|1\)/);
+});
