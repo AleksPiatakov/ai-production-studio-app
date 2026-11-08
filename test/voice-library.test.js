@@ -54,3 +54,14 @@ test('server protects voice assignment and sample isolation',()=>{
   assert.match(server,/retired voice profile cannot be assigned/);
   assert.doesNotMatch(server,/approved voice profile cannot be reassigned/);
 });
+
+
+test('P-08 Voice Cloning is explicit and consent-first',()=>{
+  const ui=fs.readFileSync(path.join(root,'public','voice-library.js'),'utf8');
+  const nav=fs.readFileSync(path.join(root,'public','approved-editor-shell.js'),'utf8');
+  assert.match(ui,/function voiceCloningPanel/);
+  assert.match(ui,/Я підтверджую право та необхідну згоду/);
+  assert.match(ui,/endpoint не підключено/);
+  assert.match(ui,/не імітує створення клону/);
+  assert.match(nav,/\['voiceClone','◌','Клонування голосу'\]/);
+});
