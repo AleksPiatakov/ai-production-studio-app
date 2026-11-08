@@ -137,6 +137,7 @@ function validateAssetInput(input) {
     scope: oneOf(input.scope, ['character', 'location', 'object', 'style', 'scene', 'shot', 'audio', 'other'], 'scope', 'other'),
     linkedCharacterId: optionalString(input.linkedCharacterId, 'linkedCharacterId'),
     linkedSceneId: optionalString(input.linkedSceneId, 'linkedSceneId'),
+    linkedShotId: optionalString(input.linkedShotId, 'linkedShotId'),
     label: nonEmptyString(input.label, 'label'),
     uri: nonEmptyString(input.uri, 'uri'),
     version: nonEmptyString(input.version || '0.1.0', 'version'),
