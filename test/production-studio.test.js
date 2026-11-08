@@ -51,7 +51,7 @@ test('registers a completed worker result as a draft asset and a separate draft 
 
 test('normalizes and updates five persistent studio settings sections', () => {
   const data = normalizeStudio({ projects: [] });
-  assert.equal(data.studio.settings.general.startView, 'home');
+  assert.equal(data.studio.settings.general.startView, 'overview');
   assert.equal(data.studio.settings.files.versionHistoryLimit, 30);
   const next = updateStudioSettings(data.studio.settings, {
     general: { startView: 'projects' },
