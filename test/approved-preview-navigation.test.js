@@ -12,7 +12,7 @@ test('approved preview has no internal P-number demo toolbar', () => {
 });
 
 test('approved compact navigation exposes real demo destinations without changing assets', () => {
-  for (const id of ['home','projects','project','script','storyboard','images','voice','sound','video','models','queue','assistant','settings']) {
+  for (const id of ['home','projects','project','script','storyboard','images','voice','sound','video','media','models','queue','assistant','settings']) {
     assert.match(html, new RegExp('data-screen="'+id+'"'));
     assert.match(html, new RegExp('id="screen-'+id+'"'));
   }
@@ -26,4 +26,5 @@ test('approved compact navigation exposes real demo destinations without changin
   assert.match(html, /data-preview-model-tab/);
   assert.match(html, /data-preview-sound-kind/);
   assert.match(html, /data-preview-video-mode/);
+  assert.match(html, /id="screen-media"/);
 });
