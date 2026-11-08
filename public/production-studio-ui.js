@@ -19,6 +19,13 @@ async function refreshProductionStudio() {
   } catch (error) { productionStudioState.error = error.message; }
 }
 function studioStatus(status) { return ({ ready: 'готова', available: 'доступна', installed: 'встановлена', connected: 'підключена', running: 'виконується', failed: 'помилка', 'not-installed': 'не встановлена', 'not-connected': 'не підключена', disabled: 'вимкнена', queued: 'у черзі', preparing: 'підготовка', paused: 'призупинено', completed: 'завершено', cancelled: 'скасовано', blocked: 'заблоковано' })[status] || status; }
+function confirmExpensiveGeneration(kind='generation',count=1,detail=''){
+  if(globalStudioSettings?.assistants?.confirmExpensive===false)return true;
+  const titles={image:'зображення',video:'відео',voice:'голосу',music:'музики',ambient:'атмосфери',sfx:'SFX',retry:'повторної генерації',generation:'генерації'};
+  const amount=Math.max(1,Number(count)||1);
+  const suffix=detail?(' '+String(detail).trim()):'';
+  return window.confirm(`Підтвердити запуск ${amount>1?amount+' задач ':''}генерації ${titles[kind]||kind}?${suffix} Підключена модель або worker може використати платні чи значні обчислювальні ресурси.`);
+}
 function productionStudioPanel() {
   const error = productionStudioState.error ? `<p class="assistant-error">${esc(productionStudioState.error)}</p>` : '';
   if (view === 'models') return modelCenterPanel(error);
@@ -167,10 +174,10 @@ function queueJobCard(job){
 function setStudioQueueProjectFilter(value){studioQueueProjectFilter=value||'all';render();}
 function setStudioQueueStatusFilter(value){studioQueueStatusFilter=value||'all';render();}
 
-async function queueStudioGeneration(event) { event.preventDefault(); const form = event.currentTarget, data = Object.fromEntries(new FormData(form)); try { await api('/api/studio/generation-jobs', { method: 'POST', body: JSON.stringify({ ...data, projectId: data.projectId || activeId }) }); await refreshProductionStudio(); render(); } catch (error) { productionStudioState.error = error.message; render(); } }
+async function queueStudioGeneration(event) { event.preventDefault(); const form = event.currentTarget, data = Object.fromEntries(new FormData(form)); if(!confirmExpensiveGeneration(data.type||'generation',1))return; try { await api('/api/studio/generation-jobs', { method: 'POST', body: JSON.stringify({ ...data, projectId: data.projectId || activeId }) }); await refreshProductionStudio(); render(); } catch (error) { productionStudioState.error = error.message; render(); } }
 async function transitionStudioJob(id, status) { try { await api(`/api/studio/generation-jobs/${encodeURIComponent(id)}/transition`, { method: 'POST', body: JSON.stringify({ status }) }); await refreshProductionStudio(); render(); } catch (error) { productionStudioState.error = error.message; render(); } }
 async function retryStudioJob(id){
-  if(!window.confirm('Створити нову спробу цієї задачі? Якщо модель використовує платні або GPU-ресурси, нова спроба може їх витратити.'))return;
+  if(!confirmExpensiveGeneration('retry',1,'Це створить нову спробу задачі.'))return;
   try{await api(`/api/studio/generation-jobs/${encodeURIComponent(id)}/retry`,{method:'POST',body:'{}'});await refreshProductionStudio();render()}catch(error){productionStudioState.error=error.message;render()}
 }
 async function cancelStudioJob(id){
