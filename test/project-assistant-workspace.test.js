@@ -41,3 +41,12 @@ test('P-13 decision note is retained in assistant audit history',()=>{
   assert.equal(action.status,'rejected');
   assert.equal(action.decisionNote,'Потрібне додаткове узгодження');
 });
+
+
+test('P-12 document cards expose edit and delete actions',()=>{
+  const ui=fs.readFileSync(path.join(__dirname,'../public/app.js'),'utf8');
+  assert.match(ui,/advisor-document-open/);
+  assert.match(ui,/advisor-document-delete/);
+  assert.match(ui,/deleteAdvisorDocument/);
+  assert.match(ui,/assistant\/documents\/\$\{encodeURIComponent\(id\)\}.*method:'DELETE'/s);
+});
