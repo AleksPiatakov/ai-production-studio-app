@@ -42,3 +42,17 @@ test('G-08 export settings affect draft package without weakening final safety',
   assert.match(ui,/Чернетковий пакет вимкнено у Налаштуваннях → Експорт/);
   assert.match(ui,/вимкнена для draft/);
 });
+
+
+test('export default language drives P-15 localization readiness',()=>{
+  const handoff=fs.readFileSync(path.join(__dirname,'../server/davinci-handoff.js'),'utf8');
+  const server=fs.readFileSync(path.join(__dirname,'../server/index.js'),'utf8');
+  const settings=fs.readFileSync(path.join(__dirname,'../public/global-studio-pages.js'),'utf8');
+  assert.match(handoff,/const preferredLanguage = options\.defaultLanguage === 'en'/);
+  assert.match(handoff,/a\.language===preferredLanguage/);
+  assert.match(handoff,/item\.language === preferredLanguage && item\.subtitlesPath/);
+  assert.match(handoff,/exportDefaultLanguage: preferredLanguage/);
+  assert.match(server,/defaultLanguage: exportSettings\.defaultLanguage \|\| project\.defaultLanguage/);
+  assert.match(settings,/основною для P-15 readiness/);
+  assert.match(settings,/ZIP\/копіювання папок не імітується/);
+});
