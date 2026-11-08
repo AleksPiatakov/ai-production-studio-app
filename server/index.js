@@ -131,9 +131,12 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && parts[0] === 'api' && parts[1] === 'studio' && parts[2] === 'worker' && parts[3] && parts[4] === 'claim') {
       authenticateWorker(req); const data = store.read(), worker = data.studio.workers.find(item => item.id === parts[3] && item.status === 'online');
       if (!worker) return send(res, 404, { error: 'online worker not found' });
-      const job = data.studio.generationJobs.filter(item => item.status === 'queued').sort((a, b) => ({ high: 0, normal: 1, low: 2 }[a.priority] - ({ high: 0, normal: 1, low: 2 }[b.priority]))).map(item => claimGenerationJob(item, worker)).find(Boolean);
-      store.update(next => { const current = next.studio.workers.find(item => item.id === worker.id); current.lastSeenAt = new Date().toISOString(); if (job) next.studio.generationJobs[next.studio.generationJobs.findIndex(item => item.id === job.id)] = job; });
-      return send(res, 200, { job: job || null });
+      const maxConcurrentJobs = Math.max(1, Math.min(4, Number(data.studio.settings?.performance?.maxConcurrentJobs) || 1));
+      const activeJobs = data.studio.generationJobs.filter(item => ['preparing','running'].includes(item.status)).length;
+      const limitReached = activeJobs >= maxConcurrentJobs;
+      const job = limitReached ? null : data.studio.generationJobs.filter(item => item.status === 'queued').sort((a, b) => ({ high: 0, normal: 1, low: 2 }[a.priority] - ({ high: 0, normal: 1, low: 2 }[b.priority]) || String(a.createdAt || '').localeCompare(String(b.createdAt || ''))).map(item => claimGenerationJob(item, worker)).find(Boolean);
+      store.update(next => { const current = next.studio.workers.find(item => item.id === worker.id); current.lastSeenAt = new Date().toISOString(); if (job) next.studio.generationJobs[next.studio.generationJobs.findIndex(item => item.id === job.id)] = job; }, { noSnapshot: true });
+      return send(res, 200, { job: job || null, limitReached, activeJobs, maxConcurrentJobs });
     }
     if (req.method === 'POST' && parts[0] === 'api' && parts[1] === 'studio' && parts[2] === 'worker' && parts[3] && parts[4] === 'jobs' && parts[5]) {
       authenticateWorker(req); const data = store.read(), worker = data.studio.workers.find(item => item.id === parts[3] && item.status === 'online'), job = data.studio.generationJobs.find(item => item.id === parts[5]);
