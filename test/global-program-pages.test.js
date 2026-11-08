@@ -455,3 +455,18 @@ test('P-06 keeps negative prompt draft per shot across renders',()=>{
   assert.match(integration,/negativePrompt:shot\?\.id\?negativePromptDrafts\.get\(shot\.id\)\|\|''/);
   assert.match(integration,/negativePromptDrafts\.set\(shot\.id,event\.target\.value\)/);
 });
+
+
+test('P-06 keeps all generation controls stable per shot',()=>{
+  const renderer=fs.readFileSync(path.join(root,'public','image-studio-p06.js'),'utf8');
+  const integration=fs.readFileSync(path.join(root,'public','image-studio-integration.js'),'utf8');
+  assert.match(renderer,/selectedModelId=data\.selectedModelId\|\|imageProfile/);
+  assert.match(renderer,/selectedResolution=data\.selectedResolution\|\|'1920x1080'/);
+  assert.match(renderer,/selectedVariantCount=Math\.max/);
+  assert.match(renderer,/aspectRatio=data\.aspectRatio\|\|'16:9'/);
+  assert.match(integration,/const imageJobDrafts=new Map\(\)/);
+  assert.match(integration,/imageJobDrafts\.set\(shot\.id/);
+  assert.match(integration,/root\.querySelector\('#p06-model'\)\?\.addEventListener\('change',rememberJobDraft\)/);
+  assert.match(integration,/active\.productionSettings\?\.aspectRatio\|\|active\.aspectRatio\|\|'16:9'/);
+  assert.match(integration,/active\.productionSettings\?\.resolution\|\|'1920x1080'/);
+});
