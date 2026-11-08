@@ -292,3 +292,19 @@ test('Pages preview mirrors P-02 read structured and text surfaces',()=>{
   assert.match(demo,/APSApprovedScriptFormat\.classify/);
   assert.match(demo,/aps-structured-block/);
 });
+
+
+test('P-01 is an operational overview instead of six-module launcher',()=>{
+  const ui=fs.readFileSync(path.join(root,'public','project-dashboard.js'),'utf8');
+  const app=fs.readFileSync(path.join(root,'public','app.js'),'utf8');
+  assert.match(ui,/ОГЛЯД ПРОЄКТУ/);
+  assert.match(ui,/ПОТОЧНИЙ ВИПУСК/);
+  assert.match(ui,/ВИПУСКИ/);
+  assert.match(ui,/СЦЕНИ/);
+  assert.match(ui,/ЗАВДАННЯ/);
+  assert.match(ui,/АКТИВИ/);
+  assert.match(ui,/p01-kpis/);
+  assert.match(ui,/p01-overview-grid/);
+  assert.doesNotMatch(ui,/p01-module-grid/);
+  assert.match(app,/currentEpisode:episode\|\|null/);
+});
