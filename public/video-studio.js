@@ -58,7 +58,7 @@ async function queueVideoVariants(event){
   event.preventDefault();const scene=currentVideoScene(),shot=currentVideoShot(scene),fd=new FormData(event.currentTarget),modelId=String(fd.get('modelId')||''),prompt=String(fd.get('prompt')||'').trim(),variantCount=Math.max(1,Math.min(4,Number(fd.get('variantCount'))||1)),durationSeconds=Number(fd.get('durationSeconds'))||Number(shot?.seconds)||5;
   if(!scene||!shot||!modelId||!prompt)return;
   const key=shotKeyImage(shot);if(!key){videoStudioNotice='Спочатку додайте або затвердьте ключовий кадр для цього шота.';render();return;}
-  if(variantCount>1&&!window.confirm(`Створити ${variantCount} окремі video-задачі? Підключений worker може використати значні GPU-ресурси.`))return;
+  if(!confirmExpensiveGeneration('video',variantCount))return;
   const inputs=[shot.keyImageAssetId,...(shot.referenceAssetIds||[])].filter(Boolean);
   videoStudioNotice='Додаємо video-задачі…';render();
   try{for(let i=1;i<=variantCount;i++)await api('/api/studio/generation-jobs',{method:'POST',body:JSON.stringify({projectId:activeId,type:'video',modelId,prompt,inputAssetIds:inputs,parameters:{durationSeconds,variantIndex:i,variantCount,camera:shot.camera||''},context:{sceneId:scene.id,shotId:shot.id}})});await refreshProductionStudio();videoStudioNotice=`Додано ${variantCount} задач(і) в глобальну чергу.`;}catch(error){videoStudioNotice='Помилка: '+error.message}render();
