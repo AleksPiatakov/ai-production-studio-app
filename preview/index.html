@@ -385,7 +385,7 @@ body:has(#screen-script.active) .preview-warning{display:none}
     <div data-preview-settings-panel="general"><label>Мова інтерфейсу<select><option>Українська</option><option>English</option></select></label><label>Початковий екран<select><option>Останній проєкт</option><option>Головна</option><option>Проєкти</option></select></label><label class="settings-check"><input type="checkbox" checked> Підтверджувати руйнівні дії</label></div>
     <div data-preview-settings-panel="files" hidden><label>Коренева папка<input value="data/projects" readonly></label><label>Кількість автоматичних версій<input type="number" value="30"></label></div>
     <div data-preview-settings-panel="performance" hidden><label class="settings-check"><input type="checkbox" checked> Надавати перевагу локальним моделям</label><label>Паралельні генерації<select><option>1</option><option>2</option></select></label></div>
-    <div data-preview-settings-panel="assistants" hidden><label>Помічник проєкту<select><option>Тільки пропозиції</option><option>Автоматичні безпечні дії</option></select></label><label class="settings-check"><input type="checkbox" checked> Підтверджувати дорогі генерації</label></div>
+    <div data-preview-settings-panel="assistants" hidden><label>Помічник проєкту<select><option>Тільки пропозиції</option><option>Автоматичні безпечні дії</option></select></label><label class="settings-check"><input type="checkbox" checked> Підтверджувати дорогі генерації</label><label class="settings-check"><input type="checkbox" checked> Зберігати розширений журнал помічника <small>Некритичні внутрішні дії. P-13 рішення та rollback-аудит зберігаються завжди.</small></label></div>
     <div data-preview-settings-panel="export" hidden><label>Пакет DaVinci<select><option>Папки + manifest</option></select></label><label class="settings-check"><input type="checkbox" checked> Перевіряти файли перед експортом</label></div>
     <div class="settings-actions"><span>Демонстрація · зміни не зберігаються</span><button class="primary" type="button">Зберегти</button></div>
    </form>
@@ -457,6 +457,7 @@ body:has(#screen-script.active) .preview-warning{display:none}
     </div>
     <p class="preview-note">У GitHub Pages це лише візуальна демонстрація. У локальній програмі документи можна відкривати, редагувати та видаляти.</p>
    </section>
+   <section class="advisor-preview-journal"><div class="advisor-preview-documents-head"><div><p class="eyebrow">ЖУРНАЛ</p><h4>Аудит і активність</h4></div><span class="tag">демо</span></div><div class="advisor-document-card"><div><strong>Обов’язковий аудит P-13</strong><small>Рішення та rollback зберігаються незалежно від налаштування розширеного журналу.</small></div></div><div class="advisor-document-card"><div><strong>Розширена активність</strong><small>Задачі, документи та зміна автономності записуються лише коли keepActionLog увімкнений.</small></div></div></section>
    <div class="global-home-actions"><button type="button" data-screen="aiChanges">Переглянути зміни AI →</button><button type="button" data-screen="project">Назад до проєкту</button></div>
   </article>
  </div>
