@@ -54,7 +54,7 @@
         const changed=status(draft,item).startsWith('Потрібна');
         return '<article class="p07-take" data-p07-take="'+safe(draft.id)+'"><div class="p07-take-name"><strong>Варіант '+itemNumber+'</strong><span class="p07-take-status '+(changed?'needs-review':'')+'">'+(changed?'Потрібна перевірка':'Чернетка')+'</span></div>'+
           '<audio controls preload="none" src="'+safe(draft.uri)+'" aria-label="Прослухати варіант '+itemNumber+'"></audio>'+
-          '<small>'+safe(draft.durationSeconds??'—')+' с · '+safe(draft.engine||'Невідомий рушій')+'</small>'+
+          '<small>'+safe(draft.durationSeconds??'—')+' с · '+safe(draft.engine||'Невідомий рушій')+'</small>'+\n          '<small>Профіль: '+safe(draft.voiceProfileId||item.voice?.id||'—')+(draft.modelId?' · модель: '+safe(draft.modelId):'')+'</small>'+
           '<small>'+safe(draft.createdAt?new Date(draft.createdAt).toLocaleString('uk-UA'):'Дата невідома')+'</small>'+
           (changed?'<p class="p07-review-warning">Текст змінився після створення цього дубля. Перевірте відповідність.</p>':'')+
           '</article>';
