@@ -252,3 +252,16 @@ test('P-07 keeps prior takes but marks them needs-review after dialogue text cha
   assert.match(server,/audioDrafts = \(line\.audioDrafts \|\| \[\]\)\.map/);
   assert.match(ui,/draft\.status==='needs-review'/);
 });
+
+
+test('P-14 protects approved assets and normalizes version provenance',()=>{
+  const server=fs.readFileSync(path.join(root,'server','index.js'),'utf8');
+  const studio=fs.readFileSync(path.join(root,'server','production-studio.js'),'utf8');
+  assert.match(server,/existing\.status === 'approved'/);
+  assert.match(server,/protectedFields/);
+  assert.match(server,/Затверджений ресурс не можна перезаписати напряму/);
+  assert.match(studio,/checksum/);
+  assert.match(studio,/provenance/);
+  assert.match(studio,/generationJobId/);
+  assert.match(studio,/source:'worker'/);
+});
