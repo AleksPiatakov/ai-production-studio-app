@@ -240,3 +240,15 @@ test('G-09 project creation rolls back failed packages and exposes approved type
   assert.match(ui,/Короткий формат/);
   assert.match(ui,/Інший/);
 });
+
+
+test('P-07 keeps prior takes but marks them needs-review after dialogue text changes',()=>{
+  const server=fs.readFileSync(path.join(root,'server','index.js'),'utf8');
+  const ui=fs.readFileSync(path.join(root,'public','p07-voice-takes.js'),'utf8');
+  assert.match(server,/dialogueTextChanged/);
+  assert.match(server,/previousStatus/);
+  assert.match(server,/status: 'needs-review'/);
+  assert.match(server,/reviewReason: 'dialogue-text-changed'/);
+  assert.match(server,/audioDrafts = \(line\.audioDrafts \|\| \[\]\)\.map/);
+  assert.match(ui,/draft\.status==='needs-review'/);
+});
