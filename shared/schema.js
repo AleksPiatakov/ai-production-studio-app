@@ -21,7 +21,7 @@ function projectTemplate({ id, name, type, defaultLanguage, targetMinutes, descr
     profile: defaultProfile(), workflow: defaultWorkflow(),
     bibles: { style: [], characters: [] }, episodes: [], scripts: [], voiceProfiles: [], localizations: [], assets: [], assetVersions: [], scenes: [], productions: [], renderJobs: [],
     storage: { layoutVersion: 2, root: `data/projects/${id}`, manifest: `data/projects/${id}/Project_Data/project.json`, database: `data/projects/${id}/Project_Data/project.sqlite`, assetDirectories: ['Assets/Images', 'Assets/Video', 'Assets/Voices', 'Assets/Music', 'Assets/SFX'], exportDirectory: 'Exports', backupDirectory: 'Backups' },
-    assistantWorkspace: { id: `project-assistant-${id}`, scope: 'project-only', autonomy: 'suggestions-only', memory: [], actions: [] } };
+    assistantWorkspace: { id: `project-assistant-${id}`, scope: 'project-only', autonomy: 'suggestions-only', memory: [], actions: [], tasks: [], documents: [] } };
 }
 
 module.exports = { allowedAgeBands, supportedLanguages, projectTypes, bibleStatuses, workflowStages, workflowStatuses, defaultWorkflow, defaultProfile, projectTemplate };
