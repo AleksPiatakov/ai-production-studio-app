@@ -512,8 +512,9 @@ document.getElementById('preview-image-studio').addEventListener('click',event=>
  const action=event.target.closest('[data-p06-action="prepare-brief"]');
  if(action){
   const prompt=root.querySelector('#p06-prompt')?.value||'';
+  const negative=root.querySelector('#p06-negative')?.value||'';
   const dialog=document.getElementById('p06-preview-brief-dialog');
-  dialog.querySelector('pre').textContent='Опис кадру: '+prompt+'\n\nСтатус: демонстраційна чернетка; модель не підключена.\nЖодна генерація зображення не виконувалася.';
+  dialog.querySelector('pre').textContent='Опис кадру: '+prompt+(negative?'\nНегативний промпт: '+negative:'')+'\n\nСтатус: демонстраційна чернетка; модель не підключена.\nЖодна генерація зображення не виконувалася.';
   dialog.showModal();
   return;
  }
