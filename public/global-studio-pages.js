@@ -131,7 +131,7 @@ function projectWizardFields(){
     <label>Назва проєкту<input name="name" required value="${esc(d.name)}" autofocus></label>
     <label>Тип<select name="type"><option value="animated-series" ${d.type==='animated-series'?'selected':''}>Анімаційний серіал</option><option value="general" ${d.type==='general'?'selected':''}>Універсальне відео</option><option value="science" ${d.type==='science'?'selected':''}>Наукове відео</option></select></label>
     <label>Основна мова<select name="defaultLanguage"><option value="uk" ${d.defaultLanguage==='uk'?'selected':''}>Українська</option><option value="en" ${d.defaultLanguage==='en'?'selected':''}>English</option></select></label>
-    <label class="settings-check"><input type="checkbox" name="additionalEnglish" ${d.additionalLanguages.includes('en')?'checked':''}> Додаткова англійська версія</label>
+    <label class="settings-check"><input type="checkbox" name="addOtherLanguage" ${d.additionalLanguages.length?'checked':''}> Додаткова друга мовна версія</label>
     <label>Опис<textarea name="description" placeholder="Короткий опис проєкту">${esc(d.description)}</textarea></label>`;
   if(projectWizard.step===2)return `<div class="wizard-progress"><i class="done"></i><i class="active"></i><i></i></div><p class="wizard-lead">Параметри виробництва</p>
     <div class="wizard-grid"><label>Роздільна здатність<select name="resolution"><option>1920x1080</option><option ${d.resolution==='3840x2160'?'selected':''}>3840x2160</option><option ${d.resolution==='1280x720'?'selected':''}>1280x720</option></select></label>
@@ -151,7 +151,7 @@ async function handleProjectWizardSubmit(event){
     projectWizard.data.name=String(fd.get('name')||'').trim();
     projectWizard.data.type=fd.get('type')||'general';
     projectWizard.data.defaultLanguage=fd.get('defaultLanguage')||'uk';
-    projectWizard.data.additionalLanguages=fd.get('additionalEnglish')&&projectWizard.data.defaultLanguage!=='en'?['en']:[];
+    projectWizard.data.additionalLanguages=fd.get('addOtherLanguage')?[projectWizard.data.defaultLanguage==='uk'?'en':'uk']:[];
     projectWizard.data.description=String(fd.get('description')||'').trim();
     projectWizard.step=2;openProjectWizard(2);return;
   }
@@ -183,5 +183,5 @@ const baseGlobalViewActions=viewActions;
 viewActions=function(){if(view==='home'||view==='projects'||view==='settings')return '';return baseGlobalViewActions()};
 const oldOpenProject=openProject;
 openProject=function(){openProjectWizard()};
-document.getElementById('new-project')?.addEventListener('click',event=>{event.preventDefault();openProjectWizard()});
+if(document.getElementById('new-project'))document.getElementById('new-project').onclick=openProjectWizard;
 setTimeout(()=>refreshGlobalStudioSettings().then(()=>{if(['home','settings'].includes(view))render()}),0);
