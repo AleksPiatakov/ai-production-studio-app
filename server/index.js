@@ -195,12 +195,13 @@ const server = http.createServer(async (req, res) => {
       if (req.method === 'GET' && parts[3] === 'assistant' && parts[4] === 'actions') return send(res, 200, project.assistantWorkspace?.actions || []);
       if (req.method === 'POST' && parts[3] === 'assistant' && parts[4] === 'actions' && parts.length === 5) {
         const action = createProjectAssistantAction(project, await body(req));
-        store.update(data => { const target=data.projects.find(item=>item.id===projectId); target.assistantWorkspace.actions.push(action); });
+        store.update(data => { const target=data.projects.find(item=>item.id===projectId); target.assistantWorkspace.actions.push(action); }, { noSnapshot: true });
         return send(res, 201, action);
       }
       if (req.method === 'POST' && parts[3] === 'assistant' && parts[4] === 'actions' && parts[5] && parts[6] === 'decision') {
         const input = await body(req); let updated;
-        store.update(data => { const target=data.projects.find(item=>item.id===projectId); updated=decideProjectAssistantAction(target, parts[5], input.decision, input.note); });
+        const apply = input.decision === 'accept';
+        store.update(data => { const target=data.projects.find(item=>item.id===projectId); updated=decideProjectAssistantAction(target, parts[5], input.decision, input.note); }, apply ? {} : { noSnapshot: true });
         return send(res, 200, updated);
       }
       if (req.method === 'POST' && parts[3] === 'assistant' && parts[4] === 'advice') return send(res, 200, await askProjectAdvisor(project, await body(req)));
