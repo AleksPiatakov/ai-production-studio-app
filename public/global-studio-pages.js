@@ -11,8 +11,14 @@ let projectWizard={step:1,data:{
 }};
 
 async function refreshGlobalStudioSettings(){
-  try{globalStudioSettings=await api('/api/studio/settings')}
-  catch(error){globalSettingsNotice='Не вдалося завантажити налаштування: '+error.message}
+  try{
+    globalStudioSettings=await api('/api/studio/settings');
+    if(!sessionStorage.getItem('ai-production-studio:start-view-applied')&&view==='overview'){
+      sessionStorage.setItem('ai-production-studio:start-view-applied','true');
+      const start=globalStudioSettings?.general?.startView;
+      if(['home','projects','overview'].includes(start))view=start;
+    }
+  }catch(error){globalSettingsNotice='Не вдалося завантажити налаштування: '+error.message}
 }
 function projectStats(project){
   const shots=(project.scenes||[]).reduce((sum,scene)=>sum+(scene.shots||[]).length,0);
@@ -184,4 +190,4 @@ viewActions=function(){if(view==='home'||view==='projects'||view==='settings')re
 const oldOpenProject=openProject;
 openProject=function(){openProjectWizard()};
 if(document.getElementById('new-project'))document.getElementById('new-project').onclick=openProjectWizard;
-setTimeout(()=>refreshGlobalStudioSettings().then(()=>{if(['home','settings'].includes(view))render()}),0);
+setTimeout(()=>refreshGlobalStudioSettings().then(()=>render()),0);
