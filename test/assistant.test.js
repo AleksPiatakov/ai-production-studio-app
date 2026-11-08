@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { buildAssistantContext, localScriptDraft } = require('../server/assistant');
+const { buildAssistantContext, localScriptDraft, localGeneralAssistantAnswer, generalAssistantSystemPrompt } = require('../server/assistant');
 
 test('assistant context keeps project facts and local draft remains explicitly unapproved', () => {
   const project = {
@@ -21,4 +21,15 @@ test('assistant context keeps project facts and local draft remains explicitly u
   assert.match(draft.body, /ЧЕРНЕТКА/);
   assert.match(draft.body, /Лума/);
   assert.match(draft.body, /Нова передісторія/);
+});
+
+
+test('global assistant local mode stays outside project context', () => {
+  const prompt = generalAssistantSystemPrompt();
+  assert.match(prompt, /НЕ маєш автоматичного доступу до проєктів/);
+  const projectReply = localGeneralAssistantAnswer('Допоможи з моїм проєктом і сценарієм');
+  assert.match(projectReply.answer, /не бачу дані конкретних проєктів/i);
+  assert.ok(projectReply.nextSteps.some(step => /Проєкт/i.test(step)));
+  const modelReply = localGeneralAssistantAnswer('Де перевірити AI моделі?');
+  assert.match(modelReply.answer, /AI Моделі/);
 });
