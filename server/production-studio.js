@@ -2,6 +2,52 @@ const { randomUUID } = require('node:crypto');
 
 const jobStates = ['queued', 'preparing', 'running', 'paused', 'completed', 'failed', 'cancelled'];
 const terminalStates = new Set(['completed', 'cancelled']);
+
+function defaultStudioSettings() {
+  return {
+    general: { interfaceLanguage: 'uk', startView: 'home', confirmDestructive: true },
+    files: { projectRoot: 'data/projects', versionHistoryLimit: 30, verifyWrites: true },
+    performance: { preferLocal: true, releaseModelsAfterTask: true, maxConcurrentJobs: 1 },
+    assistants: { generalAutonomy: 'suggestions-only', projectAutonomy: 'suggestions-only', confirmExpensive: true, keepActionLog: true },
+    export: { packageMode: 'folders-manifest', includeDrafts: false, defaultLanguage: 'uk', verifyFiles: true }
+  };
+}
+function normalizeStudioSettings(value = {}) {
+  const base = defaultStudioSettings();
+  const next = {
+    general: { ...base.general, ...(value.general || {}) },
+    files: { ...base.files, ...(value.files || {}) },
+    performance: { ...base.performance, ...(value.performance || {}) },
+    assistants: { ...base.assistants, ...(value.assistants || {}) },
+    export: { ...base.export, ...(value.export || {}) }
+  };
+  next.general.interfaceLanguage = next.general.interfaceLanguage === 'en' ? 'en' : 'uk';
+  next.general.startView = ['home','projects','overview'].includes(next.general.startView) ? next.general.startView : 'home';
+  next.general.confirmDestructive = next.general.confirmDestructive !== false;
+  next.files.projectRoot = String(next.files.projectRoot || 'data/projects');
+  next.files.versionHistoryLimit = Math.max(5, Math.min(100, Number(next.files.versionHistoryLimit) || 30));
+  next.files.verifyWrites = next.files.verifyWrites !== false;
+  next.performance.preferLocal = next.performance.preferLocal !== false;
+  next.performance.releaseModelsAfterTask = next.performance.releaseModelsAfterTask !== false;
+  next.performance.maxConcurrentJobs = Math.max(1, Math.min(4, Number(next.performance.maxConcurrentJobs) || 1));
+  const autonomy = value => ['suggestions-only','safe-actions','extended'].includes(value) ? value : 'suggestions-only';
+  next.assistants.generalAutonomy = autonomy(next.assistants.generalAutonomy);
+  next.assistants.projectAutonomy = autonomy(next.assistants.projectAutonomy);
+  next.assistants.confirmExpensive = next.assistants.confirmExpensive !== false;
+  next.assistants.keepActionLog = next.assistants.keepActionLog !== false;
+  next.export.packageMode = ['folders-manifest','manifest-only'].includes(next.export.packageMode) ? next.export.packageMode : 'folders-manifest';
+  next.export.includeDrafts = next.export.includeDrafts === true;
+  next.export.defaultLanguage = next.export.defaultLanguage === 'en' ? 'en' : 'uk';
+  next.export.verifyFiles = next.export.verifyFiles !== false;
+  return next;
+}
+function updateStudioSettings(current, input) {
+  const merged = normalizeStudioSettings(current);
+  for (const section of ['general','files','performance','assistants','export']) {
+    if (input?.[section] && typeof input[section] === 'object' && !Array.isArray(input[section])) merged[section] = { ...merged[section], ...input[section] };
+  }
+  return normalizeStudioSettings(merged);
+}
 const transitions = {
   queued: ['preparing', 'paused', 'cancelled'],
   preparing: ['running', 'paused', 'failed', 'cancelled'],
@@ -26,6 +72,7 @@ function normalizeStudio(data) {
   data.studio.modelRegistry = Array.isArray(data.studio.modelRegistry) && data.studio.modelRegistry.length ? data.studio.modelRegistry : defaultModelRegistry();
   data.studio.generationJobs = Array.isArray(data.studio.generationJobs) ? data.studio.generationJobs : [];
   data.studio.workers = Array.isArray(data.studio.workers) ? data.studio.workers : [];
+  data.studio.settings = normalizeStudioSettings(data.studio.settings);
   data.studio.generalAssistant = data.studio.generalAssistant || { id: 'general-assistant', scope: 'studio-only', autonomy: 'suggestions-only', memory: [] };
   for (const project of data.projects || []) {
     project.assetVersions = Array.isArray(project.assetVersions) ? project.assetVersions : [];
@@ -88,4 +135,4 @@ function registerWorkerOutputs(project, job) {
   return { assets, versions };
 }
 
-module.exports = { normalizeStudio, defaultModelRegistry, publicModel, createGenerationJob, transitionGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs };
+module.exports = { normalizeStudio, defaultModelRegistry, defaultStudioSettings, normalizeStudioSettings, updateStudioSettings, publicModel, createGenerationJob, transitionGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs };
