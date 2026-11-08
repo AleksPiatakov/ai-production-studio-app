@@ -1,7 +1,6 @@
 /* Studio-layer UI. It deliberately manages configuration and queued work only;
    no button suggests that a disconnected model generated an asset. */
 let productionStudioState = { models: [], catalog: [], profiles: {}, jobs: [], assistants: null, error: '' };
-let generalAssistantState={loaded:false,loading:false,sending:false,error:'',history:[],configuration:null};
 let studioQueueProjectFilter = 'all';
 let studioQueueStatusFilter = 'all';
 let modelCenterTab = 'mine';
@@ -33,56 +32,8 @@ function productionStudioPanel() {
       <form class="studio-form queue-create-form" onsubmit="queueStudioGeneration(event)"><select name="projectId" aria-label="Проєкт">${projectOptions}</select><select name="type"><option value="image">Зображення</option><option value="video">Відео</option><option value="voice">Голос</option><option value="music">Музика</option><option value="ambient">Атмосфера</option><option value="sfx">SFX</option></select><select name="modelId">${productionStudioState.models.map(model => `<option value="${esc(model.id)}">${esc(model.name)} — ${esc(modelStatusLabel(model.status))}</option>`).join('')}</select><input name="prompt" placeholder="Опис завдання (необов’язково)"><button class="primary">Додати в чергу</button></form>
       <div class="queue-list">${visible.map(queueJobCard).join('') || '<p class="global-empty">У вибраному фільтрі завдань немає.</p>'}</div></article>`;
   }
-  if (view === 'assistants') { if(!generalAssistantState.loaded&&!generalAssistantState.loading)setTimeout(loadGeneralAssistant,0); return generalAssistantPanel(error); }
   if (view === 'davinci') return `<article class="card full studio-layer"><p class="eyebrow">DAVINCI RESOLVE</p><h3>Підготовка монтажного пакета</h3><p class="muted">Студія готує перевірені матеріали, субтитри й монтажний лист. Вона не створює автоматично проєкт Resolve та не виконує фінальний експорт.</p><div class="studio-list"><section><strong>Поточний шлях</strong><p>Сценарій → затверджені кадри та голоси → перевірка → ручне затвердження → DaVinci handoff.</p><button class="primary" onclick="goToView('preview')">Перевірити готовність випуску</button><button onclick="downloadDaVinciTimeline()">Завантажити монтажний CSV</button><button onclick="goToView('production')">Відкрити технічні інструменти</button></section></div></article>`;
   return null;
-}
-
-function generalAssistantMessageText(item){return item?.text||item?.answer||''}
-function generalAssistantPanel(error=''){
-  const item=productionStudioState.assistants?.general;
-  const history=generalAssistantState.history||[];
-  const config=generalAssistantState.configuration;
-  const thread=history.length?history.map(message=>{
-    const role=message.role==='assistant'?'assistant':'user';
-    const text=generalAssistantMessageText(message);
-    const steps=Array.isArray(message.nextSteps)&&message.nextSteps.length?'<ul>'+message.nextSteps.map(step=>'<li>'+esc(step)+'</li>').join('')+'</ul>':'';
-    return '<article class="global-assistant-message '+role+'"><small>'+(role==='assistant'?'Загальний AI Помічник':'Ви')+'</small><p>'+esc(text)+'</p>'+steps+'</article>';
-  }).join(''):'<p class="global-empty">Історія порожня. Запитайте про моделі, чергу генерацій, налаштування або навігацію студії.</p>';
-  return '<article class="card full studio-layer global-assistant-page">'
-    +'<header class="global-assistant-head"><div><p class="eyebrow">ЗАГАЛЬНИЙ AI ПОМІЧНИК</p><h3>Глобальний чат студії</h3><p class="muted">Працює тільки з глобальними інструментами AI Production Studio. Автоматичного доступу до проєктів немає.</p></div><div class="global-assistant-status"><span class="tag">'+esc(item?.scope||'global-only')+'</span><small>'+(config?esc((config.engine||'')+' · '+(config.model||'')):'завантаження')+'</small></div></header>'
-    +error+(generalAssistantState.error?'<p class="assistant-error">'+esc(generalAssistantState.error)+'</p>':'')
-    +'<section class="global-assistant-thread">'+thread+'</section>'
-    +'<form class="global-assistant-composer" onsubmit="sendGeneralAssistantMessage(event)"><textarea name="message" required maxlength="6000" placeholder="Наприклад: яку image-модель зараз призначено за замовчуванням?"></textarea><div><small>Проєктний контекст ізольований. Для роботи зі сценарієм або медіа відкрийте конкретний проєкт.</small><button type="button" onclick="clearGeneralAssistantMessages()" '+(history.length?'':'disabled')+'>Очистити</button><button class="primary" '+(generalAssistantState.sending?'disabled':'')+'>'+(generalAssistantState.sending?'Надсилаємо…':'Надіслати')+'</button></div></form>'
-    +'</article>';
-}
-async function loadGeneralAssistant(){
-  if(generalAssistantState.loading)return;
-  generalAssistantState.loading=true;generalAssistantState.error='';
-  try{
-    const result=await api('/api/studio/general-assistant');
-    generalAssistantState={...generalAssistantState,loaded:true,history:result.history||[],configuration:result.configuration||null,error:''};
-  }catch(error){generalAssistantState.error=error.message}
-  finally{generalAssistantState.loading=false;if(view==='assistants')render()}
-}
-async function sendGeneralAssistantMessage(event){
-  event.preventDefault();
-  const form=event.currentTarget,message=String(new FormData(form).get('message')||'').trim();
-  if(!message||generalAssistantState.sending)return;
-  generalAssistantState.sending=true;generalAssistantState.error='';render();
-  try{
-    const result=await api('/api/studio/general-assistant/messages',{method:'POST',body:JSON.stringify({message})});
-    generalAssistantState.history=[...(generalAssistantState.history||[]),...(result.messages||[])].slice(-100);
-    form.reset();
-  }catch(error){generalAssistantState.error=error.message}
-  finally{generalAssistantState.sending=false;render();setTimeout(()=>document.querySelector('.global-assistant-thread')?.scrollTo({top:999999,behavior:'smooth'}),0)}
-}
-async function clearGeneralAssistantMessages(){
-  if(!window.confirm('Очистити історію Загального AI Помічника?'))return;
-  generalAssistantState.error='';
-  try{await api('/api/studio/general-assistant/messages',{method:'DELETE'});generalAssistantState.history=[]}
-  catch(error){generalAssistantState.error=error.message}
-  render();
 }
 
 function setModelCenterTab(tab){modelCenterTab=tab;render();}
