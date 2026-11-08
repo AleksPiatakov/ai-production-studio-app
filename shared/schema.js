@@ -1,6 +1,6 @@
 const allowedAgeBands = ['child', 'teen', 'young-adult', 'adult', 'elder'];
 const supportedLanguages = ['uk', 'en'];
-const projectTypes = ['general', 'science', 'animated-series'];
+const projectTypes = ['animation-film', 'animated-series', 'video', 'short-form', 'other', 'general', 'science'];
 const bibleStatuses = ['draft', 'approved', 'superseded'];
 const workflowStages = ['strategy', 'script', 'assets', 'storyboard', 'voice', 'animation', 'assembly', 'export'];
 const workflowStatuses = ['not-started', 'in-progress', 'ready', 'blocked'];
