@@ -282,6 +282,7 @@ async function resolveDependencyReview(targetType,targetId){
   }catch(error){window.alert(error.message)}
 }
 async function clearProjectAdvice(){
+  if(!confirmDestructiveAction('Очистити історію AI Помічника цього проєкту? Цю розмову буде видалено з пам’яті проєкту.'))return;
   advisorError='';
   try{
     await api(`/api/projects/${encodeURIComponent(activeId)}/assistant/messages`,{method:'DELETE'});
