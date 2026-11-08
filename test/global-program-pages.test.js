@@ -433,3 +433,14 @@ test('G-09 accepts intentionally skipped package verification',()=>{
   assert.match(ui,/creation\.verificationSkipped/);
   assert.match(ui,/Додаткову перевірку пакета пропущено згідно з налаштуваннями/);
 });
+
+
+test('P-06 negative prompt is passed as an optional generation parameter',()=>{
+  const renderer=fs.readFileSync(path.join(root,'public','image-studio-p06.js'),'utf8');
+  const integration=fs.readFileSync(path.join(root,'public','image-studio-integration.js'),'utf8');
+  assert.match(renderer,/id="p06-negative"/);
+  assert.doesNotMatch(renderer,/p06-negative" readonly/);
+  assert.match(renderer,/Підтримка залежить від вибраної image-моделі/);
+  assert.match(integration,/const negativePrompt=String\(root\.querySelector\('#p06-negative'\)/);
+  assert.match(integration,/negativePrompt\?\{negativePrompt\}:\{\}/);
+});
