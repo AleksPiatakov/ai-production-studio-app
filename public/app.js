@@ -325,6 +325,44 @@ openAssistantFocus=function(){
 // storyboard or an asset library. It is deliberately non-modal and never
 // changes project data: advice remains a separate, reviewable conversation.
 let floatingAdvisorOpen=false, floatingAdvisorCollapsed=false;
+let floatingAdvisorPinned=localStorage.getItem('ai-production-studio:advisor-pinned')==='true';
+let floatingAdvisorPosition=(()=>{try{return JSON.parse(localStorage.getItem('ai-production-studio:advisor-position')||'null')}catch{return null}})();
+function toggleFloatingAdvisorPin(){
+  floatingAdvisorPinned=!floatingAdvisorPinned;
+  localStorage.setItem('ai-production-studio:advisor-pinned',String(floatingAdvisorPinned));
+  render();
+}
+function floatingAdvisorInlineStyle(){
+  if(!floatingAdvisorPosition||!Number.isFinite(floatingAdvisorPosition.left)||!Number.isFinite(floatingAdvisorPosition.top))return '';
+  return ` style="left:${Math.max(8,floatingAdvisorPosition.left)}px;top:${Math.max(8,floatingAdvisorPosition.top)}px;right:auto;bottom:auto"`;
+}
+function setupFloatingAdvisorInteraction(){
+  const panel=document.querySelector('.floating-advisor');
+  const head=panel?.querySelector('.floating-advisor-head');
+  if(!panel||!head)return;
+  if(floatingAdvisorPosition){
+    const rect=panel.getBoundingClientRect();
+    const left=Math.max(8,Math.min(window.innerWidth-rect.width-8,floatingAdvisorPosition.left));
+    const top=Math.max(8,Math.min(window.innerHeight-Math.min(rect.height,80)-8,floatingAdvisorPosition.top));
+    panel.style.left=left+'px';panel.style.top=top+'px';panel.style.right='auto';panel.style.bottom='auto';
+  }
+  head.onpointerdown=event=>{
+    if(floatingAdvisorPinned||event.target.closest('button,textarea,input,select,a'))return;
+    const rect=panel.getBoundingClientRect(),offsetX=event.clientX-rect.left,offsetY=event.clientY-rect.top;
+    head.setPointerCapture?.(event.pointerId);
+    const move=moveEvent=>{
+      const left=Math.max(8,Math.min(window.innerWidth-panel.offsetWidth-8,moveEvent.clientX-offsetX));
+      const top=Math.max(8,Math.min(window.innerHeight-56,moveEvent.clientY-offsetY));
+      panel.style.left=left+'px';panel.style.top=top+'px';panel.style.right='auto';panel.style.bottom='auto';
+      floatingAdvisorPosition={left,top};
+    };
+    const stop=()=>{
+      head.removeEventListener('pointermove',move);head.removeEventListener('pointerup',stop);head.removeEventListener('pointercancel',stop);
+      if(floatingAdvisorPosition)localStorage.setItem('ai-production-studio:advisor-position',JSON.stringify(floatingAdvisorPosition));
+    };
+    head.addEventListener('pointermove',move);head.addEventListener('pointerup',stop);head.addEventListener('pointercancel',stop);
+  };
+}
 function toggleFloatingAdvisor(force){
   floatingAdvisorOpen=typeof force==='boolean'?force:!floatingAdvisorOpen;
   if(floatingAdvisorOpen)floatingAdvisorCollapsed=false;
@@ -339,8 +377,8 @@ function floatingAdvisorMarkup(){
   const messages=latestAdvisorMessages();
   const configured=assistantInfo.configured;
   if(!floatingAdvisorOpen)return `<button class="floating-advisor-launcher" type="button" onclick="toggleFloatingAdvisor(true)" aria-label="Відкрити Порадника ШІ" title="Порадник ШІ">✦ <span>Порадник ШІ</span></button>`;
-  return `<section class="floating-advisor ${floatingAdvisorCollapsed?'is-collapsed':''}" aria-label="Порадник ШІ проєкту">
-    <header class="floating-advisor-head"><div><p>Порадник ШІ</p><small>${esc(active.name)} · лише поради</small></div><div><button type="button" onclick="floatingAdvisorCollapsed=!floatingAdvisorCollapsed;render()" aria-label="${floatingAdvisorCollapsed?'Розгорнути':'Згорнути'} Порадника ШІ" title="${floatingAdvisorCollapsed?'Розгорнути':'Згорнути'}">${floatingAdvisorCollapsed?'□':'—'}</button><button type="button" onclick="toggleFloatingAdvisor(false)" aria-label="Закрити Порадника ШІ" title="Закрити">×</button></div></header>
+  return `<section class="floating-advisor ${floatingAdvisorCollapsed?'is-collapsed':''} ${floatingAdvisorPinned?'is-pinned':''}" aria-label="Порадник ШІ проєкту"${floatingAdvisorInlineStyle()}>
+    <header class="floating-advisor-head" title="${floatingAdvisorPinned?'Помічник закріплено':'Перетягніть, щоб перемістити'}"><div><p>Порадник ШІ</p><small>${esc(active.name)} · лише поради</small></div><div><button type="button" onclick="toggleFloatingAdvisorPin()" aria-pressed="${floatingAdvisorPinned?'true':'false'}" aria-label="${floatingAdvisorPinned?'Відкріпити':'Закріпити'} Порадника ШІ" title="${floatingAdvisorPinned?'Відкріпити':'Закріпити'}">${floatingAdvisorPinned?'●':'○'}</button><button type="button" onclick="floatingAdvisorCollapsed=!floatingAdvisorCollapsed;render()" aria-label="${floatingAdvisorCollapsed?'Розгорнути':'Згорнути'} Порадника ШІ" title="${floatingAdvisorCollapsed?'Розгорнути':'Згорнути'}">${floatingAdvisorCollapsed?'□':'—'}</button><button type="button" onclick="toggleFloatingAdvisor(false)" aria-label="Закрити Порадника ШІ" title="Закрити">×</button></div></header>
     ${floatingAdvisorCollapsed?'':`<div class="floating-advisor-body"><p class="floating-advisor-context">Помічник бачить лише поточний проєкт. Він не змінює сценарії, кадри або статуси.</p><div class="floating-advisor-thread" aria-live="polite">${messages.length?messages.map(item=>item.role==='user'?`<article class="user"><small>Ви</small><p>${esc(item.text)}</p></article>`:`<article class="advisor"><small>Порадник</small><p>${esc(item.answer)}</p></article>`).join(''):'<p class="muted">Запитайте про сюжет, наступний крок або ризики виробництва.</p>'}</div><form onsubmit="askFloatingProjectAdvisor(event)"><textarea id="floating-advisor-question" placeholder="Напишіть запит…" ${configured?'':'disabled'}></textarea><div><small>${configured?'Відповідь буде лише порадою.':'Підключіть модель у налаштуваннях, щоб поставити запит.'}</small><button class="primary" ${advisorBusy||!configured?'disabled':''}>${advisorBusy?'Порадник думає…':'Запитати'}</button></div></form><button class="floating-advisor-full" type="button" onclick="toggleFloatingAdvisor(false);goToView('advisor')">Відкрити повний чат →</button>${advisorError?`<p class="assistant-error">${esc(advisorError)}</p>`:''}</div>`}
   </section>`;
 }
@@ -364,5 +402,8 @@ const floatingAdvisorRender=render;
 render=function(){
   floatingAdvisorRender();
   document.querySelector('.floating-advisor, .floating-advisor-launcher')?.remove();
-  if(active&&!['models','queue','assistants','advisor'].includes(view))document.body.insertAdjacentHTML('beforeend',floatingAdvisorMarkup());
+  if(active&&!['models','queue','assistants','advisor'].includes(view)){
+    document.body.insertAdjacentHTML('beforeend',floatingAdvisorMarkup());
+    setupFloatingAdvisorInteraction();
+  }
 }
