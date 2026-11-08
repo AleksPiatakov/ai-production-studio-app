@@ -134,3 +134,12 @@ test('storage keys migrate from the legacy product prefix',()=>{
   assert.match(app,/localStorage\.setItem\(nextKey,localStorage\.getItem\(legacyKey\)\)/);
   assert.doesNotMatch(app,/localStorage\.setItem\('ai-video-studio:/);
 });
+
+
+test('P-04 storyboard cards show duration camera and status',()=>{
+  const ui=fs.readFileSync(path.join(root,'public','p04-approved-storyboard.js'),'utf8');
+  assert.match(ui,/item\.seconds/);
+  assert.match(ui,/item\.camera/);
+  assert.match(ui,/p04-shot-status/);
+  assert.match(ui,/item\.status/);
+});
