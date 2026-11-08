@@ -424,3 +424,12 @@ test('G-08 confirmDestructive covers assistant history deletion',()=>{
   assert.match(assistants,/clearGlobalAssistant\(\)[\s\S]*confirmDestructiveAction\('Очистити історію Загального AI Помічника/);
   assert.doesNotMatch(assistants,/clearGlobalAssistant\(\)[\s\S]{0,240}window\.confirm/);
 });
+
+
+test('G-09 accepts intentionally skipped package verification',()=>{
+  const ui=fs.readFileSync(path.join(root,'public','global-studio-pages.js'),'utf8');
+  assert.match(ui,/const creation=created\.creation\|\|\{\}/);
+  assert.match(ui,/!creation\.storageVerified&&!creation\.verificationSkipped/);
+  assert.match(ui,/creation\.verificationSkipped/);
+  assert.match(ui,/Додаткову перевірку пакета пропущено згідно з налаштуваннями/);
+});
