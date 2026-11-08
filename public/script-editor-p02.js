@@ -4,7 +4,7 @@
 (()=>{
   const $ = selector=>document.querySelector(selector);
   const safe = value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-  const state={scriptId:undefined,mode:'whole',sceneIndex:0,fullBody:'',dirty:false,focus:false};
+  const state={scriptId:undefined,mode:'whole',sceneIndex:0,fullBody:'',dirty:false,focus:false,scenesCollapsed:localStorage.getItem('ai-production-studio:p02-scenes-collapsed')==='true',aiCollapsed:localStorage.getItem('ai-production-studio:p02-ai-collapsed')==='true'};
   const headings=/^\s*(?:СЦЕНА|SCENE)\s+[^\r\n]+/gim;
   function segments(value){
     const text=String(value??'');
@@ -35,6 +35,13 @@
     shell.classList.toggle('p02-editor',true);
     document.body.classList.toggle('p02-focus',state.focus);
     shell.classList.toggle('is-p02-focus',state.focus);
+    const editLayout=shell.querySelector('.p02-edit-layout');
+    editLayout?.classList.toggle('scenes-collapsed',state.scenesCollapsed&&!state.focus);
+    editLayout?.classList.toggle('ai-collapsed',state.aiCollapsed&&!state.focus);
+    const sceneToggle=shell.querySelector('[data-p02-toggle-scenes]');
+    if(sceneToggle){sceneToggle.classList.toggle('active',!state.scenesCollapsed);sceneToggle.setAttribute('aria-pressed',String(!state.scenesCollapsed));sceneToggle.textContent=state.scenesCollapsed?'Показати сцени':'Сховати сцени'}
+    const aiToggle=shell.querySelector('[data-p02-toggle-ai]');
+    if(aiToggle){aiToggle.classList.toggle('active',!state.aiCollapsed);aiToggle.setAttribute('aria-pressed',String(!state.aiCollapsed));aiToggle.textContent=state.aiCollapsed?'Показати AI':'Сховати AI'}
     const sections=segments(state.fullBody);
     state.sceneIndex=Math.max(0,Math.min(state.sceneIndex,sections.length-1));
     document.querySelectorAll('[data-p02-mode]').forEach(button=>{
@@ -124,6 +131,8 @@
       <div class="p02-commandbar-right">
         <label>Епізод <select id="p02-episode-select" aria-label="Вибрати епізод">${episodeOptions()}</select></label>
         <label>Сцена <select id="p02-scene-select" aria-label="Вибрати сцену"></select></label>
+        <button type="button" data-p02-toggle-scenes aria-pressed="true">Сховати сцени</button>
+        <button type="button" data-p02-toggle-ai aria-pressed="true">Сховати AI</button>
         <button type="button" data-p02-focus aria-pressed="false">Режим зосередження</button>
       </div>
     </section>`);
@@ -145,6 +154,8 @@
       updateUI();
     });
     form.querySelectorAll('[data-p02-mode]').forEach(button=>button.addEventListener('click',()=>changeMode(button.dataset.p02Mode)));
+    form.querySelector('[data-p02-toggle-scenes]')?.addEventListener('click',()=>{state.scenesCollapsed=!state.scenesCollapsed;localStorage.setItem('ai-production-studio:p02-scenes-collapsed',String(state.scenesCollapsed));updateUI()});
+    form.querySelector('[data-p02-toggle-ai]')?.addEventListener('click',()=>{state.aiCollapsed=!state.aiCollapsed;localStorage.setItem('ai-production-studio:p02-ai-collapsed',String(state.aiCollapsed));updateUI()});
     form.querySelector('[data-p02-focus]')?.addEventListener('click',()=>setFocus(!state.focus));
     form.querySelector('#p02-scene-items')?.addEventListener('click',event=>{
       const button=event.target.closest('[data-p02-scene]');
