@@ -26,6 +26,7 @@ function overviewNextSteps(){
   episodes:active.episodes||[],
   assets:active.assets||[],
   characters:active.bibles?.characters||[],
+  tasks:active.assistantWorkspace?.tasks||[],
   progress:episodeProgress(episode),
   statusLabel:status=>label('status',status)
  });
