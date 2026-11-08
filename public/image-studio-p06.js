@@ -15,7 +15,11 @@
   const negativePrompt=data.negativePrompt||'';
   const imageModels=data.imageModels||[];
   const imageProfile=data.imageProfile||'';
-  const modelOptions=imageModels.map(model=>`<option value="${esc(model.id)}" ${model.id===imageProfile?'selected':''}>${esc(model.name)} · ${esc(model.status||'')}</option>`).join('');
+  const selectedModelId=data.selectedModelId||imageProfile||'';
+  const selectedResolution=data.selectedResolution||'1920x1080';
+  const selectedVariantCount=Math.max(1,Math.min(4,Number(data.selectedVariantCount)||2));
+  const aspectRatio=data.aspectRatio||'16:9';
+  const modelOptions=imageModels.map(model=>`<option value="${esc(model.id)}" ${model.id===selectedModelId?'selected':''}>${esc(model.name)} · ${esc(model.status||'')}</option>`).join('');
   return `<article class="p06-studio" aria-label="Image Studio">
    <nav class="p06-project-tabs" aria-label="Розділи проєкту"><button type="button" data-p06-route="overview">Огляд</button><button type="button" data-p06-route="script">Сценарій</button><button type="button" data-p06-route="storyboard">Сторіборд</button><button type="button" class="active" aria-current="page">Image Studio</button><button type="button" data-p06-route="audio">Voice Studio</button><button type="button" data-p06-route="assets">Матеріали</button></nav>
    <div class="p06-section-tabs"><span class="active">Генерація зображень</span><span>Редактор зображень</span><span>Арт-стилі</span><span>Референси</span><span>Бібліотека зображень</span></div>
@@ -44,9 +48,9 @@
     <aside class="p06-settings">
      <div class="p06-setting-header"><strong>Параметри</strong><span>Локальна робота</span></div>
      <label>Модель генерації<select id="p06-model" ${imageModels.length?'':'disabled'}><option value="">${imageModels.length?'Оберіть модель':'Не підключена'}</option>${modelOptions}</select></label>
-     <label>Роздільна здатність<select id="p06-resolution"><option value="1920x1080">1920 × 1080</option><option value="1280x720">1280 × 720</option><option value="1024x1024">1024 × 1024</option></select></label>
-     <div class="p06-setting-row"><span>Співвідношення</span><strong>16:9</strong></div>
-     <label>Кількість варіантів<select id="p06-variants-count">${[1,2,3,4].map(n=>`<option value="${n}" ${n===2?'selected':''}>${n}</option>`).join('')}</select></label>
+     <label>Роздільна здатність<select id="p06-resolution">${['1920x1080','1280x720','1024x1024'].map(value=>`<option value="${value}" ${value===selectedResolution?'selected':''}>${esc(value.replace('x',' × '))}</option>`).join('')}</select></label>
+     <div class="p06-setting-row"><span>Співвідношення</span><strong>${esc(aspectRatio)}</strong></div>
+     <label>Кількість варіантів<select id="p06-variants-count">${[1,2,3,4].map(n=>`<option value="${n}" ${n===selectedVariantCount?'selected':''}>${n}</option>`).join('')}</select></label>
      <div class="p06-setting-row"><span>Рівень деталізації</span><strong>Залежить від моделі</strong></div>
      <button type="button" class="p06-generate" data-p06-action="generate" ${imageModels.length&&shotPrompt.trim()?'':'disabled'}>${imageModels.length?'Створити варіанти':'Генерація недоступна'}</button>
      <p class="p06-hint">${imageModels.length?'Задачі підуть у глобальну чергу й виконаються тільки сумісним worker-ом.':'Для створення нових зображень потрібно підключити сумісну image-модель у Центрі моделей.'}</p>
