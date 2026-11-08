@@ -426,7 +426,17 @@ body:has(#screen-script.active) .preview-warning{display:none}
   </section>
  </div>
  <div class="preview-screen" id="screen-projectAssistant">
-  <section class="preview-main-card"><p class="eyebrow">AI ПОМІЧНИК ПРОЄКТУ</p><h3>Окремий контекст активного проєкту</h3><p>У локальній програмі цей помічник бачить лише поточний проєкт. Він може радити й готувати пропозиції, але не записує зміни напряму.</p><div class="global-home-actions"><button type="button" data-screen="aiChanges">Переглянути зміни AI →</button><button type="button" data-screen="project">Назад до проєкту</button></div></section>
+  <article class="card full advisor-card">
+   <header class="advisor-head"><div><p class="eyebrow">AI ПОМІЧНИК ПРОЄКТУ</p><h3>Окремий робочий простір цього проєкту</h3><p>Чат, завдання, документи, пам’ять і журнал ізольовані від інших проєктів. Зміни матеріалів проходять через P-13.</p></div><span class="tag ready">AI підключено</span></header>
+   <section class="advisor-context-strip"><span><b>8</b> повідомлень</span><span><b>2</b> відкритих завдання</span><span><b>3</b> документи</span><span><b>1</b> зміна очікує</span><span><b>suggestions-only</b> автономність</span></section>
+   <nav class="advisor-tabs" aria-label="Робочий простір AI Помічника"><button type="button" class="active">Чат</button><button type="button">Завдання</button><button type="button">Документи</button><button type="button">Журнал</button></nav>
+   <section class="advisor-workspace-panel advisor-chat-panel">
+    <div class="advisor-thread"><article class="advisor-message user"><small>Ви</small><p>Що зараз є головним ризиком цього проєкту?</p></article><article class="advisor-message advisor"><small>AI Помічник проєкту</small><p>Найбільший ризик — перейти до генерації відео до остаточного затвердження ключових кадрів і голосів.</p><section><strong>Наступний крок</strong><ol><li>Закрити затвердження ключових кадрів.</li><li>Перевірити голоси персонажів.</li></ol></section></article></div>
+    <div class="advisor-suggestions"><button type="button" disabled>Логіка</button><button type="button" disabled>Наступний крок</button><button type="button" disabled>Ризики</button></div>
+    <form class="advisor-composer" onsubmit="return false"><label>Фокус розмови<select disabled><option>Весь проєкт</option></select></label><textarea readonly placeholder="Напишіть питання або попросіть оцінити ідею…"></textarea><div><small>Чат зберігається в пам’яті проєкту. Зміни застосовуються тільки через P-13.</small><div><button type="button" disabled>Очистити</button><button class="primary" type="button" disabled>Запитати AI Помічника</button></div></div></form>
+   </section>
+   <div class="global-home-actions"><button type="button" data-screen="aiChanges">Переглянути зміни AI →</button><button type="button" data-screen="project">Назад до проєкту</button></div>
+  </article>
  </div>
  <div class="preview-screen" id="screen-aiChanges">
   <section class="assistant-changes-page"><header class="assistant-changes-head"><div><p class="eyebrow">ПЕРЕГЛЯД ЗМІН AI</p><h3>Кожна зміна — окреме рішення</h3><p>Демонстрація diff. Онлайн-прев’ю нічого не застосовує.</p></div><button type="button" disabled>＋ Підготувати пропозицію</button></header>
