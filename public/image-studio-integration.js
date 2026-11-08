@@ -2,14 +2,15 @@
 (()=>{
  let selectedAssetId=null;
  let imageStudioNotice='';
- const negativePromptDrafts=new Map();
+ const imageJobDrafts=new Map();
  const oldPage=pageContent;
  pageContent=function(){
   if(view!=='imageStudio')return oldPage();
   const scene=(active.scenes||[]).find(s=>s.id===activeSceneId)||(active.scenes||[])[0];
   const shot=(scene?.shots||[]).find(s=>s.id===activeShotId)||scene?.shots?.[0];
   const imageModels=typeof preferredModelOrder==='function'?preferredModelOrder((productionStudioState?.models||[]).filter(model=>typeof clientModelSupports==='function'&&clientModelSupports(model,'image'))):(productionStudioState?.models||[]).filter(model=>typeof clientModelSupports==='function'&&clientModelSupports(model,'image'));
-  return window.APSImageStudio.render({scene,shot,shots:scene?.shots||[],assets:active.assets||[],selectedAssetId,imageModels,imageProfile:productionStudioState?.profiles?.image||'',negativePrompt:shot?.id?negativePromptDrafts.get(shot.id)||'':'',notice:imageStudioNotice});
+  const draft=shot?.id?imageJobDrafts.get(shot.id)||{}:{};
+  return window.APSImageStudio.render({scene,shot,shots:scene?.shots||[],assets:active.assets||[],selectedAssetId,imageModels,imageProfile:productionStudioState?.profiles?.image||'',selectedModelId:draft.modelId||productionStudioState?.profiles?.image||'',selectedResolution:draft.resolution||active.productionSettings?.resolution||'1920x1080',selectedVariantCount:draft.variantCount||2,aspectRatio:active.productionSettings?.aspectRatio||active.aspectRatio||'16:9',negativePrompt:draft.negativePrompt||'',notice:imageStudioNotice});
  };
  const oldTitle=viewTitle;
  viewTitle=function(){return view==='imageStudio'?'Image Studio · Генерація зображень':oldTitle()};
@@ -46,11 +47,21 @@
   root.querySelector('#p06-shot')?.addEventListener('change',event=>{
    activeShotId=event.target.value;render();
   });
-  root.querySelector('#p06-negative')?.addEventListener('input',event=>{
+  const rememberJobDraft=()=>{
    const scene=(active.scenes||[]).find(s=>s.id===activeSceneId)||(active.scenes||[])[0];
    const shot=(scene?.shots||[]).find(s=>s.id===activeShotId)||scene?.shots?.[0];
-   if(shot?.id)negativePromptDrafts.set(shot.id,event.target.value);
-  });
+   if(!shot?.id)return;
+   imageJobDrafts.set(shot.id,{
+    modelId:root.querySelector('#p06-model')?.value||'',
+    resolution:root.querySelector('#p06-resolution')?.value||active.productionSettings?.resolution||'1920x1080',
+    variantCount:Math.max(1,Math.min(4,Number(root.querySelector('#p06-variants-count')?.value)||2)),
+    negativePrompt:root.querySelector('#p06-negative')?.value||''
+   });
+  };
+  root.querySelector('#p06-negative')?.addEventListener('input',rememberJobDraft);
+  root.querySelector('#p06-model')?.addEventListener('change',rememberJobDraft);
+  root.querySelector('#p06-resolution')?.addEventListener('change',rememberJobDraft);
+  root.querySelector('#p06-variants-count')?.addEventListener('change',rememberJobDraft);
   if(imageStudioNotice&&!root.querySelector('.p06-generation-notice'))root.querySelector('.p06-settings')?.insertAdjacentHTML('beforeend','<p class="p06-generation-notice">'+(typeof esc==='function'?esc(imageStudioNotice):imageStudioNotice)+'</p>');
   root.querySelectorAll('[data-p06-action]').forEach(button=>button.addEventListener('click',()=>{
    const scene=(active.scenes||[]).find(s=>s.id===activeSceneId)||(active.scenes||[])[0];
@@ -72,7 +83,7 @@
        const inputAssetIds=[...(shot.referenceAssetIds||[])];
        imageStudioNotice='Додаємо image-задачі в чергу…';render();
        (async()=>{try{
-         for(let n=1;n<=variantCount;n++)await api('/api/studio/generation-jobs',{method:'POST',body:JSON.stringify({projectId:activeId,type:'image',modelId,prompt,inputAssetIds,parameters:{resolution,variantIndex:n,variantCount,aspectRatio:active.aspectRatio||'16:9',...(negativePrompt?{negativePrompt}:{})},context:{sceneId:scene.id,shotId:shot.id}})});
+         for(let n=1;n<=variantCount;n++)await api('/api/studio/generation-jobs',{method:'POST',body:JSON.stringify({projectId:activeId,type:'image',modelId,prompt,inputAssetIds,parameters:{resolution,variantIndex:n,variantCount,aspectRatio:active.productionSettings?.aspectRatio||active.aspectRatio||'16:9',...(negativePrompt?{negativePrompt}:{})},context:{sceneId:scene.id,shotId:shot.id}})});
          await refreshProductionStudio();imageStudioNotice='Додано '+variantCount+' задач(і) в глобальну чергу.';
        }catch(error){imageStudioNotice='Помилка: '+error.message}render()})();
       }
