@@ -90,3 +90,21 @@ test('Pages preview mirrors P-12 project autonomy controls',()=>{
   assert.match(preview,/Розширена/);
   assert.match(preview,/Критичні зміни, видалення, дорогі генерації та зовнішня передача потребують підтвердження/);
 });
+
+
+test('G-08 keepActionLog affects only non-critical assistant activity',()=>{
+  const production=fs.readFileSync(path.join(__dirname,'../server/production-studio.js'),'utf8');
+  const server=fs.readFileSync(path.join(__dirname,'../server/index.js'),'utf8');
+  const ui=fs.readFileSync(path.join(__dirname,'../public/app.js'),'utf8');
+  const settings=fs.readFileSync(path.join(__dirname,'../public/global-studio-pages.js'),'utf8');
+  assert.match(production,/activityLog: \[\]/);
+  assert.match(production,/assistantWorkspace\.activityLog = Array\.isArray/);
+  assert.match(server,/function appendAssistantActivity/);
+  assert.match(server,/keepActionLog === false/);
+  assert.match(server,/activityLog = \[\.\.\.\(project\.assistantWorkspace\.activityLog \|\| \[\]\), entry\]\.slice\(-500\)/);
+  assert.match(server,/rollbackLog/);
+  assert.match(server,/rollbackAuditId:audit\.id/);
+  assert.match(ui,/Обов’язковий аудит P-13/);
+  assert.match(ui,/Розширена активність/);
+  assert.match(settings,/P-13 рішення та rollback-аудит зберігаються завжди/);
+});
