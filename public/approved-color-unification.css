@@ -234,3 +234,17 @@ body .floating-advisor-full{color:#cdb9f8!important}
 body .floating-advisor-head{cursor:move;user-select:none}
 body .floating-advisor.is-pinned .floating-advisor-head{cursor:default}
 body .floating-advisor.is-pinned{box-shadow:0 24px 70px rgba(0,0,0,.60),0 0 0 1px rgba(154,39,240,.16)!important}
+
+
+/* Dependency freshness: approved script changed, downstream material retained but needs review. */
+body .tag.needs-review,
+body .p04-shot-status.needs-review{
+  background:rgba(190,136,54,.16)!important;
+  border-color:rgba(230,176,86,.48)!important;
+  color:#f0cf91!important;
+}
+body .video-clip-card.needs-review,
+body .media-card.needs-review{
+  border-color:rgba(230,176,86,.42)!important;
+  box-shadow:0 0 0 1px rgba(230,176,86,.08) inset;
+}
