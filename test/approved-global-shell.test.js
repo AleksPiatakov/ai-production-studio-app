@@ -32,3 +32,16 @@ test('approved shell has one navigation system and compact utility topbar', () =
   assert.match(css, /body \.floating-advisor\{/);
   assert.match(css, /body \.floating-advisor-launcher/);
 });
+
+
+test('project AI assistant supports move, resize, collapse and pin controls', () => {
+  const app = fs.readFileSync(path.join(__dirname, '..', 'public', 'app.js'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'public', 'approved-color-unification.css'), 'utf8');
+  assert.match(app, /toggleFloatingAdvisorPin/);
+  assert.match(app, /setupFloatingAdvisorInteraction/);
+  assert.match(app, /advisor-position/);
+  assert.match(app, /aria-pressed=/);
+  assert.match(css, /floating-advisor\.is-pinned/);
+  const legacy = fs.readFileSync(path.join(__dirname, '..', 'public', 'styles.css'), 'utf8');
+  assert.match(legacy, /resize:both/);
+});
