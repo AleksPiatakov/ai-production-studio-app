@@ -185,6 +185,9 @@ function validateVoiceProfileInput(input) {
   const provider = oneOf(input.provider, ['local', 'elevenlabs'], 'provider', 'local');
   const providerVoiceId = optionalString(input.providerVoiceId, 'providerVoiceId');
   if (provider === 'elevenlabs' && !providerVoiceId) throw new InputError('providerVoiceId is required for ElevenLabs');
+  const voiceOrigin = oneOf(input.voiceOrigin, ['synthetic','system','licensed-library','self-recorded','authorized-clone'], 'voiceOrigin', provider === 'elevenlabs' ? 'licensed-library' : 'system');
+  const rightsConfirmed = input.rightsConfirmed === true || input.rightsConfirmed === 'true' || input.rightsConfirmed === 'on';
+  if (voiceOrigin === 'authorized-clone' && !rightsConfirmed) throw new InputError('rightsConfirmed is required for an authorized cloned voice');
   return {
     name: nonEmptyString(input.name, 'name'),
     identityKey: nonEmptyString(input.identityKey, 'identityKey'),
@@ -195,6 +198,10 @@ function validateVoiceProfileInput(input) {
     providerVoiceId,
     modelId: optionalString(input.modelId, 'modelId') || (provider === 'elevenlabs' ? 'eleven_multilingual_v2' : ''),
     license: nonEmptyString(input.license, 'license'),
+    voiceOrigin,
+    rightsConfirmed,
+    rightsNote: optionalString(input.rightsNote, 'rightsNote'),
+    sampleAssetIds: stringArray(input.sampleAssetIds, 'sampleAssetIds'),
     notes: optionalString(input.notes, 'notes'),
     generationSettings: {
       stability: boundedNumber(settings.stability, 'generationSettings.stability', 0, 1, 0.5),

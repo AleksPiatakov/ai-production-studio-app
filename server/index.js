@@ -390,16 +390,32 @@ const server = http.createServer(async (req, res) => {
       if (req.method === 'POST' && parts[3] === 'voice-profiles') {
         const input = validateVoiceProfileInput(await body(req));
         if (project.voiceProfiles.some(item => item.identityKey === input.identityKey)) return send(res, 409, { error: 'voice identity key already exists in this project' });
+        if ((input.sampleAssetIds || []).some(id => !project.assets.some(asset => asset.id === id && asset.type === 'audio'))) return send(res, 400, { error: 'sampleAssetIds must reference audio assets in this project' });
         const profile = { id: randomUUID(), ...input, createdAt: new Date().toISOString() };
         store.update(data => data.projects.find(item => item.id === projectId).voiceProfiles.push(profile)); return send(res, 201, profile);
       }
-      if (req.method === 'PUT' && parts[3] === 'voice-profiles' && parts[4]) {
+      if (req.method === 'PUT' && parts[3] === 'voice-profiles' && parts[4] && parts.length === 5) {
         const existing = project.voiceProfiles.find(item => item.id === parts[4]);
         if (!existing) return send(res, 404, { error: 'voice profile not found' });
         const input = validateVoiceProfileInput(await body(req));
         if (project.voiceProfiles.some(item => item.id !== existing.id && item.identityKey === input.identityKey)) return send(res, 409, { error: 'voice identity key already exists in this project' });
+        if ((input.sampleAssetIds || []).some(id => !project.assets.some(asset => asset.id === id && asset.type === 'audio'))) return send(res, 400, { error: 'sampleAssetIds must reference audio assets in this project' });
         const updated = { ...existing, ...input, updatedAt: new Date().toISOString() };
         store.update(data => { const items = data.projects.find(item => item.id === projectId).voiceProfiles; items[items.findIndex(item => item.id === existing.id)] = updated; }); return send(res, 200, updated);
+      }
+      if (req.method === 'POST' && parts[3] === 'voice-profiles' && parts[4] && parts[5] === 'assign') {
+        const existing = project.voiceProfiles.find(item => item.id === parts[4]);
+        if (!existing) return send(res, 404, { error: 'voice profile not found' });
+        if (existing.status === 'approved') return send(res, 409, { error: 'approved voice profile cannot be reassigned; create or edit a draft profile instead' });
+        const input = await body(req), character = project.bibles.characters.find(item => item.id === input.characterId);
+        if (!character) return send(res, 404, { error: 'character not found' });
+        if (!character.identityKey) return send(res, 409, { error: 'character needs an identityKey before voice assignment' });
+        const used = project.scenes.some(scene => (scene.dialogue || []).some(line => line.voiceIdentityKey === existing.identityKey));
+        if (used && existing.identityKey !== character.identityKey) return send(res, 409, { error: 'voice profile is already used by dialogue and cannot be reassigned safely' });
+        if (project.voiceProfiles.some(item => item.id !== existing.id && item.identityKey === character.identityKey)) return send(res, 409, { error: 'this character already has a voice profile' });
+        const updated = { ...existing, identityKey: character.identityKey, ageBand: character.ageBand, updatedAt: new Date().toISOString() };
+        store.update(data => { const items = data.projects.find(item => item.id === projectId).voiceProfiles; items[items.findIndex(item => item.id === existing.id)] = updated; });
+        return send(res, 200, updated);
       }
       if (req.method === 'POST' && parts[3] === 'localizations') {
         const localization = { id: randomUUID(), ...validateLocalizationInput(await body(req)), updatedAt: new Date().toISOString() };
