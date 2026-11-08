@@ -2,6 +2,7 @@
    no button suggests that a disconnected model generated an asset. */
 let productionStudioState = { models: [], catalog: [], profiles: {}, jobs: [], assistants: null, error: '' };
 let studioQueueProjectFilter = 'all';
+let studioQueueStatusFilter = 'all';
 let modelCenterTab = 'mine';
 let modelProbeResults = {};
 async function refreshProductionStudio() {
@@ -21,13 +22,13 @@ function productionStudioPanel() {
   const error = productionStudioState.error ? `<p class="assistant-error">${esc(productionStudioState.error)}</p>` : '';
   if (view === 'models') return modelCenterPanel(error);
   if (view === 'queue') {
-    const projectName=id=>(projects||[]).find(project=>project.id===id)?.name||id;
-    const visible=productionStudioState.jobs.filter(job=>studioQueueProjectFilter==='all'||job.projectId===studioQueueProjectFilter);
+    const visible=productionStudioState.jobs.filter(job=>(studioQueueProjectFilter==='all'||job.projectId===studioQueueProjectFilter)&&(studioQueueStatusFilter==='all'||job.status===studioQueueStatusFilter));
     const projectOptions=(projects||[]).map(project=>`<option value="${esc(project.id)}">${esc(project.name)}</option>`).join('');
-    return `<article class="card full studio-layer"><p class="eyebrow">ЧЕРГА ГЕНЕРАЦІЙ</p><h3>Єдиний журнал запланованих робіт</h3><p class="muted">Черга глобальна для всієї студії. Постановка в чергу не означає, що важка модель уже запущена.</p>${error}
-      <div class="studio-queue-filter"><label>Показати проєкт<select onchange="setStudioQueueProjectFilter(this.value)"><option value="all">Усі проєкти</option>${(projects||[]).map(project=>`<option value="${esc(project.id)}" ${studioQueueProjectFilter===project.id?'selected':''}>${esc(project.name)}</option>`).join('')}</select></label><span>${visible.length} завдань</span></div>
-      <form class="studio-form" onsubmit="queueStudioGeneration(event)"><select name="projectId" aria-label="Проєкт">${projectOptions}</select><select name="type"><option value="image">Зображення</option><option value="video">Відео</option><option value="voice">Голос</option><option value="music">Музика</option><option value="ambient">Атмосфера</option><option value="sfx">SFX</option></select><select name="modelId">${productionStudioState.models.map(model => `<option value="${esc(model.id)}">${esc(model.name)} — ${esc(modelStatusLabel(model.status))}</option>`).join('')}</select><input name="prompt" placeholder="Опис завдання (необов’язково)"><button class="primary">Додати в чергу</button></form>
-      <div class="studio-list">${visible.map(job => `<section><strong>${esc(job.type)}</strong><span class="tag">${esc(projectName(job.projectId))}</span><span class="tag">${esc(studioStatus(job.status))}</span><span class="tag">${esc(job.priority)}</span><p>${esc(job.prompt || 'Без текстового опису')}</p>${job.inputAssetIds?.length?`<small>Референсів у завданні: ${job.inputAssetIds.length}</small>`:''}<small>${esc(job.note || job.error || '')}</small>${job.status === 'queued' ? `<button onclick="transitionStudioJob('${esc(job.id)}','paused')">Призупинити</button>` : ''}${job.status === 'paused' || job.status === 'failed' ? `<button onclick="transitionStudioJob('${esc(job.id)}','queued')">Повернути в чергу</button>` : ''}</section>`).join('') || '<p class="empty">У вибраному фільтрі завдань немає.</p>'}</div></article>`;
+    const statuses=['queued','preparing','running','paused','blocked','failed','completed','cancelled'];
+    return `<article class="card full studio-layer queue-page"><div class="queue-page-head"><div><p class="eyebrow">ЧЕРГА ГЕНЕРАЦІЙ</p><h3>Єдиний журнал запланованих робіт</h3><p class="muted">Черга глобальна для всієї студії. Повтор створює нову спробу; скасування не видаляє історію.</p></div><span class="queue-total">${productionStudioState.jobs.length} всього</span></div>${error}
+      <div class="studio-queue-filter"><label>Проєкт<select onchange="setStudioQueueProjectFilter(this.value)"><option value="all">Усі проєкти</option>${(projects||[]).map(project=>`<option value="${esc(project.id)}" ${studioQueueProjectFilter===project.id?'selected':''}>${esc(project.name)}</option>`).join('')}</select></label><label>Статус<select onchange="setStudioQueueStatusFilter(this.value)"><option value="all">Усі статуси</option>${statuses.map(status=>`<option value="${status}" ${studioQueueStatusFilter===status?'selected':''}>${esc(studioStatus(status))}</option>`).join('')}</select></label><span>${visible.length} показано</span></div>
+      <form class="studio-form queue-create-form" onsubmit="queueStudioGeneration(event)"><select name="projectId" aria-label="Проєкт">${projectOptions}</select><select name="type"><option value="image">Зображення</option><option value="video">Відео</option><option value="voice">Голос</option><option value="music">Музика</option><option value="ambient">Атмосфера</option><option value="sfx">SFX</option></select><select name="modelId">${productionStudioState.models.map(model => `<option value="${esc(model.id)}">${esc(model.name)} — ${esc(modelStatusLabel(model.status))}</option>`).join('')}</select><input name="prompt" placeholder="Опис завдання (необов’язково)"><button class="primary">Додати в чергу</button></form>
+      <div class="queue-list">${visible.map(queueJobCard).join('') || '<p class="global-empty">У вибраному фільтрі завдань немає.</p>'}</div></article>`;
   }
   if (view === 'assistants') { const item = productionStudioState.assistants; const projectAssistant = item?.projectAssistants?.find(assistant => assistant.projectId === activeId); return `<article class="card full studio-layer"><p class="eyebrow">AI-ПОМІЧНИКИ</p><h3>Два ізольовані робочі простори</h3><div class="studio-list"><section><strong>Загальний помічник</strong><span class="tag">${esc(item?.general?.scope || 'завантаження')}</span><p>Працює з налаштуваннями та реєстром студії. Доступ до проєктів: <b>відсутній</b>.</p></section><section><strong>Помічник поточного проєкту</strong><span class="tag">${esc(projectAssistant?.scope || 'завантаження')}</span><p>Бачить лише «${esc(active.name)}». Доступ до загального помічника: <b>відсутній</b>.</p><small>Режим автономності: ${esc(projectAssistant?.autonomy || 'suggestions-only')}; усі творчі правки залишаються чернетками.</small></section></div></article>`; }
   if (view === 'davinci') return `<article class="card full studio-layer"><p class="eyebrow">DAVINCI RESOLVE</p><h3>Підготовка монтажного пакета</h3><p class="muted">Студія готує перевірені матеріали, субтитри й монтажний лист. Вона не створює автоматично проєкт Resolve та не виконує фінальний експорт.</p><div class="studio-list"><section><strong>Поточний шлях</strong><p>Сценарій → затверджені кадри та голоси → перевірка → ручне затвердження → DaVinci handoff.</p><button class="primary" onclick="goToView('preview')">Перевірити готовність випуску</button><button onclick="downloadDaVinciTimeline()">Завантажити монтажний CSV</button><button onclick="goToView('production')">Відкрити технічні інструменти</button></section></div></article>`;
@@ -96,9 +97,37 @@ async function saveModelProfiles(event){
   try{productionStudioState.profiles=await api('/api/studio/model-profiles',{method:'PUT',body:JSON.stringify(data)});render();}
   catch(error){productionStudioState.error=error.message;render()}
 }
+function queueProjectName(id){return (projects||[]).find(project=>project.id===id)?.name||id}
+function queueJobCard(job){
+  const model=productionStudioState.models.find(item=>item.id===job.modelId);
+  const events=(job.events&&job.events.length?job.events:[{id:'legacy',at:job.createdAt,status:job.status,message:job.note||job.error||'Старий запис без детального журналу.'}]).slice().reverse();
+  const canCancel=!['completed','cancelled'].includes(job.status);
+  const canRetry=['failed','blocked','cancelled'].includes(job.status);
+  return `<article class="queue-job ${esc(job.status)}">
+    <header><div><span class="queue-job-type">${esc(job.type)}</span><strong>${esc(queueProjectName(job.projectId))}</strong></div><div><span class="tag">${esc(studioStatus(job.status))}</span><span class="tag">спроба ${esc(job.attempt||1)}</span></div></header>
+    <div class="queue-job-body"><p>${esc(job.prompt||'Без текстового опису')}</p><div class="queue-job-meta"><span>Модель <b>${esc(model?.name||job.modelId)}</b></span><span>Пріоритет <b>${esc(job.priority)}</b></span><span>Створено <b>${esc(new Date(job.createdAt).toLocaleString('uk-UA'))}</b></span></div>${job.error?`<p class="queue-job-error">${esc(job.error)}</p>`:''}${job.retryOf?`<small class="queue-retry-link">Повтор задачі ${esc(job.retryOf.slice(0,8))}</small>`:''}
+      <details class="queue-events"><summary>Журнал · ${events.length}</summary><div>${events.map(event=>`<div class="queue-event"><span class="queue-event-dot"></span><div><strong>${esc(studioStatus(event.status))}</strong><p>${esc(event.message||'')}</p><small>${esc(event.at?new Date(event.at).toLocaleString('uk-UA'):'')}</small></div></div>`).join('')}</div></details>
+    </div>
+    <footer>${job.outputAssetId?`<button type="button" onclick="openQueueJobResult('${esc(job.id)}')">Відкрити результат</button>`:'<span></span>'}<div>${job.status==='queued'?`<button type="button" onclick="transitionStudioJob('${esc(job.id)}','paused')">Призупинити</button>`:''}${job.status==='paused'?`<button type="button" onclick="transitionStudioJob('${esc(job.id)}','queued')">Продовжити</button>`:''}${canRetry?`<button type="button" onclick="retryStudioJob('${esc(job.id)}')">Повторити</button>`:''}${canCancel?`<button class="danger-soft" type="button" onclick="cancelStudioJob('${esc(job.id)}')">Скасувати</button>`:''}</div></footer>
+  </article>`;
+}
 function setStudioQueueProjectFilter(value){studioQueueProjectFilter=value||'all';render();}
+function setStudioQueueStatusFilter(value){studioQueueStatusFilter=value||'all';render();}
+
 async function queueStudioGeneration(event) { event.preventDefault(); const form = event.currentTarget, data = Object.fromEntries(new FormData(form)); try { await api('/api/studio/generation-jobs', { method: 'POST', body: JSON.stringify({ ...data, projectId: data.projectId || activeId }) }); await refreshProductionStudio(); render(); } catch (error) { productionStudioState.error = error.message; render(); } }
 async function transitionStudioJob(id, status) { try { await api(`/api/studio/generation-jobs/${encodeURIComponent(id)}/transition`, { method: 'POST', body: JSON.stringify({ status }) }); await refreshProductionStudio(); render(); } catch (error) { productionStudioState.error = error.message; render(); } }
+async function retryStudioJob(id){
+  if(!window.confirm('Створити нову спробу цієї задачі? Якщо модель використовує платні або GPU-ресурси, нова спроба може їх витратити.'))return;
+  try{await api(`/api/studio/generation-jobs/${encodeURIComponent(id)}/retry`,{method:'POST',body:'{}'});await refreshProductionStudio();render()}catch(error){productionStudioState.error=error.message;render()}
+}
+async function cancelStudioJob(id){
+  if(!window.confirm('Скасувати цю задачу? Історія залишиться в журналі.'))return;
+  try{await api(`/api/studio/generation-jobs/${encodeURIComponent(id)}/cancel`,{method:'POST',body:JSON.stringify({note:'Скасовано користувачем у глобальній черзі.'})});await refreshProductionStudio();render()}catch(error){productionStudioState.error=error.message;render()}
+}
+async function openQueueJobResult(id){
+  const job=productionStudioState.jobs.find(item=>item.id===id);if(!job?.outputAssetId)return;
+  try{await load(job.projectId);view='mediaLibrary';if(typeof mediaLibraryQuery!=='undefined'){const asset=(active.assets||[]).find(item=>item.id===job.outputAssetId);mediaLibraryQuery=asset?.label||'';}render()}catch(error){productionStudioState.error=error.message;render()}
+}
 function downloadDaVinciTimeline() { const episode = (active.episodes || []).find(item => item.id === activeEpisodeId) || (active.episodes || [])[0]; if (!episode) return window.alert('Спочатку створіть або виберіть випуск.'); window.location.href = `/api/projects/${encodeURIComponent(activeId)}/episodes/${encodeURIComponent(episode.id)}/davinci-handoff/timeline.csv`; }
 const baseProductionPageContent = pageContent; pageContent = function () { return ['models', 'queue', 'assistants', 'davinci'].includes(view) ? productionStudioPanel() : baseProductionPageContent(); };
 const baseProductionTitle = viewTitle; viewTitle = function () { return ({ models: 'Центр AI-моделей', queue: 'Черга генерацій', assistants: 'AI-помічники', davinci: 'Підготовка DaVinci' })[view] || baseProductionTitle(); };
