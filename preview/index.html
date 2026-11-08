@@ -452,15 +452,15 @@ body:has(#screen-script.active) .preview-warning{display:none}
 <script>
 (()=>{
  const shots=[
- {id:'shot-a',seconds:5,imagePrompt:'Мира зупиняється перед мостом, тепле золотаве світло.',camera:'medium',lighting:'Теплий захід сонця',status:'draft',referenceAssetIds:[]},
- {id:'shot-b',seconds:7,imagePrompt:'Великий план сяючого мосту через ущелину.',camera:'wide',lighting:'Світанок',status:'draft',referenceAssetIds:[]},
- {id:'shot-c',seconds:6,imagePrompt:'Реакція Мири, надія та подив.',camera:'close-up',lighting:'М’яке світло',status:'draft',referenceAssetIds:[]}
+ {id:'shot-a',seconds:5,imagePrompt:'Мира зупиняється перед мостом, тепле золотаве світло.',camera:'medium',lighting:'Теплий захід сонця',emotion:'настороженість',status:'draft',referenceAssetIds:[]},
+ {id:'shot-b',seconds:7,imagePrompt:'Великий план сяючого мосту через ущелину.',camera:'wide',lighting:'Світанок',emotion:'подив',status:'draft',referenceAssetIds:[]},
+ {id:'shot-c',seconds:6,imagePrompt:'Реакція Мири, надія та подив.',camera:'close-up',lighting:'М’яке світло',emotion:'надія',status:'draft',referenceAssetIds:[]}
  ];
  let index=1;
  function show(){
   document.getElementById('preview-shot-workspace').innerHTML=window.APSShotWorkspace.render({
    projectName:'Міст із Світла',scene:{title:'Загадковий міст',order:2},sceneIndex:2,
-   shots,shot:shots[index],assets:[]
+   shots,shot:shots[index],assets:[],imageModel:{id:'demo-image',name:'Image Model · локальний профіль',status:'готова'}
   });
  }
  const host=document.getElementById('preview-shot-workspace');
@@ -480,7 +480,9 @@ document.getElementById('preview-image-studio').innerHTML=window.APSImageStudio.
  scene:{title:'Загадковий міст'},
  shots:[{id:'demo-shot-a',seconds:5,imagePrompt:'Мира дивиться на міст у золотому світлі; тепла кінематографічна атмосфера.'},{id:'demo-shot-b',seconds:7,imagePrompt:'Міст через ущелину у променях світанку.'}],
  shot:{id:'demo-shot-a',seconds:5,imagePrompt:'Мира дивиться на міст у золотому світлі; тепла кінематографічна атмосфера.'},
- assets:[]
+ assets:[],
+ imageModels:[{id:'demo-image',name:'Image Model · локальний профіль',status:'готова'}],
+ imageProfile:'demo-image'
 });
 document.getElementById('preview-image-studio').addEventListener('click',event=>{
  const root=document.getElementById('preview-image-studio');
@@ -501,7 +503,9 @@ document.getElementById('preview-image-studio').addEventListener('change',event=
  scene:{title:'Загадковий міст'},
  shots:[{id:'demo-shot-a',seconds:5,imagePrompt:'Мира дивиться на міст у золотому світлі.'},{id:'demo-shot-b',seconds:7,imagePrompt:'Міст через ущелину у променях світанку.'}],
  shot:{id:event.target.value,seconds:a?7:5,imagePrompt:a?'Міст через ущелину у променях світанку.':'Мира дивиться на міст у золотому світлі.'},
- assets:[]
+ assets:[],
+ imageModels:[{id:'demo-image',name:'Image Model · локальний профіль',status:'готова'}],
+ imageProfile:'demo-image'
  });
 });
 </script>
@@ -519,6 +523,7 @@ document.getElementById('preview-dashboard').innerHTML=window.APSProjectDashboar
  episodes:[{title:'Епізод 01',status:'draft'},{title:'Епізод 02',status:'planned'}],
  assets:[{status:'approved'},{status:'draft'},{status:'draft'}],
  characters:[{name:'Міра'},{name:'Бурштин'}],
+ tasks:[{id:'task-demo',title:'Перевірити затвердження ключових кадрів',status:'open'}],
  progress:{scenes:[{},{}],shots:[{},{},{}],storyReady:false,voicesReady:false,shotsReady:false,reviewReady:false},
  statusLabel:status=>({draft:'Чернетка',planned:'Заплановано',approved:'Затверджено'})[status]||status
 });
