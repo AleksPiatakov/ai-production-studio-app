@@ -37,6 +37,7 @@
       case 'edit': if(scene&&shot)openShot(scene.id,shot.id);break;
       case 'upload':openImageUpload();break;
       case 'brief':if(scene&&shot)openShotImageBrief(scene.id,shot.id);break;
+      case 'resolve-review':if(shot&&typeof resolveDependencyReview==='function')resolveDependencyReview('shot',shot.id);break;
       case 'assistant':if(typeof toggleFloatingAdvisor==='function')toggleFloatingAdvisor(true);else goToView('assistants');break;
     }
   }));
