@@ -2,13 +2,14 @@
 (()=>{
  let selectedAssetId=null;
  let imageStudioNotice='';
+ const negativePromptDrafts=new Map();
  const oldPage=pageContent;
  pageContent=function(){
   if(view!=='imageStudio')return oldPage();
   const scene=(active.scenes||[]).find(s=>s.id===activeSceneId)||(active.scenes||[])[0];
   const shot=(scene?.shots||[]).find(s=>s.id===activeShotId)||scene?.shots?.[0];
   const imageModels=typeof preferredModelOrder==='function'?preferredModelOrder((productionStudioState?.models||[]).filter(model=>typeof clientModelSupports==='function'&&clientModelSupports(model,'image'))):(productionStudioState?.models||[]).filter(model=>typeof clientModelSupports==='function'&&clientModelSupports(model,'image'));
-  return window.APSImageStudio.render({scene,shot,shots:scene?.shots||[],assets:active.assets||[],selectedAssetId,imageModels,imageProfile:productionStudioState?.profiles?.image||'',notice:imageStudioNotice});
+  return window.APSImageStudio.render({scene,shot,shots:scene?.shots||[],assets:active.assets||[],selectedAssetId,imageModels,imageProfile:productionStudioState?.profiles?.image||'',negativePrompt:shot?.id?negativePromptDrafts.get(shot.id)||'':'',notice:imageStudioNotice});
  };
  const oldTitle=viewTitle;
  viewTitle=function(){return view==='imageStudio'?'Image Studio · Генерація зображень':oldTitle()};
@@ -44,6 +45,11 @@
   }));
   root.querySelector('#p06-shot')?.addEventListener('change',event=>{
    activeShotId=event.target.value;render();
+  });
+  root.querySelector('#p06-negative')?.addEventListener('input',event=>{
+   const scene=(active.scenes||[]).find(s=>s.id===activeSceneId)||(active.scenes||[])[0];
+   const shot=(scene?.shots||[]).find(s=>s.id===activeShotId)||scene?.shots?.[0];
+   if(shot?.id)negativePromptDrafts.set(shot.id,event.target.value);
   });
   if(imageStudioNotice&&!root.querySelector('.p06-generation-notice'))root.querySelector('.p06-settings')?.insertAdjacentHTML('beforeend','<p class="p06-generation-notice">'+(typeof esc==='function'?esc(imageStudioNotice):imageStudioNotice)+'</p>');
   root.querySelectorAll('[data-p06-action]').forEach(button=>button.addEventListener('click',()=>{
