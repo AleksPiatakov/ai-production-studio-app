@@ -208,14 +208,23 @@ const server = http.createServer(async (req, res) => {
     }
     if (req.method === 'GET' && url.pathname === '/api/projects') return send(res, 200, store.read().projects);
     if (req.method === 'POST' && url.pathname === '/api/projects') {
-      const preflight = projectCreationPreflight(path.join(process.cwd(), 'data'));
+      const dataDirectory = path.join(process.cwd(), 'data');
+      const preflight = projectCreationPreflight(dataDirectory);
       if (!preflight.ok) return send(res, 503, { error: 'project storage is not writable', preflight });
       const input = validateProjectInput(await body(req));
       const project = projectTemplate({ id: randomUUID(), ...input });
-      store.update(data => data.projects.push(project));
-      const layout = projectLayout(path.join(process.cwd(), 'data'), project.id);
-      const verification = verifyProjectPackage(project, layout);
-      return send(res, 201, { ...project, creation: { storageVerified: verification.verified, root: project.storage.root, manifest: project.storage.manifest, database: project.storage.database, directories: preflight.requiredDirectories } });
+      const layout = projectLayout(dataDirectory, project.id);
+      const previousData = store.read();
+      try {
+        store.update(data => data.projects.push(project));
+        const verification = verifyProjectPackage(project, layout);
+        if (!verification.verified) throw new Error('project package verification failed');
+        return send(res, 201, { ...project, creation: { storageVerified: true, root: project.storage.root, manifest: project.storage.manifest, database: project.storage.database, directories: preflight.requiredDirectories } });
+      } catch (error) {
+        try { store.write(previousData); } catch {}
+        try { fs.rmSync(layout.root, { recursive: true, force: true }); } catch {}
+        throw error;
+      }
     }
     if (parts[0] === 'api' && parts[1] === 'projects' && parts[2]) {
       const projectId = parts[2]; const project = findProject(projectId); if (!project) return send(res, 404, { error: 'project not found' });
