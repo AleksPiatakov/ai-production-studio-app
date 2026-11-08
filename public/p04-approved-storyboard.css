@@ -90,3 +90,5 @@ body:has(.storyboard-workspace) #content{max-width:none;padding:21px 23px}
  .storyboard-workspace .p04-assistant-dock{display:flex}
  .p04-strip-item{flex-basis:120px}
 }
+
+.p04-shot-status{display:inline-flex;align-items:center;justify-content:center;justify-self:start;margin-top:2px;padding:3px 6px;border:1px solid rgba(144,124,221,.22);border-radius:999px;background:#171a32;color:#bdb3d2;font-size:8px;font-weight:800;letter-spacing:.03em}
