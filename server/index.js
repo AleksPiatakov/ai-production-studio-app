@@ -619,7 +619,7 @@ const server = http.createServer(async (req, res) => {
           const generated = profile?.provider === 'elevenlabs'
             ? await synthesizeElevenLabsVoice({ projectId, dialogueId: line.id, text, voiceId: profile.providerVoiceId, modelId: profile.modelId || 'eleven_multilingual_v2', ...settings })
             : hasPiperVoice() ? await synthesizePiperVoice({ projectId, dialogueId: line.id, language, text, ...settings }) : await synthesizeMacVoice({ projectId, dialogueId: line.id, language, text, rate: Math.round(165 * settings.speed) });
-          const draft = { id: randomUUID(), language, text, ...generated, generationSettings: settings, createdAt: new Date().toISOString(), status: 'draft' };
+          const draft = { id: randomUUID(), language, text, ...generated, dialogueId: line.id, characterId: line.characterId, voiceProfileId: profile?.id || '', voiceProvider: profile?.provider || (hasPiperVoice() ? 'piper' : 'macos'), providerVoiceId: profile?.providerVoiceId || '', modelId: profile?.modelId || (profile?.provider === 'elevenlabs' ? 'eleven_multilingual_v2' : ''), engine: generated.engine || profile?.engine || (hasPiperVoice() ? 'Piper' : 'macOS Speech'), generationSettings: settings, createdAt: new Date().toISOString(), status: 'draft' };
           store.update(data => { const target = data.projects.find(item => item.id === projectId).scenes.find(item => item.id === scene.id).dialogue.find(item => item.id === line.id); target.audioDrafts = [...(target.audioDrafts || []), draft]; });
           return send(res, 201, draft);
         }
