@@ -350,3 +350,15 @@ test('approved script edits mark downstream work needs-review without regenerati
   assert.match(video,/Затверджений сценарій змінився/);
   assert.match(media,/без автоматичної регенерації/);
 });
+
+
+test('G-09 preflight requires writable storage and verified free disk space',()=>{
+  const storage=fs.readFileSync(path.join(root,'server','project-storage.js'),'utf8');
+  const ui=fs.readFileSync(path.join(root,'public','global-studio-pages.js'),'utf8');
+  assert.match(storage,/freeSpaceChecked/);
+  assert.match(storage,/freeSpaceAvailable/);
+  assert.match(storage,/const ok = writable && freeSpaceChecked && freeSpaceAvailable/);
+  assert.match(storage,/Project storage has no free disk space/);
+  assert.match(ui,/вільне місце:/);
+  assert.match(ui,/Сховище не пройшло перевірку/);
+});
