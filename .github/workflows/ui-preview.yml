@@ -17,18 +17,14 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: ui-preview-pages
+  group: ui-preview-checks
   cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    outputs:
-      deployment-ready: ${{ steps.preview.outputs.ready }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -37,12 +33,10 @@ jobs:
       - name: Validate application logic
         run: npm test
       - name: Build mock-data-only static preview
-        id: preview
         run: |
           node scripts/build-preview.js
           test -f preview-dist/index.html
           ! grep -q '/api/' preview-dist/index.html
-          echo 'ready=true' >> "$GITHUB_OUTPUT"
       - name: Install Playwright for automated visual captures
         run: |
           npm_config_yes=true npx playwright@1.58.2 install --with-deps chromium
@@ -59,19 +53,3 @@ jobs:
           name: studio-preview-screenshots
           path: preview-screenshots/*.png
           retention-days: 14
-      - uses: actions/configure-pages@v5
-        with:
-          enablement: true
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: preview-dist
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
