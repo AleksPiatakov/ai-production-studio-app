@@ -12,7 +12,7 @@ function voiceOriginLabel(value){
   return ({synthetic:'Синтетичний голос',system:'Системний голос','licensed-library':'Ліцензована бібліотека','self-recorded':'Власний запис','authorized-clone':'Авторизований клон'})[value]||'Не вказано';
 }
 function voiceAssignedCharacter(voice){
-  return (active.bibles?.characters||[]).find(character=>character.identityKey&&character.identityKey===voice.identityKey)||null;
+  return (active.bibles?.characters||[]).find(character=>character.voiceProfileId===voice.id)||(active.bibles?.characters||[]).find(character=>character.identityKey&&character.identityKey===voice.identityKey)||null;
 }
 function voiceUsageCount(voice){
   return (active.scenes||[]).reduce((sum,scene)=>sum+(scene.dialogue||[]).filter(line=>line.voiceIdentityKey===voice.identityKey).length,0);
