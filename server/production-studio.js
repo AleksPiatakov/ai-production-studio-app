@@ -196,6 +196,7 @@ function createGenerationJob(input, models) {
   if (!projectId) throw new Error('projectId is required');
   const model = models.find(item => item.id === input.modelId);
   if (!model) throw new Error('selected model is not registered');
+  if (!modelSupports(model, type)) throw new Error(`selected model does not support ${type}`);
   const status = ['ready','available','running'].includes(model.status) ? 'queued' : 'blocked';
   const note = 'Завдання зареєстровано. Виконання почнеться лише після підключення сумісного локального або GPU worker.';
   const error = status === 'blocked' ? `Модель «${model.name}» не готова до виконання.` : null;
