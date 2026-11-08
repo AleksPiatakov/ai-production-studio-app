@@ -45,3 +45,11 @@ test('Video Studio creates separate clips and a simple animatic without final ed
   assert.match(rail,/\['videoStudio','▶','Video Studio'\]/);
   assert.match(rail,/\['preview','✓','Перевірка готовності'\]/);
 });
+
+
+test('P-10 requires a keyframe before queuing video variants',()=>{
+  const ui=fs.readFileSync(path.join(root,'public','video-studio.js'),'utf8');
+  assert.match(ui,/models\.length&&key/);
+  assert.match(ui,/Спочатку додайте ключовий кадр/);
+  assert.match(ui,/const key=shotKeyImage\(shot\);if\(!key\)/);
+});
