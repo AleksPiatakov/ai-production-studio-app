@@ -96,7 +96,7 @@ function probeStudioModel(model, facts={}) {
   else if(model.id==='macos-tts'){ok=facts.platform==='darwin';message=ok?'Системний macOS TTS доступний.':'Системний macOS TTS доступний лише на Mac.'}
   else if(model.id==='piper'){ok=facts.piperReady===true;message=ok?'Piper і локальна голосова модель доступні.':'Piper або голосова модель не встановлені.'}
   else if(model.id==='gpu-worker'){ok=Number(facts.onlineWorkers||0)>0;message=ok?'Підключено сумісний online GPU worker.':'Немає підключеного online GPU worker.'}
-  else {ok=['ready','available'].includes(model.status);message=ok?'Конфігурація моделі позначена як доступна.':'Модель ще не підключена або вимкнена.'}
+  else {ok=['ready','available','running'].includes(model.status);message=ok?'Конфігурація моделі позначена як доступна.':'Модель ще не готова до виконання.'}
   return { ok, status:ok?'ready':model.status, message, checkedAt:new Date().toISOString() };
 }
 
@@ -126,7 +126,7 @@ function normalizeStudio(data) {
   return data;
 }
 
-function publicModel(model) { return { ...model, configured: ['ready', 'available'].includes(model.status) }; }
+function publicModel(model) { return { ...model, configured: ['ready', 'available', 'connected', 'running'].includes(model.status) }; }
 function createGenerationJob(input, models) {
   const type = String(input.type || '');
   if (!['image', 'video', 'voice', 'music', 'sfx'].includes(type)) throw new Error('generation type must be image, video, voice, music, or sfx');
@@ -134,7 +134,7 @@ function createGenerationJob(input, models) {
   if (!projectId) throw new Error('projectId is required');
   const model = models.find(item => item.id === input.modelId);
   if (!model) throw new Error('selected model is not registered');
-  const status = model.status === 'ready' || model.status === 'available' ? 'queued' : 'blocked';
+  const status = ['ready','available','running'].includes(model.status) ? 'queued' : 'blocked';
   return { id: randomUUID(), projectId, type, modelId: model.id, status, priority: ['low', 'normal', 'high'].includes(input.priority) ? input.priority : 'normal', prompt: String(input.prompt || '').trim(), inputAssetIds: Array.isArray(input.inputAssetIds) ? input.inputAssetIds : [], outputAssetId: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), executor: null, error: status === 'blocked' ? `Модель «${model.name}» не готова до виконання.` : null, note: 'Завдання зареєстровано. Виконання почнеться лише після підключення сумісного локального або GPU worker.' };
 }
 function transitionGenerationJob(job, nextStatus, note = '') {
