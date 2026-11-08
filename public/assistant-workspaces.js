@@ -49,7 +49,7 @@ async function askGlobalAssistant(event){
 }
 async function clearGlobalAssistant(){
   if(!globalAssistantState.history.length)return;
-  if(!window.confirm('Очистити історію Загального AI Помічника? Проєктні дані це не зачіпає.'))return;
+  if(!confirmDestructiveAction('Очистити історію Загального AI Помічника? Проєктні дані це не зачіпає.'))return;
   try{await api('/api/studio/general-assistant/messages',{method:'DELETE'});globalAssistantState.history=[];globalAssistantState.error='';render()}catch(error){globalAssistantState.error=error.message;render()}
 }
 function setGlobalAssistantEngine(value){
