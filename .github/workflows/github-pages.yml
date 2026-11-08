@@ -1,3 +1,4 @@
+# Canonical Pages workflow — the only deploy path for GitHub Pages.
 name: Publish approved UI preview to GitHub Pages
 
 on:
