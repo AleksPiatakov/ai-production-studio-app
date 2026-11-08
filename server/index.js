@@ -13,7 +13,7 @@ const { synthesizeMacVoice, synthesizePiperVoice, hasPiperVoice } = require('./l
 const { configuration: elevenLabsConfiguration, listVoices: listElevenLabsVoices, synthesizeElevenLabsVoice } = require('./elevenlabs');
 const { validateProject, validateProjectInput, validateBibleInput, validateSceneInput, validateShotInput, validateDialogueInput, validateAssetInput, validateProfileInput, validateWorkflowInput, validateScriptInput, validateVoiceProfileInput, validateLocalizationInput, validateRenderJobInput, validateEpisodeInput } = require('./validation');
 const { projectTemplate, allowedAgeBands, supportedLanguages, workflowStages } = require('../shared/schema');
-const { publicModel, updateStudioSettings, defaultModelCatalog, updateModelProfiles, probeStudioModel, createProjectAssistantAction, decideProjectAssistantAction, createGenerationJob, transitionGenerationJob, retryGenerationJob, cancelGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs } = require('./production-studio');
+const { publicModel, updateStudioSettings, defaultModelCatalog, updateModelProfiles, normalizeModelSetup, probeStudioModel, createProjectAssistantAction, decideProjectAssistantAction, createGenerationJob, transitionGenerationJob, retryGenerationJob, cancelGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs } = require('./production-studio');
 const store = createStore();
 
 function send(res, status, payload) { res.writeHead(status, { 'content-type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(payload)); }
@@ -84,7 +84,23 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && parts[0] === 'api' && parts[1] === 'studio' && parts[2] === 'models' && parts[3] && parts[4] === 'probe') {
       const data = store.read(), model = data.studio.modelRegistry.find(item => item.id === parts[3]);
       if (!model) return send(res, 404, { error: 'model not found' });
-      return send(res, 200, probeStudioModel(model, { platform: process.platform, piperReady: hasPiperVoice(), onlineWorkers: data.studio.workers.filter(worker => worker.status === 'online').length }));
+      const result = probeStudioModel(model, { platform: process.platform, piperReady: hasPiperVoice(), onlineWorkers: data.studio.workers.filter(worker => worker.status === 'online').length });
+      store.update(next => {
+        const item = next.studio.modelRegistry.find(entry => entry.id === model.id);
+        if (item) item.lastProbe = { ...result, checkedAt: result.checkedAt || new Date().toISOString() };
+      }, { noSnapshot: true });
+      return send(res, 200, result);
+    }
+    if (req.method === 'PUT' && parts[0] === 'api' && parts[1] === 'studio' && parts[2] === 'models' && parts[3] && parts[4] === 'setup') {
+      const input = await body(req), current = store.read().studio.modelRegistry.find(item => item.id === parts[3]);
+      if (!current) return send(res, 404, { error: 'model not found' });
+      const setup = normalizeModelSetup(current, input);
+      store.update(next => {
+        const item = next.studio.modelRegistry.find(entry => entry.id === current.id);
+        item.setup = setup;
+        item.execution = setup.executionTarget;
+      }, { noSnapshot: true });
+      return send(res, 200, { id: current.id, setup });
     }
     if (req.method === 'GET' && url.pathname === '/api/studio/models') return send(res, 200, store.read().studio.modelRegistry.map(publicModel));
     if (req.method === 'POST' && url.pathname === '/api/studio/models') {
