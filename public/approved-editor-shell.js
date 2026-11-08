@@ -10,7 +10,8 @@
     ['audio','◖','Озвучування'],
     ['sound','♫','Звук і музика'],
     ['assets','♙','Персонажі та ресурси'],
-    ['preview','▣','Відео та перевірка'],
+    ['videoStudio','▶','Video Studio'],
+    ['preview','✓','Перевірка готовності'],
     ['davinci','⇧','Експорт DaVinci']
   ];
   const globalRoutes=[
