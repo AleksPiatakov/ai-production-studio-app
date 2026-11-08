@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { DatabaseSync } = require('node:sqlite');
-const { syncProjectPackage, migrateJsonToSqlite } = require('../server/project-storage');
+const { projectCreationPreflight, syncProjectPackage, migrateJsonToSqlite } = require('../server/project-storage');
 
 test('creates a portable project package and queryable SQLite index', () => {
   const dataDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'ai-production-storage-'));
@@ -43,4 +43,17 @@ test('applies a JSON to SQLite migration with an immutable source backup', () =>
   assert.equal(fs.readFileSync(report.backup, 'utf8'), before);
   assert.equal(fs.readFileSync(source, 'utf8'), before);
   assert.ok(fs.existsSync(path.join(directory, 'projects', 'project_1', 'Project_Data', 'project.sqlite')));
+});
+
+
+test('new-project storage preflight reports writability, free space and required package folders', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'ai-production-preflight-'));
+  const report = projectCreationPreflight(directory);
+  assert.equal(report.ok, true);
+  assert.equal(report.writable, true);
+  assert.ok(report.projectsRoot.endsWith(path.join('projects')));
+  assert.ok(report.requiredDirectories.includes('Project_Data'));
+  assert.ok(report.requiredDirectories.includes('Assets/Video'));
+  assert.ok(report.requiredDirectories.includes('Backups'));
+  assert.ok(report.freeBytes === null || report.freeBytes > 0);
 });
