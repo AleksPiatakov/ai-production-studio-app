@@ -16,7 +16,7 @@ async function refreshProductionStudio() {
     productionStudioState = { models, catalog, profiles, jobs, assistants, error: '' };
   } catch (error) { productionStudioState.error = error.message; }
 }
-function studioStatus(status) { return ({ ready: 'готова', available: 'доступна', 'not-installed': 'не встановлена', 'not-connected': 'не підключена', disabled: 'вимкнена', queued: 'у черзі', preparing: 'підготовка', running: 'виконується', paused: 'призупинено', completed: 'завершено', failed: 'помилка', cancelled: 'скасовано', blocked: 'заблоковано' })[status] || status; }
+function studioStatus(status) { return ({ ready: 'готова', available: 'доступна', installed: 'встановлена', connected: 'підключена', running: 'запущена', failed: 'помилка', 'not-installed': 'не встановлена', 'not-connected': 'не підключена', disabled: 'вимкнена', queued: 'у черзі', preparing: 'підготовка', paused: 'призупинено', completed: 'завершено', cancelled: 'скасовано', blocked: 'заблоковано' })[status] || status; }
 function productionStudioPanel() {
   const error = productionStudioState.error ? `<p class="assistant-error">${esc(productionStudioState.error)}</p>` : '';
   if (view === 'models') return modelCenterPanel(error);
@@ -42,7 +42,7 @@ function clientModelSupports(model,task){
   if(task==='music'||task==='sfx')return capability===task||capability==='audio'||capability==='music-sfx';
   return false;
 }
-function modelStatusClass(status){return ['ready','available'].includes(status)?'ready':status==='disabled'?'disabled':'pending'}
+function modelStatusClass(status){return ['ready','available','running'].includes(status)?'ready':['disabled','failed'].includes(status)?'disabled':'pending'}
 function modelCatalogInfo(id){return productionStudioState.catalog.find(item=>item.id===id)}
 function modelCard(model,catalog=modelCatalogInfo(model.id)){
   const probe=modelProbeResults[model.id];
@@ -69,7 +69,7 @@ function modelProfilesPanel(){
   return `<form class="model-profiles" onsubmit="saveModelProfiles(event)"><p class="muted">Профіль визначає модель за замовчуванням для кожного типу завдання. В модулі її все одно можна змінити.</p>${rows.map(([id,title])=>`<label><span>${title}</span><select name="${id}">${modelProfileOptions(id,p[id]||'')}</select></label>`).join('')}<div class="model-profile-actions"><span>Зберігається локально для всієї студії.</span><button class="primary">Зберегти профілі</button></div></form>`;
 }
 function modelCenterPanel(error){
-  const connected=productionStudioState.models.filter(model=>['ready','available'].includes(model.status));
+  const connected=productionStudioState.models.filter(model=>['ready','available','connected','running'].includes(model.status));
   const archived=productionStudioState.models.filter(model=>model.status==='disabled');
   let body='';
   if(modelCenterTab==='mine')body=connected.length?'<div class="model-grid">'+connected.map(model=>modelCard(model)).join('')+'</div>':'<p class="global-empty">Підключених готових моделей ще немає.</p>';
