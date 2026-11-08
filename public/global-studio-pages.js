@@ -211,10 +211,12 @@ async function handleProjectWizardSubmit(event){
   const submit=form.querySelector('button[type="submit"]');submit.disabled=true;submit.textContent='Створення та перевірка…';
   try{
     const created=await api('/api/projects',{method:'POST',body:JSON.stringify(projectWizard.data)});
-    if(!created.creation?.storageVerified)throw new Error('Проєкт створено, але перевірка локального пакета не підтверджена.');
+    const creation=created.creation||{};
+    if(!creation.storageVerified&&!creation.verificationSkipped)throw new Error('Проєкт створено, але стан локального пакета не підтверджено.');
     const dlg=document.getElementById('modal');dlg.close();dlg.classList.remove('project-wizard-dialog');document.getElementById('modal-cancel').onclick=closeModal;
     view='overview';workspaceMode='guided';activeEpisodeId=null;localStorage.setItem('ai-production-studio:workspace-mode','guided');
     await load(created.id);
+    if(creation.verificationSkipped)globalSettingsNotice='Проєкт створено. Додаткову перевірку пакета пропущено згідно з налаштуваннями.';
   }catch(error){submit.disabled=false;submit.textContent='Створити проєкт';window.alert(error.message)}
 }
 
