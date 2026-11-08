@@ -500,7 +500,7 @@ const server = http.createServer(async (req, res) => {
         const mode = url.searchParams.get('mode') === 'final' ? 'final' : 'draft';
         const exportSettings = store.read().studio.settings?.export || {};
         const draftAllowed = exportSettings.includeDrafts === true;
-        const packagePlan = buildDaVinciPackage(project, episode, mode, { verifyFiles: exportSettings.verifyFiles !== false });
+        const packagePlan = buildDaVinciPackage(project, episode, mode, { verifyFiles: exportSettings.verifyFiles !== false, defaultLanguage: exportSettings.defaultLanguage || project.defaultLanguage });
         if (mode === 'draft' && !draftAllowed) {
           packagePlan.canExport = false;
           packagePlan.issues = [...new Set([...(packagePlan.issues || []), 'Чернетковий пакет вимкнено у Налаштуваннях → Експорт.'])];
