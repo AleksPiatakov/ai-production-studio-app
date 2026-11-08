@@ -162,3 +162,16 @@ test('P-05 shot workspace exposes emotion and model readiness',()=>{
   assert.match(ui,/Модель не підключена · генерація вимкнена/);
   assert.match(ui,/data-p05-route="imageStudio"/);
 });
+
+
+test('P-02 scene and AI columns collapse independently',()=>{
+  const ui=fs.readFileSync(path.join(root,'public','script-editor-p02.js'),'utf8');
+  assert.match(ui,/data-p02-toggle-scenes/);
+  assert.match(ui,/data-p02-toggle-ai/);
+  assert.match(ui,/scenesCollapsed/);
+  assert.match(ui,/aiCollapsed/);
+  assert.match(ui,/ai-production-studio:p02-scenes-collapsed/);
+  assert.match(ui,/ai-production-studio:p02-ai-collapsed/);
+  assert.match(ui,/scenes-collapsed/);
+  assert.match(ui,/ai-collapsed/);
+});
