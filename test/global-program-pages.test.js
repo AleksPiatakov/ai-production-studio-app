@@ -405,3 +405,13 @@ test('G-08 files.verifyWrites controls project package verification',()=>{
   assert.match(server,/projectCreationPreflight\(dataDirectory\)/);
   assert.match(settings,/Preflight запису й вільного місця виконується завжди/);
 });
+
+
+test('G-08 does not claim unfinished English interface localization',()=>{
+  const settings=fs.readFileSync(path.join(root,'public','global-studio-pages.js'),'utf8');
+  const production=fs.readFileSync(path.join(root,'server','production-studio.js'),'utf8');
+  assert.match(settings,/English · заплановано/);
+  assert.match(settings,/Повна англійська локалізація інтерфейсу ще не реалізована/);
+  assert.match(settings,/option value="en" disabled/);
+  assert.match(production,/next\.general\.interfaceLanguage = 'uk'/);
+});
