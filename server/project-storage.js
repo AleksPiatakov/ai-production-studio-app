@@ -12,10 +12,14 @@ function safeProjectId(id) {
 function projectCreationPreflight(dataDirectory) {
   const root = path.resolve(dataDirectory);
   const projectsRoot = path.join(root, 'projects');
-  const probeTarget = fs.existsSync(projectsRoot) ? projectsRoot : root;
+  let probeTarget = fs.existsSync(projectsRoot) ? projectsRoot : root;
+  while (!fs.existsSync(probeTarget)) {
+    const parent = path.dirname(probeTarget);
+    if (parent === probeTarget) break;
+    probeTarget = parent;
+  }
   let writable = false, error = '';
   try {
-    fs.mkdirSync(root, { recursive: true });
     fs.accessSync(probeTarget, fs.constants.W_OK);
     writable = true;
   } catch (cause) {
@@ -30,7 +34,8 @@ function projectCreationPreflight(dataDirectory) {
     ok: writable,
     dataDirectory: root,
     projectsRoot,
-    rootExists: fs.existsSync(projectsRoot),
+    projectsRootExists: fs.existsSync(projectsRoot),
+    checkedDirectory: probeTarget,
     writable,
     freeBytes,
     requiredDirectories: ['Project_Data','Scripts','Character_Bible','Style_Bible','Storyboards','Assets/Images','Assets/Video','Assets/Voices','Assets/Music','Assets/SFX','Generated','Exports','Backups'],
