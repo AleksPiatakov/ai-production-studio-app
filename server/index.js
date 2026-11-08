@@ -546,16 +546,19 @@ const server = http.createServer(async (req, res) => {
       if (req.method === 'POST' && parts[3] === 'voice-profiles' && parts[4] && parts[5] === 'assign') {
         const existing = project.voiceProfiles.find(item => item.id === parts[4]);
         if (!existing) return send(res, 404, { error: 'voice profile not found' });
-        if (existing.status === 'approved') return send(res, 409, { error: 'approved voice profile cannot be reassigned; create or edit a draft profile instead' });
         const input = await body(req), character = project.bibles.characters.find(item => item.id === input.characterId);
         if (!character) return send(res, 404, { error: 'character not found' });
         if (!character.identityKey) return send(res, 409, { error: 'character needs an identityKey before voice assignment' });
-        const used = project.scenes.some(scene => (scene.dialogue || []).some(line => line.voiceIdentityKey === existing.identityKey));
-        if (used && existing.identityKey !== character.identityKey) return send(res, 409, { error: 'voice profile is already used by dialogue and cannot be reassigned safely' });
-        if (project.voiceProfiles.some(item => item.id !== existing.id && item.identityKey === character.identityKey)) return send(res, 409, { error: 'this character already has a voice profile' });
-        const updated = { ...existing, identityKey: character.identityKey, ageBand: character.ageBand, updatedAt: new Date().toISOString() };
-        store.update(data => { const items = data.projects.find(item => item.id === projectId).voiceProfiles; items[items.findIndex(item => item.id === existing.id)] = updated; });
-        return send(res, 200, updated);
+        if (existing.status === 'retired') return send(res, 409, { error: 'retired voice profile cannot be assigned' });
+        const assignedElsewhere = project.bibles.characters.find(item => item.id !== character.id && item.voiceProfileId === existing.id);
+        if (assignedElsewhere) return send(res, 409, { error: 'voice profile is already assigned to another character' });
+        const updatedCharacter = { ...character, voiceProfileId: existing.id };
+        store.update(data => {
+          const target = data.projects.find(item => item.id === projectId);
+          const items = target.bibles.characters;
+          items[items.findIndex(item => item.id === character.id)] = updatedCharacter;
+        });
+        return send(res, 200, { profile: existing, character: updatedCharacter });
       }
       if (req.method === 'POST' && parts[3] === 'localizations') {
         const localization = { id: randomUUID(), ...validateLocalizationInput(await body(req)), updatedAt: new Date().toISOString() };
@@ -610,7 +613,8 @@ const server = http.createServer(async (req, res) => {
           if (!line) return send(res, 404, { error: 'dialogue line not found' });
           const input = await body(req); const language = input.language === 'en' ? 'en' : 'uk';
           const text = language === 'en' ? line.textEn : (line.textUk || (line.language === 'uk' ? line.text : ''));
-          const profile = project.voiceProfiles.find(item => item.identityKey === line.voiceIdentityKey);
+          const character = project.bibles.characters.find(item => item.id === line.characterId);
+          const profile = project.voiceProfiles.find(item => item.id === character?.voiceProfileId) || project.voiceProfiles.find(item => item.identityKey === line.voiceIdentityKey);
           const settings = { stability: 0.5, similarityBoost: 0.75, style: 0, speed: 1, sentenceSilence: 0.2, volume: 1, outputFormat: 'wav', speakerBoost: true, ...(profile?.generationSettings || {}), ...(line.generationSettings || {}) };
           const generated = profile?.provider === 'elevenlabs'
             ? await synthesizeElevenLabsVoice({ projectId, dialogueId: line.id, text, voiceId: profile.providerVoiceId, modelId: profile.modelId || 'eleven_multilingual_v2', ...settings })
