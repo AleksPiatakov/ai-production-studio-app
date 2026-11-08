@@ -16,7 +16,7 @@ async function refreshProductionStudio() {
     productionStudioState = { models, catalog, profiles, jobs, assistants, error: '' };
   } catch (error) { productionStudioState.error = error.message; }
 }
-function studioStatus(status) { return ({ ready: 'готова', available: 'доступна', installed: 'встановлена', connected: 'підключена', running: 'запущена', failed: 'помилка', 'not-installed': 'не встановлена', 'not-connected': 'не підключена', disabled: 'вимкнена', queued: 'у черзі', preparing: 'підготовка', paused: 'призупинено', completed: 'завершено', cancelled: 'скасовано', blocked: 'заблоковано' })[status] || status; }
+function studioStatus(status) { return ({ ready: 'готова', available: 'доступна', installed: 'встановлена', connected: 'підключена', running: 'виконується', failed: 'помилка', 'not-installed': 'не встановлена', 'not-connected': 'не підключена', disabled: 'вимкнена', queued: 'у черзі', preparing: 'підготовка', paused: 'призупинено', completed: 'завершено', cancelled: 'скасовано', blocked: 'заблоковано' })[status] || status; }
 function productionStudioPanel() {
   const error = productionStudioState.error ? `<p class="assistant-error">${esc(productionStudioState.error)}</p>` : '';
   if (view === 'models') return modelCenterPanel(error);
@@ -43,11 +43,12 @@ function clientModelSupports(model,task){
   return false;
 }
 function modelStatusClass(status){return ['ready','available','running'].includes(status)?'ready':['disabled','failed'].includes(status)?'disabled':'pending'}
+function modelStatusLabel(status){return ({installed:'встановлена',connected:'підключена',running:'запущена',failed:'помилка'})[status]||studioStatus(status)}
 function modelCatalogInfo(id){return productionStudioState.catalog.find(item=>item.id===id)}
 function modelCard(model,catalog=modelCatalogInfo(model.id)){
   const probe=modelProbeResults[model.id];
   return `<section class="model-card">
-    <div class="model-card-head"><div><strong>${esc(model.name)}</strong><span class="tag">${esc(catalog?.category||model.capability)}</span></div><span class="model-state ${modelStatusClass(model.status)}">${esc(studioStatus(model.status))}</span></div>
+    <div class="model-card-head"><div><strong>${esc(model.name)}</strong><span class="tag">${esc(catalog?.category||model.capability)}</span></div><span class="model-state ${modelStatusClass(model.status)}">${esc(modelStatusLabel(model.status))}</span></div>
     <p>${esc(catalog?.description||model.notes||'')}</p>
     <div class="model-facts"><span>Рушій <b>${esc(model.runtime)}</b></span><span>Версія <b>${esc(model.version)}</b></span><span>Запуск <b>${esc(model.execution)}</b></span></div>
     ${catalog?`<small>Ліцензія: ${esc(catalog.license)} · Вимоги: ${esc(catalog.requirements)} · ${esc(catalog.sizeNote)}</small>`:''}
@@ -57,7 +58,7 @@ function modelCard(model,catalog=modelCatalogInfo(model.id)){
 }
 function catalogCard(entry){
   const model=entry.registry;
-  return `<section class="model-card catalog-card"><div class="model-card-head"><div><strong>${esc(entry.name)}</strong><span class="tag">${esc(entry.category)}</span></div><span class="model-state ${model?modelStatusClass(model.status):'pending'}">${esc(model?studioStatus(model.status):'не додана')}</span></div><p>${esc(entry.description)}</p><div class="model-facts"><span>Тип <b>${esc(entry.capability)}</b></span><span>Встановлення <b>${esc(entry.installMode)}</b></span><span>Вимоги <b>${esc(entry.requirements)}</b></span></div><small>Ліцензія: ${esc(entry.license)} · Розмір: ${esc(entry.sizeNote)}</small><div class="model-card-actions">${model?`<button type="button" onclick="openModelSetupInfo('${esc(entry.id)}')">Налаштувати</button><button class="primary" type="button" onclick="probeStudioModelUI('${esc(entry.id)}')">Перевірити</button>`:'<button type="button" disabled>Ще не підтримується</button>'}</div></section>`;
+  return `<section class="model-card catalog-card"><div class="model-card-head"><div><strong>${esc(entry.name)}</strong><span class="tag">${esc(entry.category)}</span></div><span class="model-state ${model?modelStatusClass(model.status):'pending'}">${esc(model?modelStatusLabel(model.status):'не додана')}</span></div><p>${esc(entry.description)}</p><div class="model-facts"><span>Тип <b>${esc(entry.capability)}</b></span><span>Встановлення <b>${esc(entry.installMode)}</b></span><span>Вимоги <b>${esc(entry.requirements)}</b></span></div><small>Ліцензія: ${esc(entry.license)} · Розмір: ${esc(entry.sizeNote)}</small><div class="model-card-actions">${model?`<button type="button" onclick="openModelSetupInfo('${esc(entry.id)}')">Налаштувати</button><button class="primary" type="button" onclick="probeStudioModelUI('${esc(entry.id)}')">Перевірити</button>`:'<button type="button" disabled>Ще не підтримується</button>'}</div></section>`;
 }
 function modelProfileOptions(task,current){
   const compatible=productionStudioState.models.filter(model=>clientModelSupports(model,task));
