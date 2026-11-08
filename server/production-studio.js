@@ -67,14 +67,14 @@ function defaultModelCatalog() {
   ];
 }
 function defaultModelProfiles() {
-  return { planning: 'local-planner', voice: 'macos-tts', image: '', video: '', music: '', sfx: '' };
+  return { planning: 'local-planner', voice: 'macos-tts', image: '', video: '', music: '', ambient: '', sfx: '' };
 }
 function modelSupports(model, task) {
   const capability=String(model?.capability||'');
   if(task==='planning')return capability==='planning';
   if(task==='voice')return capability==='voice';
   if(task==='image'||task==='video')return capability===task||capability==='image-video';
-  if(task==='music'||task==='sfx')return capability===task||capability==='audio'||capability==='music-sfx';
+  if(task==='music'||task==='ambient'||task==='sfx')return capability===task||capability==='audio'||capability==='music-sfx';
   return false;
 }
 function updateModelProfiles(current, input, models) {
