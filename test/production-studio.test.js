@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { normalizeStudio, defaultModelRegistry, defaultModelCatalog, updateModelProfiles, probeStudioModel, updateStudioSettings, createProjectAssistantAction, decideProjectAssistantAction, createGenerationJob, transitionGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs } = require('../server/production-studio');
+const { normalizeStudio, defaultModelRegistry, defaultModelCatalog, updateModelProfiles, probeStudioModel, updateStudioSettings, createProjectAssistantAction, decideProjectAssistantAction, createGenerationJob, transitionGenerationJob, retryGenerationJob, cancelGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs } = require('../server/production-studio');
 
 test('migrates existing projects to the production-studio architecture without losing their data', () => {
   const data = normalizeStudio({ projects: [{ id: 'p-1', name: 'Existing project', assets: [{ id: 'a-1' }] }] });
@@ -133,4 +133,45 @@ test('rejected assistant proposals do not mutate project data', () => {
   decideProjectAssistantAction(project,action.id,'reject','Not now');
   assert.equal(project.workflow[0].note,'Before');
   assert.equal(action.status,'rejected');
+});
+
+
+test('generation jobs keep an append-only event history across transitions', () => {
+  const models = defaultModelRegistry();
+  const job = createGenerationJob({ projectId:'p-1', type:'voice', modelId:'macos-tts', prompt:'hello' }, models);
+  assert.equal(job.events.length,1);
+  assert.equal(job.events[0].status,'queued');
+  const paused = transitionGenerationJob(job,'paused','Paused by user');
+  assert.equal(paused.events.length,2);
+  assert.equal(paused.events[1].status,'paused');
+  const resumed = transitionGenerationJob(paused,'queued','Resume');
+  assert.equal(resumed.events.length,3);
+  assert.equal(resumed.events[2].message,'Resume');
+});
+
+test('retry creates a new attempt instead of rewriting failed history', () => {
+  const models = defaultModelRegistry();
+  const original = { ...createGenerationJob({ projectId:'p-1', type:'voice', modelId:'macos-tts', prompt:'hello' }, models), status:'failed', error:'boom' };
+  const retry = retryGenerationJob(original, models);
+  assert.notEqual(retry.id, original.id);
+  assert.equal(retry.retryOf, original.id);
+  assert.equal(retry.attempt, 2);
+  assert.match(retry.events[0].message,/Повторна спроба #2/);
+  assert.equal(original.status,'failed');
+});
+
+test('safe cancellation preserves job history and prevents later transition', () => {
+  const models = defaultModelRegistry();
+  const queued = createGenerationJob({ projectId:'p-1', type:'voice', modelId:'macos-tts' }, models);
+  const cancelled = cancelGenerationJob(queued,'Cancelled by user');
+  assert.equal(cancelled.status,'cancelled');
+  assert.equal(cancelled.events.at(-1).status,'cancelled');
+  assert.throws(()=>transitionGenerationJob(cancelled,'completed'),/cannot transition|completed or cancelled/);
+});
+
+test('registered worker outputs report result asset ids back to the queue', () => {
+  const project={assets:[],assetVersions:[]};
+  const registered=registerWorkerOutputs(project,{id:'job-output-12345678',projectId:'p-1',type:'image',modelId:'gpu-worker',status:'completed',prompt:'x',outputs:[{kind:'image',uri:'asset://x.png',checksum:'sha256:x'}]});
+  assert.equal(registered.outputAssetIds.length,1);
+  assert.equal(registered.outputAssetIds[0],registered.assets[0].id);
 });

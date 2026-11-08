@@ -13,7 +13,7 @@ const { synthesizeMacVoice, synthesizePiperVoice, hasPiperVoice } = require('./l
 const { configuration: elevenLabsConfiguration, listVoices: listElevenLabsVoices, synthesizeElevenLabsVoice } = require('./elevenlabs');
 const { validateProject, validateProjectInput, validateBibleInput, validateSceneInput, validateShotInput, validateDialogueInput, validateAssetInput, validateProfileInput, validateWorkflowInput, validateScriptInput, validateVoiceProfileInput, validateLocalizationInput, validateRenderJobInput, validateEpisodeInput } = require('./validation');
 const { projectTemplate, allowedAgeBands, supportedLanguages, workflowStages } = require('../shared/schema');
-const { publicModel, updateStudioSettings, defaultModelCatalog, updateModelProfiles, probeStudioModel, createProjectAssistantAction, decideProjectAssistantAction, createGenerationJob, transitionGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs } = require('./production-studio');
+const { publicModel, updateStudioSettings, defaultModelCatalog, updateModelProfiles, probeStudioModel, createProjectAssistantAction, decideProjectAssistantAction, createGenerationJob, transitionGenerationJob, retryGenerationJob, cancelGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs } = require('./production-studio');
 const store = createStore();
 
 function send(res, status, payload) { res.writeHead(status, { 'content-type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(payload)); }
@@ -121,12 +121,16 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && parts[0] === 'api' && parts[1] === 'studio' && parts[2] === 'worker' && parts[3] && parts[4] === 'jobs' && parts[5]) {
       authenticateWorker(req); const data = store.read(), worker = data.studio.workers.find(item => item.id === parts[3] && item.status === 'online'), job = data.studio.generationJobs.find(item => item.id === parts[5]);
       if (!worker) return send(res, 404, { error: 'online worker not found' }); if (!job) return send(res, 404, { error: 'generation job not found' });
-      const updated = workerJobUpdate(job, worker, await body(req));
+      let updated = workerJobUpdate(job, worker, await body(req));
       store.update(next => {
         const current = next.studio.workers.find(item => item.id === worker.id); current.lastSeenAt = new Date().toISOString();
-        next.studio.generationJobs[next.studio.generationJobs.findIndex(item => item.id === job.id)] = updated;
         const targetProject = next.projects.find(item => item.id === updated.projectId);
-        if (targetProject) { const registered = registerWorkerOutputs(targetProject, updated); targetProject.assets.push(...registered.assets); targetProject.assetVersions.push(...registered.versions); }
+        if (targetProject) {
+          const registered = registerWorkerOutputs(targetProject, updated);
+          targetProject.assets.push(...registered.assets); targetProject.assetVersions.push(...registered.versions);
+          if (registered.outputAssetIds?.length) updated = { ...updated, outputAssetId: registered.outputAssetIds[0] };
+        }
+        next.studio.generationJobs[next.studio.generationJobs.findIndex(item => item.id === job.id)] = updated;
       });
       return send(res, 200, updated);
     }
@@ -141,6 +145,20 @@ const server = http.createServer(async (req, res) => {
       if (!job) return send(res, 404, { error: 'generation job not found' });
       const updated = transitionGenerationJob(job, input.status, input.note);
       store.update(data => { const jobs = data.studio.generationJobs; jobs[jobs.findIndex(item => item.id === job.id)] = updated; }); return send(res, 200, updated);
+    }
+    if (req.method === 'POST' && parts[0] === 'api' && parts[1] === 'studio' && parts[2] === 'generation-jobs' && parts[3] && parts[4] === 'retry') {
+      const data = store.read(), job = data.studio.generationJobs.find(item => item.id === parts[3]);
+      if (!job) return send(res, 404, { error: 'generation job not found' });
+      const retried = retryGenerationJob(job, data.studio.modelRegistry);
+      store.update(next => next.studio.generationJobs.push(retried), { noSnapshot: true });
+      return send(res, 201, retried);
+    }
+    if (req.method === 'POST' && parts[0] === 'api' && parts[1] === 'studio' && parts[2] === 'generation-jobs' && parts[3] && parts[4] === 'cancel') {
+      const input = await body(req), job = store.read().studio.generationJobs.find(item => item.id === parts[3]);
+      if (!job) return send(res, 404, { error: 'generation job not found' });
+      const cancelled = cancelGenerationJob(job, input.note);
+      store.update(next => { const jobs=next.studio.generationJobs; jobs[jobs.findIndex(item => item.id === job.id)] = cancelled; }, { noSnapshot: true });
+      return send(res, 200, cancelled);
     }
     if (req.method === 'GET' && url.pathname === '/api/studio/general-assistant') {
       const data = store.read(), config = assistantConfiguration();

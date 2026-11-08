@@ -31,6 +31,9 @@ test('approved compact navigation exposes real demo destinations without changin
   assert.match(html, /ВЕРСІЇ ПРОЄКТУ/);
   assert.match(html, /БІБЛІОТЕКА ГОЛОСІВ/);
   assert.match(html, /Права підтверджено/);
+  assert.match(html, /Журнал · 3/);
+  assert.match(html, /Повторити/);
+  assert.match(html, /Відкрити результат/);
   assert.match(html, /ПЕРЕГЛЯД ЗМІН AI/);
   assert.match(html, /ДОСТУП ДО ПРОЄКТІВ/);
 });
