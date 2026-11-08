@@ -1,5 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 const { safeSegment } = require('../server/local-voice');
 
 test('uses a safe local path segment for generated audio', () => {
