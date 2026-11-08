@@ -1,7 +1,7 @@
 /* G-03 Global AI Assistant + P-13 project AI change review.
    Global chat never receives project data automatically.
    Project changes remain typed proposals until explicit accept/reject. */
-let globalAssistantState={history:[],configuration:null,assistant:null,busy:false,error:''};
+let globalAssistantState={history:[],configuration:null,assistant:null,busy:false,error:'',contextCollapsed:localStorage.getItem('ai-production-studio:g03-context-collapsed')==='true',enginePreference:localStorage.getItem('ai-production-studio:g03-engine-preference')||'auto'};
 let projectAssistantActions=[];
 let projectAssistantActionsBusy=false;
 let projectAssistantActionsError='';
@@ -21,13 +21,18 @@ function globalAssistantMessage(item){
   return `<article class="global-ai-message ${assistant?'assistant':'user'}"><header><span>${assistant?'AI':'Ви'}</span><time>${item.createdAt?esc(new Date(item.createdAt).toLocaleTimeString('uk-UA',{hour:'2-digit',minute:'2-digit'})):''}</time></header><p>${esc(assistant?item.answer:item.text)}</p>${assistant&&item.nextSteps?.length?`<div class="global-ai-next"><strong>Можливі наступні кроки</strong>${item.nextSteps.map(step=>`<span>${esc(step)}</span>`).join('')}</div>`:''}</article>`;
 }
 function globalAssistantPanel(){
-  const cfg=globalAssistantState.configuration,configured=Boolean(cfg?.configured||cfg?.engine==='local-planner'),history=globalAssistantState.history||[];
+  const cfg=globalAssistantState.configuration,history=globalAssistantState.history||[];
+  const externalReady=Boolean(cfg?.configured&&cfg?.engine!=='local-planner');
+  const preference=globalAssistantState.enginePreference==='configured'&&externalReady?'configured':globalAssistantState.enginePreference==='local-planner'?'local-planner':'auto';
+  const effectiveEngine=preference==='local-planner'?'local-planner':cfg?.engine||'local-planner';
+  const effectiveModel=effectiveEngine==='local-planner'?'Local Planner':(cfg?.model||cfg?.engine||'Підключена модель');
+  const configured=true;
   return `<section class="global-ai-page">
-    <header class="global-ai-head"><div><p class="eyebrow">ЗАГАЛЬНИЙ AI ПОМІЧНИК</p><h3>Робочий чат студії</h3><p>Працює поза проєктами. Проєктні файли, сценарії, медіа та пам’ять проєктів не передаються автоматично.</p></div><div class="global-ai-model"><span>${configured?(cfg?.engine==='local-planner'?'● Локальний режим':'● Підключено'):'○ Не підключено'}</span><strong>${esc(cfg?.model||(cfg?.engine==='local-planner'?'Local Planner':cfg?.engine)||'Текстова модель не налаштована')}</strong></div></header>
-    <div class="global-ai-layout">
-      <aside class="global-ai-info"><div class="global-ai-info-card safe"><span>КОНТЕКСТ</span><strong>Глобальна зона</strong><p>Налаштування програми, моделі, черга та загальні виробничі питання.</p></div><div class="global-ai-info-card blocked"><span>ДОСТУП ДО ПРОЄКТІВ</span><strong>${globalAssistantState.assistant?.projectAccess==='none'?'Відсутній':'Не підтверджено'}</strong><p>Щоб працювати з конкретним проєктом, відкрийте його проєктний AI-помічник.</p></div><button type="button" onclick="goToView('projects')">Відкрити проєкти →</button></aside>
+    <header class="global-ai-head"><div><p class="eyebrow">ЗАГАЛЬНИЙ AI ПОМІЧНИК</p><h3>Робочий чат студії</h3><p>Працює поза проєктами. Проєктні файли, сценарії, медіа та пам’ять проєктів не передаються автоматично.</p></div><div class="global-ai-model"><span>${effectiveEngine==='local-planner'?'● Локальний режим':'● Підключено'}</span><strong>${esc(effectiveModel)}</strong><label>Модель<select onchange="setGlobalAssistantEngine(this.value)"><option value="auto" ${preference==='auto'?'selected':''}>Автоматично</option><option value="local-planner" ${preference==='local-planner'?'selected':''}>Local Planner</option>${externalReady?`<option value="configured" ${preference==='configured'?'selected':''}>${esc(cfg.model||cfg.provider||'Підключена модель')}</option>`:''}</select></label></div></header>
+    <div class="global-ai-layout ${globalAssistantState.contextCollapsed?'context-collapsed':''}">
+      <aside class="global-ai-info"><button class="global-ai-context-toggle" type="button" onclick="toggleGlobalAssistantContext()" aria-pressed="${String(!globalAssistantState.contextCollapsed)}">${globalAssistantState.contextCollapsed?'Показати контекст':'Сховати контекст'}</button><div class="global-ai-info-card safe"><span>КОНТЕКСТ</span><strong>Глобальна зона</strong><p>Налаштування програми, моделі, черга та загальні виробничі питання.</p></div><div class="global-ai-info-card blocked"><span>ДОСТУП ДО ПРОЄКТІВ</span><strong>${globalAssistantState.assistant?.projectAccess==='none'?'Відсутній':'Не підтверджено'}</strong><p>Щоб працювати з конкретним проєктом, відкрийте його проєктний AI-помічник.</p></div><button type="button" onclick="goToView('projects')">Відкрити проєкти →</button></aside>
       <section class="global-ai-chat"><div id="global-ai-thread" class="global-ai-thread" aria-live="polite">${history.length?history.map(globalAssistantMessage).join(''):'<div class="global-ai-empty"><span>✧</span><strong>Окрема глобальна розмова</strong><p>Запитайте про роботу студії, AI-моделі, чергу, налаштування або загальний виробничий процес.</p></div>'}</div>
-        <form class="global-ai-composer" onsubmit="askGlobalAssistant(event)"><textarea id="global-ai-question" required placeholder="Напишіть питання…" ${configured?'':'disabled'}></textarea><div><small>${configured?'Проєктні дані не додаються до запиту.':'Підключіть текстову модель, щоб активувати чат.'}</small><div><button type="button" onclick="clearGlobalAssistant()" ${history.length?'':'disabled'}>Очистити</button><button class="primary" type="submit" ${configured&&!globalAssistantState.busy?'':'disabled'}>${globalAssistantState.busy?'Відповідає…':'Надіслати'}</button></div></div></form>${globalAssistantState.error?`<p class="assistant-error">${esc(globalAssistantState.error)}</p>`:''}
+        <form class="global-ai-composer" onsubmit="askGlobalAssistant(event)"><textarea id="global-ai-question" required placeholder="Напишіть питання…"></textarea><div><small>Проєктні дані не додаються до запиту.</small><div><button type="button" onclick="clearGlobalAssistant()" ${history.length?'':'disabled'}>Очистити</button><button class="primary" type="submit" ${!globalAssistantState.busy?'':'disabled'}>${globalAssistantState.busy?'Відповідає…':'Надіслати'}</button></div></div></form>${globalAssistantState.error?`<p class="assistant-error">${esc(globalAssistantState.error)}</p>`:''}
       </section>
     </div>
   </section>`;
@@ -37,7 +42,7 @@ async function askGlobalAssistant(event){
   if(!message||globalAssistantState.busy)return;
   globalAssistantState.busy=true;globalAssistantState.error='';render();
   try{
-    const result=await api('/api/studio/general-assistant/messages',{method:'POST',body:JSON.stringify({message})});
+    const result=await api('/api/studio/general-assistant/messages',{method:'POST',body:JSON.stringify({message,enginePreference:globalAssistantState.enginePreference})});
     globalAssistantState.history.push(...(result.messages||[]));field.value='';
   }catch(error){globalAssistantState.error=error.message}
   finally{globalAssistantState.busy=false;render();setTimeout(()=>document.getElementById('global-ai-thread')?.scrollTo({top:999999,behavior:'smooth'}),0)}
@@ -46,6 +51,17 @@ async function clearGlobalAssistant(){
   if(!globalAssistantState.history.length)return;
   if(!window.confirm('Очистити історію Загального AI Помічника? Проєктні дані це не зачіпає.'))return;
   try{await api('/api/studio/general-assistant/messages',{method:'DELETE'});globalAssistantState.history=[];globalAssistantState.error='';render()}catch(error){globalAssistantState.error=error.message;render()}
+}
+function setGlobalAssistantEngine(value){
+  const allowed=['auto','local-planner','configured'];
+  globalAssistantState.enginePreference=allowed.includes(value)?value:'auto';
+  localStorage.setItem('ai-production-studio:g03-engine-preference',globalAssistantState.enginePreference);
+  render();
+}
+function toggleGlobalAssistantContext(){
+  globalAssistantState.contextCollapsed=!globalAssistantState.contextCollapsed;
+  localStorage.setItem('ai-production-studio:g03-context-collapsed',String(globalAssistantState.contextCollapsed));
+  render();
 }
 
 async function refreshProjectAssistantActions(){
