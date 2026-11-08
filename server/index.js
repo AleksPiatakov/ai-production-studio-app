@@ -183,7 +183,7 @@ const server = http.createServer(async (req, res) => {
     }
     if (req.method === 'POST' && url.pathname === '/api/studio/general-assistant/messages') {
       const input = await body(req), data = store.read(), memory = (data.studio.generalAssistant.memory || []).slice(-100);
-      const result = await askGeneralAssistant({ message: input.message, history: memory });
+      const result = await askGeneralAssistant({ message: input.message, history: memory, enginePreference: input.enginePreference });
       const now = new Date().toISOString();
       const userMessage = { id: randomUUID(), role: 'user', text: String(input.message || '').trim(), createdAt: now };
       const assistantMessage = { id: randomUUID(), role: 'assistant', answer: result.reply.answer, nextSteps: result.reply.nextSteps, engine: result.engine, model: result.model, createdAt: new Date().toISOString() };
