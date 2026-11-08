@@ -49,7 +49,8 @@ test('Voice Library exposes filters compare assignment and rights metadata',()=>
 test('server protects voice assignment and sample isolation',()=>{
   const server=fs.readFileSync(path.join(root,'server','index.js'),'utf8');
   assert.match(server,/sampleAssetIds must reference audio assets in this project/);
-  assert.match(server,/approved voice profile cannot be reassigned/);
-  assert.match(server,/voice profile is already used by dialogue and cannot be reassigned safely/);
-  assert.match(server,/this character already has a voice profile/);
+  assert.match(server,/voiceProfileId: existing\.id/);
+  assert.match(server,/voice profile is already assigned to another character/);
+  assert.match(server,/retired voice profile cannot be assigned/);
+  assert.doesNotMatch(server,/approved voice profile cannot be reassigned/);
 });
