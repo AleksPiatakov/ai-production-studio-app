@@ -171,7 +171,10 @@ function registerWorkerOutputs(project, job) {
   for (const output of job.outputs || []) {
     if (!output.uri) continue;
     const existing = output.assetId && project.assets.find(asset => asset.id === output.assetId);
-    const asset = existing || { id: randomUUID(), type: typeFor(output.kind || job.type), scope: 'other', linkedCharacterId: '', label: `${job.type} · ${job.id.slice(0, 8)}`, uri: output.uri, version: '1.0.0', notes: 'Чернетковий результат, зареєстрований GPU Worker.', annotations: [], status: 'draft', currentVersionId: null, generatedByJobId: job.id };
+    const assetType = typeFor(output.kind || job.type);
+    const isSound = ['audio','music','ambient','sfx'].includes(assetType);
+    const linkedSceneId = String(job.context?.sceneId || '');
+    const asset = existing || { id: randomUUID(), type: assetType, scope: linkedSceneId ? 'scene' : (isSound ? 'audio' : 'other'), linkedCharacterId: '', linkedSceneId, label: `${job.type} · ${job.id.slice(0, 8)}`, uri: output.uri, version: '1.0.0', notes: 'Чернетковий результат, зареєстрований GPU Worker.', annotations: [], audioEdit: isSound ? { trimStart:0, trimEnd:0, fadeIn:0, fadeOut:0, volume:1 } : undefined, status: 'draft', currentVersionId: null, generatedByJobId: job.id };
     const version = { id: randomUUID(), assetId: asset.id, version: `worker-${job.id.slice(0, 8)}-${versions.length + 1}`, status: 'draft', createdAt: new Date().toISOString(), source: 'worker', uri: output.uri, prompt: job.prompt || '', model: job.modelId, seed: '', parameters: { checksum: output.checksum || '' }, parentVersionId: existing?.currentVersionId || null, notes: 'Результат worker-а. Потребує ручного перегляду й затвердження.', approvedAt: null, generationJobId: job.id };
     if (!existing) { asset.currentVersionId = version.id; assets.push(asset); }
     versions.push(version);
