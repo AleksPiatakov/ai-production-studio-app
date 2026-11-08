@@ -80,3 +80,13 @@ test('P-12 stores autonomy per project and keeps critical actions gated',()=>{
   assert.match(ui,/критичні зміни, видалення, дорогі генерації та зовнішня передача все одно потребують підтвердження/);
   assert.match(ui,/assistant\/autonomy/);
 });
+
+
+test('Pages preview mirrors P-12 project autonomy controls',()=>{
+  const preview=fs.readFileSync(path.join(__dirname,'../preview/index.html'),'utf8');
+  assert.match(preview,/advisor-autonomy/);
+  assert.match(preview,/Тільки пропозиції/);
+  assert.match(preview,/Безпечні внутрішні дії/);
+  assert.match(preview,/Розширена/);
+  assert.match(preview,/Критичні зміни, видалення, дорогі генерації та зовнішня передача потребують підтвердження/);
+});
