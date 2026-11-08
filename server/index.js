@@ -258,6 +258,19 @@ const server = http.createServer(async (req, res) => {
       }
       if (req.method === 'GET' && parts[3] === 'continuity') return send(res, 200, inspectContinuity(project));
       if (req.method === 'GET' && parts[3] === 'assistant' && parts[4] === 'status') return send(res, 200, assistantConfiguration());
+      if (req.method === 'PUT' && parts[3] === 'assistant' && parts[4] === 'autonomy') {
+        const input = await body(req);
+        const autonomy = String(input.autonomy || '');
+        if (!['suggestions-only','safe-actions','extended'].includes(autonomy)) return send(res, 400, { error: 'autonomy must be suggestions-only, safe-actions, or extended' });
+        let updated;
+        store.update(data => {
+          const target=data.projects.find(item=>item.id===projectId);
+          target.assistantWorkspace.autonomy=autonomy;
+          target.assistantWorkspace.autonomyUpdatedAt=new Date().toISOString();
+          updated={ autonomy:target.assistantWorkspace.autonomy, autonomyUpdatedAt:target.assistantWorkspace.autonomyUpdatedAt };
+        }, { noSnapshot: true });
+        return send(res, 200, updated);
+      }
       if (req.method === 'POST' && parts[3] === 'assistant' && parts[4] === 'draft') return send(res, 200, await generateAssistantDraft(project, await body(req)));
       if (req.method === 'GET' && parts[3] === 'assistant' && parts[4] === 'actions') return send(res, 200, project.assistantWorkspace?.actions || []);
       if (req.method === 'POST' && parts[3] === 'assistant' && parts[4] === 'actions' && parts.length === 5) {
