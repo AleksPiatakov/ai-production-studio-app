@@ -175,3 +175,12 @@ test('P-02 scene and AI columns collapse independently',()=>{
   assert.match(ui,/scenes-collapsed/);
   assert.match(ui,/ai-collapsed/);
 });
+
+
+test('Pages preview mirrors P-04 statuses and P-12 document actions',()=>{
+  const preview=fs.readFileSync(path.join(root,'preview','index.html'),'utf8');
+  assert.match(preview,/p04-shot-status/);
+  assert.match(preview,/advisor-document-card/);
+  assert.match(preview,/advisor-document-open/);
+  assert.match(preview,/advisor-document-delete/);
+});
