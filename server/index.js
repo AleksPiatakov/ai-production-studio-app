@@ -179,12 +179,25 @@ const server = http.createServer(async (req, res) => {
       if (req.method === 'GET' && parts[3] === 'elevenlabs' && parts[4] === 'status') return send(res, 200, elevenLabsConfiguration());
       if (req.method === 'GET' && parts[3] === 'elevenlabs' && parts[4] === 'voices') return send(res, 200, { voices: await listElevenLabsVoices() });
       if (req.method === 'GET' && parts[3] === 'versions') return send(res, 200, (project.versionHistory || []).map(version => ({ id: version.id, createdAt: version.createdAt, label: version.label, snapshot: version.snapshot })));
+      if (req.method === 'POST' && parts[3] === 'versions' && parts.length === 4) {
+        const input = await body(req), label = String(input.label || 'Ручна контрольна точка').trim().slice(0, 160) || 'Ручна контрольна точка';
+        let created;
+        store.update(data => {
+          const target = data.projects.find(item => item.id === projectId);
+          const snapshot = JSON.parse(JSON.stringify({ ...target, versionHistory: undefined }));
+          created = { id: randomUUID(), createdAt: new Date().toISOString(), label, snapshot };
+          const limit = Math.max(5, Math.min(100, Number(data.studio?.settings?.files?.versionHistoryLimit) || 30));
+          target.versionHistory = [...(target.versionHistory || []), created].slice(-limit);
+        }, { noSnapshot: true });
+        return send(res, 201, created);
+      }
       if (req.method === 'POST' && parts[3] === 'versions' && parts[4] && parts[5] === 'restore') {
         const version = (project.versionHistory || []).find(item => item.id === parts[4]);
         if (!version) return send(res, 404, { error: 'version not found' });
         store.update(data => {
           const index = data.projects.findIndex(item => item.id === projectId); const current = data.projects[index];
-          const history = [...(current.versionHistory || []), { id: randomUUID(), createdAt: new Date().toISOString(), label: 'Автоматично збережено перед відновленням', snapshot: JSON.parse(JSON.stringify({ ...current, versionHistory: undefined })) }].slice(-30);
+          const limit = Math.max(5, Math.min(100, Number(data.studio?.settings?.files?.versionHistoryLimit) || 30));
+          const history = [...(current.versionHistory || []), { id: randomUUID(), createdAt: new Date().toISOString(), label: 'Автоматично збережено перед відновленням', snapshot: JSON.parse(JSON.stringify({ ...current, versionHistory: undefined })) }].slice(-limit);
           data.projects[index] = { ...JSON.parse(JSON.stringify(version.snapshot)), versionHistory: history };
         }, { noSnapshot: true });
         return send(res, 200, { restoredVersionId: version.id });

@@ -13,6 +13,7 @@
     ['sound','♫','Звук і музика'],
     ['assets','♙','Персонажі / Style Bible'],
     ['mediaLibrary','▤','Медіабібліотека'],
+    ['versions','↶','Версії проєкту'],
     ['videoStudio','▶','Video Studio'],
     ['preview','✓','Перевірка готовності'],
     ['davinci','⇧','Експорт DaVinci']
