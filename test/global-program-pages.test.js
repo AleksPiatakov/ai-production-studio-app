@@ -382,3 +382,14 @@ test('stale dependency review is explicitly resolved and audited',()=>{
   assert.match(video,/resolveDependencyReview\('asset'/);
   assert.match(media,/resolveDependencyReview\('asset'/);
 });
+
+
+test('G-08 confirmDestructive controls only destructive project actions',()=>{
+  const app=fs.readFileSync(path.join(root,'public','app.js'),'utf8');
+  assert.match(app,/function confirmDestructiveAction/);
+  assert.match(app,/confirmDestructive===false/);
+  assert.match(app,/trashScript\(scriptId\)[\s\S]*confirmDestructiveAction/);
+  assert.match(app,/deleteAdvisorTask\(id\)[\s\S]*confirmDestructiveAction/);
+  assert.match(app,/deleteAdvisorDocument\(id\)[\s\S]*confirmDestructiveAction/);
+  assert.match(app,/resolveDependencyReview[\s\S]*window\.confirm/);
+});
