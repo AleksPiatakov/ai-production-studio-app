@@ -330,3 +330,23 @@ test('local app does not replace P-01 with legacy story-first route card',()=>{
   assert.match(app,/const previousOverviewNextSteps=overviewNextSteps;overviewNextSteps=function\(\)\{return previousOverviewNextSteps\(\)\}/);
   assert.doesNotMatch(app,/Спочатку сезон і сценарії/);
 });
+
+
+test('approved script edits mark downstream work needs-review without regeneration',()=>{
+  const server=fs.readFileSync(path.join(root,'server','index.js'),'utf8');
+  const p04=fs.readFileSync(path.join(root,'public','p04-approved-storyboard.js'),'utf8');
+  const p05=fs.readFileSync(path.join(root,'public','shot-workspace-p05.js'),'utf8');
+  const video=fs.readFileSync(path.join(root,'public','video-studio.js'),'utf8');
+  const media=fs.readFileSync(path.join(root,'public','media-library.js'),'utf8');
+  assert.match(server,/approvedContentChanged/);
+  assert.match(server,/dependencyStatus = 'needs-review'/);
+  assert.match(server,/dependencyReason = 'approved-script-changed'/);
+  assert.match(server,/reviewReason:'approved-script-changed'/);
+  assert.match(server,/dependencyReviewRequired: approvedContentChanged/);
+  assert.doesNotMatch(server,/approvedContentChanged[\s\S]{0,2500}createGenerationJob\(/);
+  assert.doesNotMatch(server,/approvedContentChanged[\s\S]{0,2500}splice\(/);
+  assert.match(p04,/dependencyStatus==='needs-review'/);
+  assert.match(p05,/Потрібна перевірка/);
+  assert.match(video,/Затверджений сценарій змінився/);
+  assert.match(media,/без автоматичної регенерації/);
+});
