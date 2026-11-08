@@ -285,3 +285,96 @@
 .wizard-directory-list span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:6px 7px;border-radius:7px;background:#1a1d38;color:#a9a0b6;font-size:8px}.wizard-directory-list span::first-letter{color:#83c9a8}
 @media(max-width:720px){.project-wizard-dialog{width:calc(100vw - 18px)}.wizard-storage-status{grid-template-columns:30px minmax(0,1fr)}.wizard-storage-status button{grid-column:1/-1;width:100%}.wizard-directory-list{grid-template-columns:1fr 1fr}}
 @media(max-width:460px){.wizard-directory-list{grid-template-columns:1fr}.wizard-step-title small{line-height:1.35}}
+
+
+/* P-12–P-15 unified project workspace shell.
+   These screens share the same approved graphite/violet hierarchy while keeping
+   their module-specific controls and data intact. */
+.advisor-card,
+.assistant-changes-page,
+.media-library,
+.project-versions-page,
+.davinci-export{
+  width:100%;
+  min-width:0;
+  display:grid;
+  gap:14px;
+  color:var(--aps-ink);
+}
+.advisor-head,
+.assistant-changes-head,
+.media-library-head,
+.project-versions-head,
+.davinci-export-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:18px;
+  padding:18px 20px;
+  border:1px solid var(--aps-border);
+  border-radius:14px;
+  background:
+    linear-gradient(135deg,rgba(17,22,44,.98),rgba(23,22,47,.98));
+  box-shadow:0 14px 36px rgba(0,0,0,.13);
+}
+.advisor-head h3,
+.assistant-changes-head h3,
+.media-library-head h3,
+.project-versions-head h3,
+.davinci-export-head h3{
+  margin:4px 0 6px;
+  color:var(--aps-ink);
+  font-size:21px;
+  line-height:1.25;
+}
+.advisor-head p:not(.eyebrow),
+.assistant-changes-head p:not(.eyebrow),
+.media-library-head p:not(.eyebrow),
+.project-versions-head p:not(.eyebrow),
+.davinci-export-head p:not(.eyebrow){
+  margin:0;
+  max-width:850px;
+  color:var(--aps-muted);
+  line-height:1.55;
+}
+.advisor-context-strip,
+.assistant-change-filters,
+.media-library-filters,
+.project-current-state,
+.davinci-controls{
+  border-color:var(--aps-border)!important;
+  background:#10152a!important;
+}
+.assistant-change-card,
+.media-card,
+.project-version-card,
+.davinci-package-tree,
+.davinci-readiness{
+  background:#11162b!important;
+  border-color:rgba(144,124,221,.20)!important;
+}
+.advisor-card .eyebrow,
+.assistant-changes-page .eyebrow,
+.media-library .eyebrow,
+.project-versions-page .eyebrow,
+.davinci-export .eyebrow{
+  color:#a995ce!important;
+  letter-spacing:.09em;
+}
+@media(max-width:700px){
+  .advisor-head,
+  .assistant-changes-head,
+  .media-library-head,
+  .project-versions-head,
+  .davinci-export-head{
+    flex-direction:column;
+    padding:16px;
+  }
+  .advisor-head>button,
+  .assistant-changes-head>button,
+  .media-library-head>button,
+  .project-versions-head>button,
+  .davinci-export-head>button{
+    width:100%;
+  }
+}
