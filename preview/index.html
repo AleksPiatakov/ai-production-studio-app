@@ -105,6 +105,7 @@ body:has(#screen-script.active) .preview-warning{display:none}
     <button type="button" data-screen="voice"><span aria-hidden="true">◖</span> Озвучування</button>
     <button type="button" data-screen="sound"><span aria-hidden="true">♫</span> Звук і музика</button>
     <button type="button" data-screen="video"><span aria-hidden="true">▶</span> Video Studio</button>
+    <button type="button" data-screen="media"><span aria-hidden="true">▤</span> Медіабібліотека</button>
   </nav>
   <p class="preview-rail-label">ГЛОБАЛЬНІ ІНСТРУМЕНТИ</p>
   <nav class="preview-rail" aria-label="Глобальні інструменти">
@@ -209,6 +210,16 @@ body:has(#screen-script.active) .preview-warning{display:none}
      </div>
    </section>
   </article>
+ </div>
+ <div class="preview-screen" id="screen-media">
+  <section class="media-library"><header class="media-library-head"><div><p class="eyebrow">МЕДІАБІБЛІОТЕКА</p><h3>Матеріали поточного проєкту</h3><p>Каталог, статуси, версії та зв’язки ресурсів.</p></div><button class="primary" type="button" disabled>＋ Додати ресурс</button></header>
+   <div class="media-library-stats"><span><b>4</b> матеріалів</span><span><b>1</b> затверджено</span><span><b>3</b> чернеток</span><span><b>6</b> версій</span></div>
+   <div class="media-library-filters"><label>Пошук<input readonly placeholder="Назва, нотатка або URI…"></label><label>Тип<select disabled><option>Усі типи</option></select></label><label>Статус<select disabled><option>Усі статуси</option></select></label></div>
+   <div class="media-grid">
+    <article class="media-card"><div class="media-preview"><div class="media-generic-preview"><span>▧</span><small>Зображення</small></div></div><div class="media-card-body"><div class="media-card-title"><div><strong>Ключовий кадр</strong><span>Зображення</span></div><span class="tag">затверджено</span></div><p>Демонстраційний запис без реального файла.</p><div class="media-meta"><span>v1.0</span><span>2 версії</span><span>1 зв’язок</span></div><div class="media-usage"><span>Кадр: Demo · 1</span></div><div class="media-card-actions"><button disabled>Версії</button><button disabled>＋ Нова версія</button><button disabled>Переглянути</button></div></div></article>
+    <article class="media-card"><div class="media-preview"><div class="media-generic-preview"><span>♫</span><small>Музика</small></div></div><div class="media-card-body"><div class="media-card-title"><div><strong>Музичний варіант</strong><span>Музика</span></div><span class="tag">чернетка</span></div><p>Тестовий запис UI.</p><div class="media-meta"><span>v0.1</span><span>1 версія</span><span>0 зв’язків</span></div><div class="media-usage"><span>Не прив’язано</span></div><div class="media-card-actions"><button disabled>Версії</button><button disabled>＋ Нова версія</button><button disabled>Редагувати</button></div></div></article>
+   </div><p class="media-library-rule">Затверджений матеріал не перезаписується; зміни створюють нову чернеткову версію.</p>
+  </section>
  </div>
  <div class="preview-screen" id="screen-video">
   <section class="video-studio"><header class="video-studio-head"><div><p class="eyebrow">VIDEO STUDIO</p><h3>Окремі кліпи для монтажу</h3><p>Ключовий кадр + рух + модель → варіанти → перегляд → затвердження.</p></div><button type="button" disabled>Перевірка готовності →</button></header>
@@ -402,7 +413,7 @@ document.getElementById('preview-image-studio').addEventListener('change',event=
 
 <script>
 window.goToView=function(name){
- const demoRoutes={home:'home',projects:'projects',script:'script',storyboard:'storyboard',imageStudio:'images',audio:'voice',sound:'sound',videoStudio:'video',shot:'shot',models:'models',queue:'queue',assistants:'assistant',settings:'settings'};
+ const demoRoutes={home:'home',projects:'projects',script:'script',storyboard:'storyboard',imageStudio:'images',audio:'voice',sound:'sound',videoStudio:'video',mediaLibrary:'media',shot:'shot',models:'models',queue:'queue',assistants:'assistant',settings:'settings'};
  if(demoRoutes[name]){window.previewNavigate(demoRoutes[name]);return;}
  const labels={assets:'Персонажі та бібліотека',episodes:'Епізоди',preview:'Відео та експорт',davinci:'Експорт для DaVinci'};
  document.getElementById('preview-feedback').textContent='«'+(labels[name]||name)+'»: екран поки не включено до статичного прев’ю. Реальні дані доступні лише в локальній програмі.';
