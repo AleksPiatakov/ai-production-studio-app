@@ -268,7 +268,25 @@ const server = http.createServer(async (req, res) => {
       if (req.method === 'POST' && parts[3] === 'assistant' && parts[4] === 'actions' && parts[5] && parts[6] === 'decision') {
         const input = await body(req); let updated;
         const apply = input.decision === 'accept';
-        store.update(data => { const target=data.projects.find(item=>item.id===projectId); updated=decideProjectAssistantAction(target, parts[5], input.decision, input.note); }, apply ? {} : { noSnapshot: true });
+        const result = store.update(data => {
+          const target=data.projects.find(item=>item.id===projectId);
+          updated=decideProjectAssistantAction(target, parts[5], input.decision, input.note);
+        }, apply ? {} : { noSnapshot: true });
+        if (apply) {
+          const target=result.projects.find(item=>item.id===projectId);
+          const rollbackVersion=target?.versionHistory?.[target.versionHistory.length-1]||null;
+          if (rollbackVersion) {
+            store.update(data => {
+              const project=data.projects.find(item=>item.id===projectId);
+              const action=project?.assistantWorkspace?.actions?.find(item=>item.id===parts[5]);
+              if (action) {
+                action.rollbackVersionId=rollbackVersion.id;
+                action.rollbackVersionCreatedAt=rollbackVersion.createdAt;
+              }
+            }, { noSnapshot: true });
+            updated={...updated,rollbackVersionId:rollbackVersion.id,rollbackVersionCreatedAt:rollbackVersion.createdAt};
+          }
+        }
         return send(res, 200, updated);
       }
       if (req.method === 'POST' && parts[3] === 'assistant' && parts[4] === 'advice') {
