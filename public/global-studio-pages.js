@@ -91,7 +91,7 @@ function settingsFields(){
     <label>Загальний помічник<select name="generalAutonomy">${autonomyOptions(settings.assistants.generalAutonomy)}</select></label>
     <label>Помічник проєкту<select name="projectAutonomy">${autonomyOptions(settings.assistants.projectAutonomy)}</select></label>
     <label class="settings-check"><input type="checkbox" name="confirmExpensive" ${checked(settings.assistants.confirmExpensive)}> Підтверджувати дорогі генерації</label>
-    <label class="settings-check"><input type="checkbox" name="keepActionLog" ${checked(settings.assistants.keepActionLog)}> Зберігати журнал дій помічників</label>`;
+    <label class="settings-check"><input type="checkbox" name="keepActionLog" ${checked(settings.assistants.keepActionLog)}> Зберігати розширений журнал помічника <small>Некритичні внутрішні дії. P-13 рішення та rollback-аудит зберігаються завжди.</small></label>`;
   return `
     <label>Пакет DaVinci<select name="packageMode"><option value="folders-manifest" ${settings.export.packageMode==='folders-manifest'?'selected':''}>Папки + manifest</option><option value="manifest-only" ${settings.export.packageMode==='manifest-only'?'selected':''}>Тільки manifest</option></select></label>
     <label>Мова за замовчуванням<select name="defaultLanguage"><option value="uk" ${settings.export.defaultLanguage==='uk'?'selected':''}>Українська</option><option value="en" ${settings.export.defaultLanguage==='en'?'selected':''}>English</option></select></label>
