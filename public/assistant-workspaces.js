@@ -84,8 +84,10 @@ async function decideAssistantChange(id,decision){
   if(!window.confirm(labelText))return;
   try{
     await api(`/api/projects/${encodeURIComponent(activeId)}/assistant/actions/${encodeURIComponent(id)}/decision`,{method:'POST',body:JSON.stringify({decision})});
-    if(decision==='accept')await load(activeId);else{await refreshProjectAssistantActions();render()}
-  }catch(error){projectAssistantActionsError=error.message;await refreshProjectAssistantActions();render()}
+    if(decision==='accept')await load(activeId);
+    await refreshProjectAssistantActions();
+    render();
+  }catch(error){projectAssistantActionsError=error.message;render()}
 }
 
 const assistantWorkspaceBasePageContent=pageContent;
