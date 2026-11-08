@@ -360,7 +360,7 @@ document.getElementById('preview-image-studio').addEventListener('change',event=
 
 <script>
 window.goToView=function(name){
- const demoRoutes={script:'script',storyboard:'storyboard',imageStudio:'images',audio:'voice',shot:'shot',models:'models',assistants:'assistant'};
+ const demoRoutes={home:'home',projects:'projects',script:'script',storyboard:'storyboard',imageStudio:'images',audio:'voice',shot:'shot',models:'models',queue:'queue',assistants:'assistant',settings:'settings'};
  if(demoRoutes[name]){window.previewNavigate(demoRoutes[name]);return;}
  const labels={assets:'Персонажі та бібліотека',episodes:'Епізоди',preview:'Відео та експорт',davinci:'Експорт для DaVinci'};
  document.getElementById('preview-feedback').textContent='«'+(labels[name]||name)+'»: екран поки не включено до статичного прев’ю. Реальні дані доступні лише в локальній програмі.';
@@ -375,7 +375,7 @@ document.getElementById('preview-dashboard').innerHTML=window.APSProjectDashboar
 });
 </script>
 <script>
-(()=>{const buttons=[...document.querySelectorAll('[data-screen]')],panels=[...document.querySelectorAll('.preview-screen')];function select(id){if(!document.getElementById('screen-'+id))return;panels.forEach(p=>p.classList.toggle('active',p.id==='screen-'+id));buttons.forEach(b=>{const active=b.dataset.screen===id;b.classList.toggle('active',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});document.getElementById('preview-feedback').textContent='Відкрито демонстраційний екран. Збереження та генератори працюють тільки в локальному застосунку.';}window.previewNavigate=select;buttons.forEach(b=>b.addEventListener('click',()=>select(b.dataset.screen)));if(window.matchMedia('(max-width:700px)').matches){document.getElementById('preview-layout').classList.add('sidebar-collapsed');document.getElementById('sidebar-toggle').setAttribute('aria-expanded','false')}document.getElementById('sidebar-toggle').addEventListener('click',()=>{const main=document.getElementById('preview-layout');const collapsed=main.classList.toggle('sidebar-collapsed');document.getElementById('sidebar-toggle').setAttribute('aria-expanded',String(!collapsed))});document.querySelectorAll('[data-module]').forEach(button=>button.addEventListener('click',()=>{document.getElementById('preview-feedback').textContent='Модуль «'+button.dataset.module+'» буде доступний в основному застосунку. Це лише дизайн-прев’ю.'}));})();
+(()=>{const buttons=[...document.querySelectorAll('[data-screen]')],panels=[...document.querySelectorAll('.preview-screen')];const globalScreens=new Set(['home','projects','assistant','models','queue','settings']);const heroMeta={home:['ГЛОБАЛЬНА ЗОНА','Головна','Проєкти, моделі, черга та загальний AI-помічник.'],projects:['ГЛОБАЛЬНА ЗОНА','Проєкти','Каталог локальних проєктів.'],assistant:['ГЛОБАЛЬНА ЗОНА','AI Помічники','Ізольовані глобальний і проєктний контексти.'],models:['ГЛОБАЛЬНА ЗОНА','AI Моделі','Підключені локальні й віддалені моделі.'],queue:['ГЛОБАЛЬНА ЗОНА','Черга генерацій','Глобальна черга завдань усіх проєктів.'],settings:['ГЛОБАЛЬНА ЗОНА','Налаштування','Параметри програми, файлів, продуктивності, AI та експорту.'],project:['ДЕМО ПРОЄКТ · ПІДГОТОВКА МАТЕРІАЛІВ','Робочий стіл','Усі творчі модулі одного проєкту — в одному місці.']};function select(id){if(!document.getElementById('screen-'+id))return;panels.forEach(p=>p.classList.toggle('active',p.id==='screen-'+id));buttons.forEach(b=>{const active=b.dataset.screen===id;b.classList.toggle('active',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});document.body.classList.toggle('preview-global-zone',globalScreens.has(id));const meta=heroMeta[id],hero=document.querySelector('#content>.hero');if(meta&&hero){hero.querySelector('.eyebrow').textContent=meta[0];hero.querySelector('h2').textContent=meta[1];hero.querySelector('p:not(.eyebrow)').textContent=meta[2]}document.getElementById('preview-feedback').textContent='Відкрито демонстраційний екран. Збереження та генератори працюють тільки в локальному застосунку.';}window.previewNavigate=select;buttons.forEach(b=>b.addEventListener('click',()=>select(b.dataset.screen)));if(window.matchMedia('(max-width:700px)').matches){document.getElementById('preview-layout').classList.add('sidebar-collapsed');document.getElementById('sidebar-toggle').setAttribute('aria-expanded','false')}document.getElementById('sidebar-toggle').addEventListener('click',()=>{const main=document.getElementById('preview-layout');const collapsed=main.classList.toggle('sidebar-collapsed');document.getElementById('sidebar-toggle').setAttribute('aria-expanded',String(!collapsed))});document.querySelectorAll('[data-module]').forEach(button=>button.addEventListener('click',()=>{document.getElementById('preview-feedback').textContent='Модуль «'+button.dataset.module+'» буде доступний в основному застосунку. Це лише дизайн-прев’ю.'}));})();
 </script>
 <script>
 (()=>{
@@ -392,6 +392,10 @@ document.getElementById('preview-dashboard').innerHTML=window.APSProjectDashboar
   document.getElementById('demo-p04-camera').textContent=cameras[i];
  }));
 })();
+</script>
+
+<script>
+(()=>{const root=document.getElementById('screen-settings');if(!root)return;root.querySelectorAll('[data-preview-settings-tab]').forEach(button=>button.addEventListener('click',()=>{const id=button.dataset.previewSettingsTab;root.querySelectorAll('[data-preview-settings-tab]').forEach(x=>x.classList.toggle('active',x===button));root.querySelectorAll('[data-preview-settings-panel]').forEach(panel=>panel.hidden=panel.dataset.previewSettingsPanel!==id)}));})();
 </script>
 <script>
 (()=>{
