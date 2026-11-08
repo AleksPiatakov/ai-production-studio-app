@@ -9,6 +9,35 @@ function safeProjectId(id) {
   if (!/^[a-zA-Z0-9_-]+$/.test(value)) throw new Error('invalid project storage id');
   return value;
 }
+function projectCreationPreflight(dataDirectory) {
+  const root = path.resolve(dataDirectory);
+  const projectsRoot = path.join(root, 'projects');
+  const probeTarget = fs.existsSync(projectsRoot) ? projectsRoot : root;
+  let writable = false, error = '';
+  try {
+    fs.mkdirSync(root, { recursive: true });
+    fs.accessSync(probeTarget, fs.constants.W_OK);
+    writable = true;
+  } catch (cause) {
+    error = cause.message;
+  }
+  let freeBytes = null;
+  try {
+    const stats = fs.statfsSync(probeTarget);
+    freeBytes = Number(stats.bavail) * Number(stats.bsize);
+  } catch {}
+  return {
+    ok: writable,
+    dataDirectory: root,
+    projectsRoot,
+    rootExists: fs.existsSync(projectsRoot),
+    writable,
+    freeBytes,
+    requiredDirectories: ['Project_Data','Scripts','Character_Bible','Style_Bible','Storyboards','Assets/Images','Assets/Video','Assets/Voices','Assets/Music','Assets/SFX','Generated','Exports','Backups'],
+    error: writable ? '' : error || 'Project storage is not writable.'
+  };
+}
+
 function projectLayout(dataDirectory, id) {
   const root = path.join(dataDirectory, 'projects', safeProjectId(id));
   return {
@@ -129,4 +158,4 @@ function migrateJsonToSqlite(sourceFile, options = {}) {
     if (temporaryDirectory) fs.rmSync(temporaryDirectory, { recursive: true, force: true });
   }
 }
-module.exports = { projectLayout, syncProjectPackage, syncAllProjectPackages, summarizeEntities, verifyProjectPackage, migrateJsonToSqlite };
+module.exports = { projectCreationPreflight, projectLayout, syncProjectPackage, syncAllProjectPackages, summarizeEntities, verifyProjectPackage, migrateJsonToSqlite };
