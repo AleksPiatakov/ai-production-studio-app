@@ -82,8 +82,10 @@ function toggleAssistantChangeTarget(kind){const row=document.getElementById('as
 async function decideAssistantChange(id,decision){
   const labelText=decision==='accept'?'Прийняти саме цю зміну? Буде створено версію проєкту для можливого відкату.':'Відхилити цю пропозицію?';
   if(!window.confirm(labelText))return;
+  const note=window.prompt(decision==='accept'?'Необов’язкова примітка до прийняття:':'Необов’язкова причина відхилення:','');
+  if(note===null)return;
   try{
-    await api(`/api/projects/${encodeURIComponent(activeId)}/assistant/actions/${encodeURIComponent(id)}/decision`,{method:'POST',body:JSON.stringify({decision})});
+    await api(`/api/projects/${encodeURIComponent(activeId)}/assistant/actions/${encodeURIComponent(id)}/decision`,{method:'POST',body:JSON.stringify({decision,note})});
     if(decision==='accept')await load(activeId);
     await refreshProjectAssistantActions();
     render();
