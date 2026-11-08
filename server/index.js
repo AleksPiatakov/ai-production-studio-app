@@ -13,6 +13,7 @@ const { synthesizeMacVoice, synthesizePiperVoice, hasPiperVoice } = require('./l
 const { configuration: elevenLabsConfiguration, listVoices: listElevenLabsVoices, synthesizeElevenLabsVoice } = require('./elevenlabs');
 const { validateProject, validateProjectInput, validateBibleInput, validateSceneInput, validateShotInput, validateDialogueInput, validateAssetInput, validateProfileInput, validateWorkflowInput, validateScriptInput, validateVoiceProfileInput, validateLocalizationInput, validateRenderJobInput, validateEpisodeInput } = require('./validation');
 const { projectTemplate, allowedAgeBands, supportedLanguages, workflowStages } = require('../shared/schema');
+const { projectCreationPreflight, projectLayout, verifyProjectPackage } = require('./project-storage');
 const { publicModel, updateStudioSettings, defaultModelCatalog, updateModelProfiles, normalizeModelSetup, probeStudioModel, createProjectAssistantAction, decideProjectAssistantAction, createGenerationJob, transitionGenerationJob, retryGenerationJob, cancelGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs } = require('./production-studio');
 const store = createStore();
 
@@ -200,11 +201,21 @@ const server = http.createServer(async (req, res) => {
       const data = store.read();
       return send(res, 200, { general: { ...data.studio.generalAssistant, projectAccess: 'none' }, projectAssistants: data.projects.map(project => ({ projectId: project.id, projectName: project.name, ...project.assistantWorkspace, generalAccess: 'none' })) });
     }
+    if (req.method === 'GET' && url.pathname === '/api/projects/preflight') {
+      store.read();
+      const preflight = projectCreationPreflight(path.join(process.cwd(), 'data'));
+      return send(res, preflight.ok ? 200 : 503, preflight);
+    }
     if (req.method === 'GET' && url.pathname === '/api/projects') return send(res, 200, store.read().projects);
     if (req.method === 'POST' && url.pathname === '/api/projects') {
+      const preflight = projectCreationPreflight(path.join(process.cwd(), 'data'));
+      if (!preflight.ok) return send(res, 503, { error: 'project storage is not writable', preflight });
       const input = validateProjectInput(await body(req));
       const project = projectTemplate({ id: randomUUID(), ...input });
-      store.update(data => data.projects.push(project)); return send(res, 201, project);
+      store.update(data => data.projects.push(project));
+      const layout = projectLayout(path.join(process.cwd(), 'data'), project.id);
+      const verification = verifyProjectPackage(project, layout);
+      return send(res, 201, { ...project, creation: { storageVerified: verification.verified, root: project.storage.root, manifest: project.storage.manifest, database: project.storage.database, directories: preflight.requiredDirectories } });
     }
     if (parts[0] === 'api' && parts[1] === 'projects' && parts[2]) {
       const projectId = parts[2]; const project = findProject(projectId); if (!project) return send(res, 404, { error: 'project not found' });
