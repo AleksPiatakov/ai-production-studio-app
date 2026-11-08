@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { normalizeStudio, defaultModelRegistry, defaultModelCatalog, updateModelProfiles, probeStudioModel, updateStudioSettings, createGenerationJob, transitionGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs } = require('../server/production-studio');
+const { normalizeStudio, defaultModelRegistry, defaultModelCatalog, updateModelProfiles, probeStudioModel, updateStudioSettings, createProjectAssistantAction, decideProjectAssistantAction, createGenerationJob, transitionGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs } = require('../server/production-studio');
 
 test('migrates existing projects to the production-studio architecture without losing their data', () => {
   const data = normalizeStudio({ projects: [{ id: 'p-1', name: 'Existing project', assets: [{ id: 'a-1' }] }] });
@@ -99,4 +99,38 @@ test('connected and running model states remain distinct from execution readines
   assert.equal(require('../server/production-studio').publicModel(connected).configured, true);
   assert.equal(createGenerationJob({ projectId: 'p-1', type: 'video', modelId: connected.id }, [connected]).status, 'blocked');
   assert.equal(createGenerationJob({ projectId: 'p-1', type: 'video', modelId: running.id }, [running]).status, 'queued');
+});
+
+
+test('project assistant changes remain proposals until explicitly accepted', () => {
+  const data = normalizeStudio({ projects: [{ id:'p-ai', description:'Old', workflow:[{id:'script',note:'Before'}] }] });
+  const project = data.projects[0];
+  const action = createProjectAssistantAction(project,{kind:'project-description',summary:'Clarify project',after:'New'});
+  assert.equal(action.status,'proposed');
+  project.assistantWorkspace.actions.push(action);
+  assert.equal(project.description,'Old');
+  const accepted = decideProjectAssistantAction(project,action.id,'accept');
+  assert.equal(accepted.status,'accepted');
+  assert.equal(project.description,'New');
+});
+
+test('project assistant rejects stale proposals instead of overwriting newer edits', () => {
+  const data = normalizeStudio({ projects: [{ id:'p-stale', description:'Original', workflow:[{id:'script',note:'Before'}] }] });
+  const project = data.projects[0];
+  const action = createProjectAssistantAction(project,{kind:'project-description',summary:'Change description',after:'AI proposal'});
+  project.assistantWorkspace.actions.push(action);
+  project.description='Human edit';
+  assert.throws(()=>decideProjectAssistantAction(project,action.id,'accept'),/stale/);
+  assert.equal(project.description,'Human edit');
+  assert.equal(action.status,'proposed');
+});
+
+test('rejected assistant proposals do not mutate project data', () => {
+  const data = normalizeStudio({ projects: [{ id:'p-reject', description:'Keep', workflow:[{id:'script',note:'Before'}] }] });
+  const project = data.projects[0];
+  const action = createProjectAssistantAction(project,{kind:'workflow-note',targetId:'script',summary:'Rewrite note',after:'After'});
+  project.assistantWorkspace.actions.push(action);
+  decideProjectAssistantAction(project,action.id,'reject','Not now');
+  assert.equal(project.workflow[0].note,'Before');
+  assert.equal(action.status,'rejected');
 });

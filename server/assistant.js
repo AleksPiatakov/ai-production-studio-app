@@ -45,6 +45,8 @@ function assistantConfiguration() {
 }
 
 function scriptSystemPrompt() { return 'Ти — сценарний помічник AI Video Studio. Працюй лише з наданим контекстом проєкту. Не вигадуй затверджені факти, не змінюй статуси, не називай творчі рішення остаточними. Якщо профіль містить духовну основу, бережи її: дозволені оригінальні алегорії, тварини й фантастичні світи, але не видавай вигадану подію за біблійний факт і не зводь головний зміст до абстрактної доброї поведінки. Поверни українською JSON-об’єкт з полями title, logline, body, note. body має бути сценарною чернеткою з чіткими сценами.'; }
+function generalAssistantSystemPrompt() { return 'Ти — Загальний AI Помічник AI Production Studio. Відповідай українською. Ти працюєш лише з глобальним контекстом програми і НЕ маєш автоматичного доступу до проєктів, сценаріїв, персонажів, медіа або їхніх файлів. Не стверджуй, що бачиш проєктні дані. Допомагай з використанням студії, плануванням роботи, моделями, чергою, налаштуваннями й загальними виробничими питаннями. Якщо користувач просить про конкретний проєкт, поясни, що його потрібно явно відкрити або передати в дозволений проєктний контекст. Поверни винятково JSON: {"answer":"...","nextSteps":["..."]}. nextSteps — не більше трьох коротких кроків.'; }
+
 function advisorSystemPrompt() { return 'Ти — Порадник проєкту AI Video Studio: уважний творчий продюсер, сценарний редактор і режисерський консультант. Відповідай українською, конкретно й доброзичливо. Бачиш лише переданий контекст локального проєкту. Не вигадуй факти про персонажів чи події, не оголошуй чернетки каноном і не роби жодних змін самостійно. Якщо даних бракує — прямо скажи це. Підтримуй визначений порядок: сезон → сценарій → ручне затвердження → аудіо/кадри/рух → перевірка → DaVinci. Для сімейного YouTube-серіалу 5–10 хвилин про «оживлені 3D-ілюстрації» оцінюй логіку, послідовність, виробничу реалістичність та ясність наступного кроку. Якщо профіль містить духовну основу, не підміняй її загальними моральними уроками: перевіряй, чи історія зрештою веде до надії, благодаті, спасіння через Ісуса Христа та особистого відповідального вибору. Оригінальні персонажі, тварини, фантастичні створіння й інші світи допустимі; не представляй їх як буквальний біблійний переказ і не використовуй прихований психологічний тиск. Для глядача без церковного досвіду радь ясну, людяну, ненав’язливу драматургію, а не внутрішню релігійну мову. Відповідь поверни винятково JSON-об’єкт: {"answer":"...","observations":["..."],"nextSteps":["..."]}. answer — коротка жива порада; observations і nextSteps — не більше трьох пунктів кожен.'; }
 
 function extractJson(text) {
@@ -78,6 +80,54 @@ async function generateAssistantDraft(project, { task, episodeId, instruction = 
   return { task, engine: config.engine, context: { episode: context.episode?.title || null, characterCount: context.characters.length, sceneCount: context.scenes.length, styleRuleCount: context.styleRules.length, scriptCount: context.existingScripts.length, assetCount: context.assets.length, visualReferenceCount: context.visualReferences.length }, draft };
 }
 
+async function connectedGeneralAnswer(message, history = []) {
+  const endpoint = process.env.AI_STUDIO_ASSISTANT_URL, token = process.env.AI_STUDIO_ASSISTANT_TOKEN, model = process.env.AI_STUDIO_ASSISTANT_MODEL;
+  if (!endpoint || !model) throw new Error('Загальний AI Помічник ще не підключено.');
+  const headers = { 'content-type': 'application/json' }; if (token) headers.authorization = `Bearer ${token}`;
+  const messages = [{ role: 'system', content: generalAssistantSystemPrompt() }, ...history.slice(-12).map(item => ({ role: item.role === 'assistant' ? 'assistant' : 'user', content: String(item.text || item.answer || '') })), { role: 'user', content: message }];
+  const response = await fetch(endpoint, { method: 'POST', headers, body: JSON.stringify({ model, messages, response_format: { type: 'json_object' } }) });
+  if (!response.ok) throw new Error(`assistant model returned ${response.status}`);
+  const payload = await response.json(), raw = payload?.choices?.[0]?.message?.content;
+  if (!raw) throw new Error('assistant model returned an empty response');
+  const reply = extractJson(raw);
+  return { answer: asText(reply.answer), nextSteps: Array.isArray(reply.nextSteps) ? reply.nextSteps.filter(Boolean).slice(0, 3) : [] };
+}
+function localGeneralAssistantAnswer(message) {
+  const question=String(message||'').trim();
+  const lower=question.toLowerCase();
+  let answer='Я працюю в локальному режимі без доступу до проєктів. Можу підказати, де в AI Production Studio знаходяться глобальні інструменти та який наступний крок зробити.';
+  const nextSteps=[];
+  if (/модел|model/.test(lower)) {
+    answer='Відкрийте «AI Моделі»: там окремо показані Мої моделі, Каталог, Профілі та перевірка готовності. Локальний режим не встановлює моделі самостійно.';
+    nextSteps.push('Відкрити AI Моделі','Перевірити готовність потрібної моделі');
+  } else if (/черг|queue|генерац/.test(lower)) {
+    answer='Глобальна черга показує задачі всіх проєктів. Можна відфільтрувати проєкт і побачити blocked/queued/running/completed стани.';
+    nextSteps.push('Відкрити Чергу генерацій','Перевірити blocked задачі та їхні моделі');
+  } else if (/налашт|setting|параметр/.test(lower)) {
+    answer='У «Налаштуваннях» є п’ять глобальних розділів: Загальні, Файли та сховище, Продуктивність, AI Помічники та Експорт.';
+    nextSteps.push('Відкрити Налаштування','Змінити лише потрібний глобальний параметр');
+  } else if (/проєкт|project/.test(lower)) {
+    answer='Я не бачу дані конкретних проєктів автоматично. Для сценарію, персонажів, медіа або виробничого стану відкрийте потрібний проєкт і його Проєктний AI-помічник.';
+    nextSteps.push('Відкрити Проєкти','Вибрати проєкт і перейти до його AI-помічника');
+  } else {
+    nextSteps.push('Уточнити, з яким глобальним інструментом студії потрібна допомога');
+  }
+  return { answer, nextSteps: nextSteps.slice(0,3) };
+}
+
+async function askGeneralAssistant({ message, history = [] } = {}) {
+  const question = String(message || '').trim();
+  if (!question) throw new Error('Напишіть питання для Загального AI Помічника.');
+  const config = assistantConfiguration();
+  let reply;
+  if (config.engine === 'local-planner') reply = localGeneralAssistantAnswer(question);
+  else if (config.engine === 'openai') {
+    const result = await openAIJsonResponse(generalAssistantSystemPrompt(), { question, history: history.slice(-12).map(item => ({ role: item.role, text: item.text || item.answer || '' })), projectAccess: 'none' });
+    reply = { answer: asText(result.answer), nextSteps: Array.isArray(result.nextSteps) ? result.nextSteps.filter(Boolean).slice(0, 3) : [] };
+  } else reply = await connectedGeneralAnswer(question, history);
+  return { engine: config.engine, model: config.model, projectAccess: 'none', reply };
+}
+
 async function askProjectAdvisor(project, { message, episodeId } = {}) {
   const question = String(message || '').trim(); if (!question) throw new Error('Напишіть питання для Порадника.');
   const config = assistantConfiguration(); if (config.engine !== 'openai') throw new Error('Порадник OpenAI ще не підключено. Перевірте локальний ключ і перезапустіть студію.');
@@ -85,4 +135,4 @@ async function askProjectAdvisor(project, { message, episodeId } = {}) {
   return { engine: config.engine, model: config.model, context: { project: context.project.name, seasonEpisodes: context.season.length, selectedEpisode: context.selectedEpisode?.title || null, characterCount: context.characters.length, scriptCount: context.selectedEpisodeWork.scripts.length }, reply: { answer: asText(reply.answer), observations: Array.isArray(reply.observations) ? reply.observations.filter(Boolean).slice(0, 3) : [], nextSteps: Array.isArray(reply.nextSteps) ? reply.nextSteps.filter(Boolean).slice(0, 3) : [] } };
 }
 
-module.exports = { buildAssistantContext, buildProjectAdvisorContext, localScriptDraft, assistantConfiguration, generateAssistantDraft, askProjectAdvisor };
+module.exports = { buildAssistantContext, buildProjectAdvisorContext, localScriptDraft, localGeneralAssistantAnswer, assistantConfiguration, generalAssistantSystemPrompt, generateAssistantDraft, askGeneralAssistant, askProjectAdvisor };

@@ -55,3 +55,28 @@ test('model center separates my models catalog profiles archive and probes readi
   assert.match(studio,/Перевірити готовність/);
   assert.match(studio,/БЕЗ УДАВАНОГО ВСТАНОВЛЕННЯ/);
 });
+
+
+test('global assistant has isolated server history and no automatic project context',()=>{
+  const ui=fs.readFileSync(path.join(root,'public','assistant-workspaces.js'),'utf8');
+  assert.match(ui,/\/api\/studio\/general-assistant/);
+  assert.match(ui,/projectAccess/);
+  assert.match(ui,/Проєктні файли, сценарії, медіа та пам’ять проєктів не передаються автоматично/);
+  assert.match(ui,/local-planner/);
+});
+
+test('project AI changes render a two-column diff and require explicit decisions',()=>{
+  const ui=fs.readFileSync(path.join(root,'public','assistant-workspaces.js'),'utf8');
+  assert.match(ui,/assistant-diff/);
+  assert.match(ui,/Прийняти цю зміну/);
+  assert.match(ui,/Відхилити/);
+  assert.match(ui,/assistant\/actions/);
+  assert.match(ui,/decision/);
+  assert.match(css,/\.assistant-diff/);
+});
+
+
+test('approved project rail exposes project assistant and AI change review separately',()=>{
+  assert.match(rail,/\['advisor','✧','AI Помічник проєкту'\]/);
+  assert.match(rail,/\['assistantChanges','≠','Зміни AI'\]/);
+});

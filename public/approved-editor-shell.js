@@ -4,6 +4,8 @@
 (()=>{
   const projectRoutes=[
     ['overview','⌂','Робочий стіл'],
+    ['advisor','✧','AI Помічник проєкту'],
+    ['assistantChanges','≠','Зміни AI'],
     ['script','✎','Сценарій'],
     ['storyboard','▦','Сторіборд'],
     ['imageStudio','▧','Зображення'],

@@ -6,14 +6,14 @@ const localEnvFile = path.join(__dirname, '..', '.env.local');
 if (fs.existsSync(localEnvFile) && typeof process.loadEnvFile === 'function') process.loadEnvFile(localEnvFile);
 const { createStore } = require('./store');
 const { inspectContinuity } = require('./continuity');
-const { assistantConfiguration, generateAssistantDraft, askProjectAdvisor } = require('./assistant');
+const { assistantConfiguration, generateAssistantDraft, askGeneralAssistant, askProjectAdvisor } = require('./assistant');
 const { buildAutopilotBlueprint } = require('./autopilot');
 const { buildDaVinciHandoff, buildDaVinciPackage, packageManifestJson, handoffMarkdown, handoffTimelineCsv } = require('./davinci-handoff');
 const { synthesizeMacVoice, synthesizePiperVoice, hasPiperVoice } = require('./local-voice');
 const { configuration: elevenLabsConfiguration, listVoices: listElevenLabsVoices, synthesizeElevenLabsVoice } = require('./elevenlabs');
 const { validateProject, validateProjectInput, validateBibleInput, validateSceneInput, validateShotInput, validateDialogueInput, validateAssetInput, validateProfileInput, validateWorkflowInput, validateScriptInput, validateVoiceProfileInput, validateLocalizationInput, validateRenderJobInput, validateEpisodeInput } = require('./validation');
 const { projectTemplate, allowedAgeBands, supportedLanguages, workflowStages } = require('../shared/schema');
-const { publicModel, updateStudioSettings, defaultModelCatalog, updateModelProfiles, probeStudioModel, createGenerationJob, transitionGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs } = require('./production-studio');
+const { publicModel, updateStudioSettings, defaultModelCatalog, updateModelProfiles, probeStudioModel, createProjectAssistantAction, decideProjectAssistantAction, createGenerationJob, transitionGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs } = require('./production-studio');
 const store = createStore();
 
 function send(res, status, payload) { res.writeHead(status, { 'content-type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(payload)); }
@@ -142,6 +142,26 @@ const server = http.createServer(async (req, res) => {
       const updated = transitionGenerationJob(job, input.status, input.note);
       store.update(data => { const jobs = data.studio.generationJobs; jobs[jobs.findIndex(item => item.id === job.id)] = updated; }); return send(res, 200, updated);
     }
+    if (req.method === 'GET' && url.pathname === '/api/studio/general-assistant') {
+      const data = store.read(), config = assistantConfiguration();
+      return send(res, 200, { assistant: { ...data.studio.generalAssistant, projectAccess: 'none' }, configuration: config, history: (data.studio.generalAssistant.memory || []).slice(-100) });
+    }
+    if (req.method === 'POST' && url.pathname === '/api/studio/general-assistant/messages') {
+      const input = await body(req), data = store.read(), memory = (data.studio.generalAssistant.memory || []).slice(-100);
+      const result = await askGeneralAssistant({ message: input.message, history: memory });
+      const now = new Date().toISOString();
+      const userMessage = { id: randomUUID(), role: 'user', text: String(input.message || '').trim(), createdAt: now };
+      const assistantMessage = { id: randomUUID(), role: 'assistant', answer: result.reply.answer, nextSteps: result.reply.nextSteps, engine: result.engine, model: result.model, createdAt: new Date().toISOString() };
+      store.update(next => {
+        const target = next.studio.generalAssistant;
+        target.memory = [...(target.memory || []), userMessage, assistantMessage].slice(-100);
+      }, { noSnapshot: true });
+      return send(res, 200, { ...result, messages: [userMessage, assistantMessage] });
+    }
+    if (req.method === 'DELETE' && url.pathname === '/api/studio/general-assistant/messages') {
+      store.update(data => { data.studio.generalAssistant.memory = []; }, { noSnapshot: true });
+      return send(res, 200, { cleared: true });
+    }
     if (req.method === 'GET' && url.pathname === '/api/studio/assistants') {
       const data = store.read();
       return send(res, 200, { general: { ...data.studio.generalAssistant, projectAccess: 'none' }, projectAssistants: data.projects.map(project => ({ projectId: project.id, projectName: project.name, ...project.assistantWorkspace, generalAccess: 'none' })) });
@@ -172,6 +192,18 @@ const server = http.createServer(async (req, res) => {
       if (req.method === 'GET' && parts[3] === 'continuity') return send(res, 200, inspectContinuity(project));
       if (req.method === 'GET' && parts[3] === 'assistant' && parts[4] === 'status') return send(res, 200, assistantConfiguration());
       if (req.method === 'POST' && parts[3] === 'assistant' && parts[4] === 'draft') return send(res, 200, await generateAssistantDraft(project, await body(req)));
+      if (req.method === 'GET' && parts[3] === 'assistant' && parts[4] === 'actions') return send(res, 200, project.assistantWorkspace?.actions || []);
+      if (req.method === 'POST' && parts[3] === 'assistant' && parts[4] === 'actions' && parts.length === 5) {
+        const action = createProjectAssistantAction(project, await body(req));
+        store.update(data => { const target=data.projects.find(item=>item.id===projectId); target.assistantWorkspace.actions.push(action); }, { noSnapshot: true });
+        return send(res, 201, action);
+      }
+      if (req.method === 'POST' && parts[3] === 'assistant' && parts[4] === 'actions' && parts[5] && parts[6] === 'decision') {
+        const input = await body(req); let updated;
+        const apply = input.decision === 'accept';
+        store.update(data => { const target=data.projects.find(item=>item.id===projectId); updated=decideProjectAssistantAction(target, parts[5], input.decision, input.note); }, apply ? {} : { noSnapshot: true });
+        return send(res, 200, updated);
+      }
       if (req.method === 'POST' && parts[3] === 'assistant' && parts[4] === 'advice') return send(res, 200, await askProjectAdvisor(project, await body(req)));
       if (req.method === 'POST' && parts[3] === 'autopilot' && parts[4] === 'episode') {
         const blueprint = buildAutopilotBlueprint(project, await body(req));
