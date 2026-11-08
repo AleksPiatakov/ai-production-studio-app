@@ -112,4 +112,4 @@ async function askProjectAdvisor(project, { message, episodeId } = {}) {
   return { engine: config.engine, model: config.model, context: { project: context.project.name, seasonEpisodes: context.season.length, selectedEpisode: context.selectedEpisode?.title || null, characterCount: context.characters.length, scriptCount: context.selectedEpisodeWork.scripts.length }, reply: { answer: asText(reply.answer), observations: Array.isArray(reply.observations) ? reply.observations.filter(Boolean).slice(0, 3) : [], nextSteps: Array.isArray(reply.nextSteps) ? reply.nextSteps.filter(Boolean).slice(0, 3) : [] } };
 }
 
-module.exports = { buildAssistantContext, buildProjectAdvisorContext, localScriptDraft, assistantConfiguration, generateAssistantDraft, askGeneralAssistant, askProjectAdvisor };
+module.exports = { buildAssistantContext, buildProjectAdvisorContext, localScriptDraft, assistantConfiguration, generalAssistantSystemPrompt, generateAssistantDraft, askGeneralAssistant, askProjectAdvisor };
