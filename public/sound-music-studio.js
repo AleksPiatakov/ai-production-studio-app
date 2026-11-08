@@ -4,7 +4,8 @@ let soundStudioKind='music';
 let soundStudioNotice='';
 function soundKindLabel(kind){return ({music:'Музика',ambient:'Атмосфера',sfx:'SFX'})[kind]||kind}
 function soundModelOptions(kind){
-  const models=(productionStudioState?.models||[]).filter(model=>typeof clientModelSupports==='function'&&clientModelSupports(model,kind));
+  const compatible=(productionStudioState?.models||[]).filter(model=>typeof clientModelSupports==='function'&&clientModelSupports(model,kind));
+  const models=typeof preferredModelOrder==='function'?preferredModelOrder(compatible):compatible;
   return {models,html:models.map(model=>`<option value="${esc(model.id)}">${esc(model.name)} · ${esc(typeof modelStatusLabel==='function'?modelStatusLabel(model.status):model.status)}</option>`).join('')};
 }
 function projectSoundAssets(){
