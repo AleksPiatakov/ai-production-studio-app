@@ -393,3 +393,15 @@ test('G-08 confirmDestructive controls only destructive project actions',()=>{
   assert.match(app,/deleteAdvisorDocument\(id\)[\s\S]*confirmDestructiveAction/);
   assert.match(app,/resolveDependencyReview[\s\S]*window\.confirm/);
 });
+
+
+test('G-08 files.verifyWrites controls project package verification',()=>{
+  const server=fs.readFileSync(path.join(root,'server','index.js'),'utf8');
+  const settings=fs.readFileSync(path.join(root,'public','global-studio-pages.js'),'utf8');
+  assert.match(server,/const verifyWrites = previousData\.studio\?\.settings\?\.files\?\.verifyWrites !== false/);
+  assert.match(server,/if \(verifyWrites\) \{[\s\S]*verifyProjectPackage/);
+  assert.match(server,/verificationSkipped: !verifyWrites/);
+  assert.match(server,/storageVerified: verifyWrites \? true : false/);
+  assert.match(server,/projectCreationPreflight\(dataDirectory\)/);
+  assert.match(settings,/Preflight запису й вільного місця виконується завжди/);
+});
