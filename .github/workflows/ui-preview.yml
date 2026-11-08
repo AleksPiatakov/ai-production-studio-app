@@ -6,6 +6,7 @@ on:
     paths:
       - 'preview/**'
       - 'public/*.css'
+      - 'public/*.js'
       - 'scripts/build-preview.js'
       - '.github/workflows/ui-preview.yml'
   workflow_dispatch:
@@ -44,8 +45,11 @@ jobs:
       - name: Capture desktop and mobile layout
         run: |
           mkdir -p preview-screenshots
-          npx playwright@1.58.2 screenshot --browser chromium --viewport-size='1440,900' --wait-for-timeout=600 "file://$PWD/preview-dist/index.html" preview-screenshots/project-desktop.png
-          npx playwright@1.58.2 screenshot --browser chromium --viewport-size='390,844' --wait-for-timeout=600 "file://$PWD/preview-dist/index.html" preview-screenshots/project-mobile.png
+          for screen in project home projects assistant models queue settings; do
+            npx playwright@1.58.2 screenshot --browser chromium --viewport-size='1440,900' --wait-for-timeout=700 "file://$PWD/preview-dist/index.html?screen=$screen" "preview-screenshots/$screen-desktop.png"
+          done
+          npx playwright@1.58.2 screenshot --browser chromium --viewport-size='390,844' --wait-for-timeout=700 "file://$PWD/preview-dist/index.html?screen=project" preview-screenshots/project-mobile.png
+          npx playwright@1.58.2 screenshot --browser chromium --viewport-size='390,844' --wait-for-timeout=700 "file://$PWD/preview-dist/index.html?screen=home" preview-screenshots/home-mobile.png
       - uses: actions/upload-artifact@v4
         with:
           name: studio-preview-screenshots
