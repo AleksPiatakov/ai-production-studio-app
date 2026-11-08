@@ -63,3 +63,17 @@ test('P-13 accepted action exposes its exact rollback snapshot',()=>{
   assert.match(ui,/versions\/\$\{encodeURIComponent\(action\.rollbackVersionId\)\}\/restore/);
   assert.match(ui,/Відкотити цю зміну/);
 });
+
+
+test('P-12 stores autonomy per project and keeps critical actions gated',()=>{
+  const server=fs.readFileSync(path.join(__dirname,'../server/index.js'),'utf8');
+  const ui=fs.readFileSync(path.join(__dirname,'../public/app.js'),'utf8');
+  assert.match(server,/assistant' && parts\[4\] === 'autonomy'/);
+  assert.match(server,/suggestions-only','safe-actions','extended/);
+  assert.match(server,/target\.assistantWorkspace\.autonomy=autonomy/);
+  assert.match(server,/noSnapshot: true/);
+  assert.match(ui,/setProjectAssistantAutonomy/);
+  assert.match(ui,/Безпечні внутрішні дії/);
+  assert.match(ui,/критичні зміни, видалення, дорогі генерації та зовнішня передача все одно потребують підтвердження/);
+  assert.match(ui,/assistant\/autonomy/);
+});
