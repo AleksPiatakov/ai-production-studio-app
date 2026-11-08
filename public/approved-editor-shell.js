@@ -13,9 +13,12 @@
     ['davinci','⇧','Експорт DaVinci']
   ];
   const globalRoutes=[
+    ['home','⌂','Головна'],
+    ['projects','▤','Проєкти'],
+    ['assistants','✧','AI Помічники'],
     ['models','◈','AI Моделі'],
     ['queue','≡','Черга генерацій'],
-    ['assistants','✧','AI Помічники']
+    ['settings','⚙','Налаштування']
   ];
   const routeMarkup=routes=>routes.map(([id,icon,title])=>
     '<button type="button" data-aps-destination="'+id+'" '+(view===id?'class="active" aria-current="page"':'')+'><span aria-hidden="true">'+icon+'</span>'+title+'</button>'
@@ -25,7 +28,7 @@
     const aside=document.getElementById('app-sidebar');
     if(!aside)return;
     const isEditor=view==='editor';
-    const globalZone=['models','queue','assistants'].includes(view);
+    const globalZone=['home','projects','models','queue','assistants','settings'].includes(view);
     document.body.classList.add('aps-approved-studio-shell');
     document.body.classList.toggle('aps-approved-editor-shell',isEditor);
     document.body.classList.toggle('aps-global-zone',globalZone);
