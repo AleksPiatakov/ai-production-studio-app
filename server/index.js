@@ -718,19 +718,11 @@ const server = http.createServer(async (req, res) => {
           const changed = mutableKeys.find(key => JSON.stringify(existing[key] ?? null) !== JSON.stringify(validated[key] ?? null));
           if (changed) return send(res, 409, { error: 'Затверджений запис Bible не можна перезаписати напряму. Створіть нову версію.', field: changed, bibleEntryId: existing.id });
         }
-        const updated = { ...existing, ...validated, id: existing.id, updatedAt: new Date().toISOString() };
+        const updated = { ...existing, ...validated, id: existing.id, updatedAt: new Date().toISOString(), ...(validated.status === 'approved' && existing.supersedesId ? { replacementStatus: 'dependency-review-required' } : {}) };
         store.update(data => {
           const target = data.projects.find(item => item.id === projectId).bibles[parts[4]];
           const index = target.findIndex(item => item.id === existing.id);
           target[index] = updated;
-          if (updated.status === 'approved' && updated.supersedesId) {
-            const previous = target.find(item => item.id === updated.supersedesId);
-            if (previous && previous.status === 'approved') {
-              previous.status = 'superseded';
-              previous.supersededById = updated.id;
-              previous.supersededAt = new Date().toISOString();
-            }
-          }
         });
         return send(res, 200, updated);
       }
