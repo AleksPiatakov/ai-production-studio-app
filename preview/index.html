@@ -29,7 +29,7 @@
 #preview-layout #app-sidebar .side-note{margin:22px 13px;color:#a69bb9;font-size:11px}
 #preview-layout #content{min-width:0}
 .preview-global-zone .preview-project{display:none}
-.preview-global-zone .preview-rail-label.project-only{display:none}
+.preview-global-zone .preview-rail-label.project-only,.preview-global-zone .preview-rail.project-only{display:none}
 .preview-main-card h3{max-width:100%}
 @media(max-width:800px){.preview-brand{padding:12px}.preview-rail{padding:8px}.preview-rail button{min-height:40px}}
 .preview-screen{display:none}.preview-screen.active{display:block}
@@ -97,7 +97,7 @@ body:has(#screen-script.active) .preview-warning{display:none}
  <aside id="app-sidebar" aria-label="Навігація студії">
   <div class="preview-brand"><span class="preview-brand-icon" aria-hidden="true">▣</span><div><strong>AI Production Studio</strong><small>Творчий простір</small></div></div>
   <div class="preview-project"><label>ПОТОЧНИЙ ПРОЄКТ</label><strong>Демонстраційний проєкт</strong></div>
-  <nav class="preview-rail" aria-label="Розділи проєкту">
+  <nav class="preview-rail project-only" aria-label="Розділи проєкту">
     <button type="button" data-screen="project" class="active"><span aria-hidden="true">⌂</span> Робочий стіл</button>
     <button type="button" data-screen="script"><span aria-hidden="true">✎</span> Сценарій</button>
     <button type="button" data-screen="storyboard"><span aria-hidden="true">▦</span> Сторіборд</button>
@@ -114,7 +114,7 @@ body:has(#screen-script.active) .preview-warning{display:none}
   <nav class="preview-rail" aria-label="Глобальні інструменти">
     <button type="button" data-screen="home"><span aria-hidden="true">⌂</span> Головна</button>
     <button type="button" data-screen="projects"><span aria-hidden="true">▤</span> Проєкти</button>
-    <button type="button" data-screen="assistant"><span aria-hidden="true">✧</span> AI Помічники</button>
+    <button type="button" data-screen="assistant"><span aria-hidden="true">✧</span> Загальний AI Помічник</button>
     <button type="button" data-screen="models"><span aria-hidden="true">◈</span> AI Моделі</button>
     <button type="button" data-screen="queue"><span aria-hidden="true">≡</span> Черга генерацій</button>
     <button type="button" data-screen="settings"><span aria-hidden="true">⚙</span> Налаштування</button>
