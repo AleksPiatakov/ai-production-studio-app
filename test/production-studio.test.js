@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { normalizeStudio, defaultModelRegistry, defaultModelCatalog, updateModelProfiles, probeStudioModel, updateStudioSettings, createProjectAssistantAction, decideProjectAssistantAction, createGenerationJob, transitionGenerationJob, retryGenerationJob, cancelGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs } = require('../server/production-studio');
+const { normalizeStudio, defaultModelRegistry, defaultModelCatalog, updateModelProfiles, normalizeModelSetup, probeStudioModel, updateStudioSettings, createProjectAssistantAction, decideProjectAssistantAction, createGenerationJob, transitionGenerationJob, retryGenerationJob, cancelGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs } = require('../server/production-studio');
 
 test('migrates existing projects to the production-studio architecture without losing their data', () => {
   const data = normalizeStudio({ projects: [{ id: 'p-1', name: 'Existing project', assets: [{ id: 'a-1' }] }] });
@@ -174,4 +174,23 @@ test('registered worker outputs report result asset ids back to the queue', () =
   const registered=registerWorkerOutputs(project,{id:'job-output-12345678',projectId:'p-1',type:'image',modelId:'gpu-worker',status:'completed',prompt:'x',outputs:[{kind:'image',uri:'asset://x.png',checksum:'sha256:x'}]});
   assert.equal(registered.outputAssetIds.length,1);
   assert.equal(registered.outputAssetIds[0],registered.assets[0].id);
+});
+
+
+test('model setup stores configuration only and validates remote endpoint shape', () => {
+  const model = defaultModelRegistry().find(item => item.id === 'gpu-worker');
+  const setup = normalizeModelSetup(model, { mode:'advanced', executionTarget:'remote', endpoint:'https://gpu.example.local', connectionLabel:'GPU Node A', technicalNotes:'CUDA worker' });
+  assert.equal(setup.mode,'advanced');
+  assert.equal(setup.executionTarget,'remote');
+  assert.equal(setup.endpoint,'https://gpu.example.local');
+  assert.match(setup.savedAt,/T/);
+  assert.throws(()=>normalizeModelSetup(model,{executionTarget:'remote',endpoint:'gpu.local'}),/http:\/\//);
+});
+
+test('studio normalization preserves model setup and last probe without pretending it is running', () => {
+  const data = normalizeStudio({ studio:{ modelRegistry:[{ id:'custom',name:'Custom',capability:'image',runtime:'external',version:'1',status:'not-connected',execution:'remote',setup:{executionTarget:'remote',endpoint:'https://node.local',savedAt:'2026-11-08T08:00:00.000Z'},lastProbe:{ok:false,message:'offline',checkedAt:'2026-11-08T08:01:00.000Z'} }] }, projects:[] });
+  const model=data.studio.modelRegistry[0];
+  assert.equal(model.setup.executionTarget,'remote');
+  assert.equal(model.lastProbe.ok,false);
+  assert.notEqual(model.status,'running');
 });

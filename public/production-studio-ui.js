@@ -5,6 +5,7 @@ let studioQueueProjectFilter = 'all';
 let studioQueueStatusFilter = 'all';
 let modelCenterTab = 'mine';
 let modelProbeResults = {};
+let modelSetupState = { modelId:null, step:1, mode:'simple', draft:null, error:'', probe:null };
 async function refreshProductionStudio() {
   try {
     const [models, catalog, profiles, jobs, assistants] = await Promise.all([
@@ -21,6 +22,7 @@ function studioStatus(status) { return ({ ready: 'готова', available: 'д�
 function productionStudioPanel() {
   const error = productionStudioState.error ? `<p class="assistant-error">${esc(productionStudioState.error)}</p>` : '';
   if (view === 'models') return modelCenterPanel(error);
+  if (view === 'modelSetup') return modelSetupPanel();
   if (view === 'queue') {
     const visible=productionStudioState.jobs.filter(job=>(studioQueueProjectFilter==='all'||job.projectId===studioQueueProjectFilter)&&(studioQueueStatusFilter==='all'||job.status===studioQueueStatusFilter));
     const projectOptions=(projects||[]).map(project=>`<option value="${esc(project.id)}">${esc(project.name)}</option>`).join('');
@@ -47,19 +49,21 @@ function modelStatusClass(status){return ['ready','available','running'].include
 function modelStatusLabel(status){return ({installed:'встановлена',connected:'підключена',running:'запущена',failed:'помилка'})[status]||studioStatus(status)}
 function modelCatalogInfo(id){return productionStudioState.catalog.find(item=>item.id===id)}
 function modelCard(model,catalog=modelCatalogInfo(model.id)){
-  const probe=modelProbeResults[model.id];
+  const probe=modelProbeResults[model.id]||model.lastProbe;
+  const configured=Boolean(model.setup?.savedAt);
   return `<section class="model-card">
     <div class="model-card-head"><div><strong>${esc(model.name)}</strong><span class="tag">${esc(catalog?.category||model.capability)}</span></div><span class="model-state ${modelStatusClass(model.status)}">${esc(modelStatusLabel(model.status))}</span></div>
     <p>${esc(catalog?.description||model.notes||'')}</p>
-    <div class="model-facts"><span>Рушій <b>${esc(model.runtime)}</b></span><span>Версія <b>${esc(model.version)}</b></span><span>Запуск <b>${esc(model.execution)}</b></span></div>
+    <div class="model-facts"><span>Рушій <b>${esc(model.runtime)}</b></span><span>Версія <b>${esc(model.version)}</b></span><span>Виконання <b>${esc(model.setup?.executionTarget||model.execution)}</b></span></div>
+    <div class="model-readiness-mini"><span class="${configured?'ok':''}">Конфігурація <b>${configured?'збережена':'не збережена'}</b></span><span class="${probe?.ok?'ok':probe?'error':''}">Перевірка <b>${probe?(probe.ok?'успішна':'помилка'):'ще не виконана'}</b></span><span class="${model.status==='running'?'ok':''}">Запуск <b>${model.status==='running'?'активний':'не запущено'}</b></span></div>
     ${catalog?`<small>Ліцензія: ${esc(catalog.license)} · Вимоги: ${esc(catalog.requirements)} · ${esc(catalog.sizeNote)}</small>`:''}
-    ${probe?`<div class="model-probe ${probe.ok?'ok':'error'}"><strong>${probe.ok?'✓ Готовність підтверджено':'Не готова'}</strong><span>${esc(probe.message)}</span></div>`:''}
-    <div class="model-card-actions"><button type="button" onclick="openModelSetupInfo('${esc(model.id)}')">Параметри</button><button class="primary" type="button" onclick="probeStudioModelUI('${esc(model.id)}')">Перевірити готовність</button></div>
+    ${probe?`<div class="model-probe ${probe.ok?'ok':'error'}"><strong>${probe.ok?'✓ Перевірка пройдена':'Перевірка не пройдена'}</strong><span>${esc(probe.message)}</span><small>${probe.checkedAt?esc(new Date(probe.checkedAt).toLocaleString('uk-UA')):''}</small></div>`:''}
+    <div class="model-card-actions"><button type="button" onclick="startModelSetup('${esc(model.id)}')">Налаштувати</button><button class="primary" type="button" onclick="probeStudioModelUI('${esc(model.id)}')">Перевірити готовність</button></div>
   </section>`;
 }
 function catalogCard(entry){
   const model=entry.registry;
-  return `<section class="model-card catalog-card"><div class="model-card-head"><div><strong>${esc(entry.name)}</strong><span class="tag">${esc(entry.category)}</span></div><span class="model-state ${model?modelStatusClass(model.status):'pending'}">${esc(model?modelStatusLabel(model.status):'не додана')}</span></div><p>${esc(entry.description)}</p><div class="model-facts"><span>Тип <b>${esc(entry.capability)}</b></span><span>Встановлення <b>${esc(entry.installMode)}</b></span><span>Вимоги <b>${esc(entry.requirements)}</b></span></div><small>Ліцензія: ${esc(entry.license)} · Розмір: ${esc(entry.sizeNote)}</small><div class="model-card-actions">${model?`<button type="button" onclick="openModelSetupInfo('${esc(entry.id)}')">Налаштувати</button><button class="primary" type="button" onclick="probeStudioModelUI('${esc(entry.id)}')">Перевірити</button>`:'<button type="button" disabled>Ще не підтримується</button>'}</div></section>`;
+  return `<section class="model-card catalog-card"><div class="model-card-head"><div><strong>${esc(entry.name)}</strong><span class="tag">${esc(entry.category)}</span></div><span class="model-state ${model?modelStatusClass(model.status):'pending'}">${esc(model?modelStatusLabel(model.status):'не додана')}</span></div><p>${esc(entry.description)}</p><div class="model-facts"><span>Тип <b>${esc(entry.capability)}</b></span><span>Підключення <b>${esc(entry.installMode)}</b></span><span>Вимоги <b>${esc(entry.requirements)}</b></span></div><small>Ліцензія: ${esc(entry.license)} · Розмір: ${esc(entry.sizeNote)}</small><div class="model-card-actions">${model?`<button type="button" onclick="startModelSetup('${esc(entry.id)}')">Відкрити майстер</button><button class="primary" type="button" onclick="probeStudioModelUI('${esc(entry.id)}')">Перевірити</button>`:'<button type="button" disabled>Ще не підтримується</button>'}</div></section>`;
 }
 function modelProfileOptions(task,current){
   const compatible=productionStudioState.models.filter(model=>clientModelSupports(model,task));
@@ -82,15 +86,50 @@ function modelCenterPanel(error){
 }
 async function probeStudioModelUI(id){
   modelProbeResults[id]={ok:false,message:'Перевірка…'};render();
-  try{modelProbeResults[id]=await api('/api/studio/models/'+encodeURIComponent(id)+'/probe',{method:'POST',body:'{}'});}
-  catch(error){modelProbeResults[id]={ok:false,message:error.message}}
+  try{
+    modelProbeResults[id]=await api('/api/studio/models/'+encodeURIComponent(id)+'/probe',{method:'POST',body:'{}'});
+    await refreshProductionStudio();
+  }catch(error){modelProbeResults[id]={ok:false,message:error.message}}
+  if(modelSetupState.modelId===id)modelSetupState.probe=modelProbeResults[id];
   render();
 }
-function openModelSetupInfo(id){
-  const model=productionStudioState.models.find(item=>item.id===id),entry=modelCatalogInfo(id);
-  if(!model)return;
-  modal('Параметри моделі',`<div class="model-setup-summary"><p class="eyebrow">БЕЗ УДАВАНОГО ВСТАНОВЛЕННЯ</p><h3>${esc(model.name)}</h3><p>${esc(entry?.description||model.notes||'')}</p></div><label>Статус<input value="${esc(studioStatus(model.status))}" readonly></label><label>Рушій<input value="${esc(model.runtime)}" readonly></label><label>Спосіб підключення<input value="${esc(entry?.installMode||model.execution)}" readonly></label><label>Вимоги<textarea readonly>${esc(entry?.requirements||'Не задано')}</textarea></label><p class="muted">Цей екран не позначає модель встановленою вручну. Після реального налаштування натисніть «Перевірити готовність» у Центрі моделей.</p>`,()=>Promise.resolve());
-  const submit=document.querySelector('#modal-form button[type="submit"]');if(submit)submit.textContent='Закрити';
+function modelSetupModel(){return productionStudioState.models.find(item=>item.id===modelSetupState.modelId)}
+function modelSetupCatalog(){return modelCatalogInfo(modelSetupState.modelId)}
+function startModelSetup(id){
+  const model=productionStudioState.models.find(item=>item.id===id);if(!model)return;
+  const setup=model.setup||{};
+  modelSetupState={modelId:id,step:1,mode:setup.mode||'simple',draft:{executionTarget:setup.executionTarget||model.execution||'local',storagePath:setup.storagePath||'',endpoint:setup.endpoint||'',connectionLabel:setup.connectionLabel||'',technicalNotes:setup.technicalNotes||''},error:'',probe:model.lastProbe||modelProbeResults[id]||null};
+  view='modelSetup';workspaceMode='studio';render();window.scrollTo({top:0,left:0});
+}
+function modelSetupSet(field,value){modelSetupState.draft={...(modelSetupState.draft||{}),[field]:value}}
+function modelSetupSetMode(mode){modelSetupState.mode=mode==='advanced'?'advanced':'simple';render()}
+function modelSetupBack(){if(modelSetupState.step>1){modelSetupState.step--;render()}else{view='models';modelCenterTab='catalog';render()}}
+function modelSetupNext(){modelSetupState.step=Math.min(3,modelSetupState.step+1);render()}
+async function saveModelSetup(){
+  const model=modelSetupModel();if(!model)return;
+  modelSetupState.error='';
+  try{
+    const result=await api('/api/studio/models/'+encodeURIComponent(model.id)+'/setup',{method:'PUT',body:JSON.stringify({mode:modelSetupState.mode,...modelSetupState.draft})});
+    await refreshProductionStudio();
+    modelSetupState.draft={...modelSetupState.draft,...result.setup};
+    modelSetupState.step=4;
+    render();
+  }catch(error){modelSetupState.error=error.message;render()}
+}
+function modelSetupReadiness(model){
+  const probe=modelSetupState.probe||model?.lastProbe;
+  return `<div class="model-readiness-grid"><div class="${model?.setup?.savedAt?'ok':''}"><span>КОНФІГУРАЦІЯ</span><strong>${model?.setup?.savedAt?'Збережена':'Не збережена'}</strong><small>${model?.setup?.savedAt?esc(new Date(model.setup.savedAt).toLocaleString('uk-UA')):'Майстер ще не завершено'}</small></div><div class="${probe?.ok?'ok':probe?'error':''}"><span>ПЕРЕВІРКА</span><strong>${probe?(probe.ok?'Пройдена':'Не пройдена'):'Не виконана'}</strong><small>${probe?esc(probe.message):'Натисніть «Перевірити готовність»'}</small></div><div class="${model?.status==='running'?'ok':''}"><span>ЗАПУСК</span><strong>${model?.status==='running'?'Запущена':'Не запущена'}</strong><small>Перевірка не запускає важку модель автоматично</small></div></div>`;
+}
+function modelSetupPanel(){
+  const model=modelSetupModel(),entry=modelSetupCatalog();if(!model)return '<p class="global-empty">Модель не знайдена.</p>';
+  const draft=modelSetupState.draft||{},step=modelSetupState.step||1;
+  const steps=[['1','Огляд'],['2','Місце виконання'],['3','Конфігурація'],['4','Перевірка']];
+  let body='';
+  if(step===1)body=`<section class="model-wizard-section"><p class="eyebrow">КРОК 1</p><h4>Що саме підключається</h4><div class="model-wizard-summary"><strong>${esc(model.name)}</strong><p>${esc(entry?.description||model.notes||'')}</p><div class="model-wizard-facts"><span>Тип <b>${esc(entry?.category||model.capability)}</b></span><span>Ліцензія <b>${esc(entry?.license||'Не вказано')}</b></span><span>Розмір <b>${esc(entry?.sizeNote||'Не вказано')}</b></span><span>Вимоги <b>${esc(entry?.requirements||'Не вказано')}</b></span></div></div><div class="model-wizard-warning">Майстер не завантажує модель, не приймає ліцензію замість вас і не запускає віддалений сервіс.</div></section>`;
+  if(step===2)body=`<section class="model-wizard-section"><p class="eyebrow">КРОК 2</p><h4>Де модель має працювати</h4><div class="model-execution-choice"><label class="${draft.executionTarget!=='remote'?'active':''}"><input type="radio" name="modelExecutionTarget" value="local" ${draft.executionTarget!=='remote'?'checked':''} onchange="modelSetupSet('executionTarget','local');render()"> <strong>Цей комп’ютер</strong><span>Локальні файли та обчислення на Mac.</span></label><label class="${draft.executionTarget==='remote'?'active':''}"><input type="radio" name="modelExecutionTarget" value="remote" ${draft.executionTarget==='remote'?'checked':''} onchange="modelSetupSet('executionTarget','remote');render()"> <strong>GPU-сервер / worker</strong><span>Окремий виконавець; модель не завантажується на Mac.</span></label></div>${draft.executionTarget==='remote'?`<label>Endpoint (без ключів і паролів)<input value="${esc(draft.endpoint||'')}" placeholder="https://worker.example.local" oninput="modelSetupSet('endpoint',this.value)"></label><label>Назва підключення<input value="${esc(draft.connectionLabel||'')}" placeholder="Наприклад: Home GPU Node" oninput="modelSetupSet('connectionLabel',this.value)"></label>`:`<label>Папка моделі / даних<input value="${esc(draft.storagePath||'')}" placeholder="Наприклад: ~/AI-Models/Piper" oninput="modelSetupSet('storagePath',this.value)"></label>`}<p class="muted">Це лише збережена конфігурація шляху/вузла. Файли не копіюються й сервер не реєструється автоматично.</p></section>`;
+  if(step===3)body=`<section class="model-wizard-section"><p class="eyebrow">КРОК 3</p><h4>Підтвердити конфігурацію</h4><div class="model-wizard-mode"><button class="${modelSetupState.mode==='simple'?'active':''}" type="button" onclick="modelSetupSetMode('simple')">Простий режим</button><button class="${modelSetupState.mode==='advanced'?'active':''}" type="button" onclick="modelSetupSetMode('advanced')">Технічні деталі</button></div><div class="model-config-review"><span>Модель <b>${esc(model.name)}</b></span><span>Виконання <b>${esc(draft.executionTarget==='remote'?'GPU-сервер / worker':'цей Mac')}</b></span><span>Шлях / endpoint <b>${esc(draft.executionTarget==='remote'?(draft.endpoint||'не задано'):(draft.storagePath||'не задано'))}</b></span></div>${modelSetupState.mode==='advanced'?`<label>Технічна примітка<textarea oninput="modelSetupSet('technicalNotes',this.value)" placeholder="Аргументи запуску, середовище, особливості…">${esc(draft.technicalNotes||'')}</textarea></label>`:''}<div class="model-wizard-warning">«Зберегти конфігурацію» не означає «встановити» або «запустити». Після збереження потрібна окрема фактична перевірка.</div></section>`;
+  if(step===4)body=`<section class="model-wizard-section"><p class="eyebrow">КРОК 4</p><h4>Перевірка підключення і готовності</h4>${modelSetupReadiness(model)}<div class="model-test-box"><p>Перевірка читає фактичний стан локального runtime або підключених worker-ів. Вона не виконує дорогу генерацію й не завантажує модель у RAM без потреби.</p><button class="primary" type="button" onclick="probeStudioModelUI('${esc(model.id)}')">Перевірити готовність зараз</button></div></section>`;
+  return `<article class="card full studio-layer model-wizard"><header class="model-wizard-head"><div><button type="button" class="text-action" onclick="modelSetupBack()">← Центр моделей</button><p class="eyebrow">МАЙСТЕР МОДЕЛІ · G-06 / G-07</p><h3>${esc(model.name)}</h3><p>Просте підключення, технічні параметри та окрема перевірка фактичної готовності.</p></div><span class="model-state ${modelStatusClass(model.status)}">${esc(modelStatusLabel(model.status))}</span></header><nav class="model-wizard-steps">${steps.map(([id,title])=>`<span class="${Number(id)===step?'active':Number(id)<step?'done':''}"><b>${id}</b>${title}</span>`).join('')}</nav>${modelSetupState.error?`<p class="assistant-error">${esc(modelSetupState.error)}</p>`:''}${body}<footer class="model-wizard-actions"><span>Жодної автоматичної інсталяції або вибору моделі за вас.</span><div>${step>1&&step<4?'<button type="button" onclick="modelSetupBack()">Назад</button>':''}${step<3?`<button class="primary" type="button" onclick="modelSetupNext()">Далі</button>`:''}${step===3?'<button class="primary" type="button" onclick="saveModelSetup()">Зберегти конфігурацію</button>':''}${step===4?'<button type="button" onclick="view=\'models\';modelCenterTab=\'mine\';render()">Готово</button>':''}</div></footer></article>`;
 }
 async function saveModelProfiles(event){
   event.preventDefault();const data=Object.fromEntries(new FormData(event.currentTarget));
@@ -129,7 +168,7 @@ async function openQueueJobResult(id){
   try{await load(job.projectId);view='mediaLibrary';if(typeof mediaLibraryQuery!=='undefined'){const asset=(active.assets||[]).find(item=>item.id===job.outputAssetId);mediaLibraryQuery=asset?.label||'';}render()}catch(error){productionStudioState.error=error.message;render()}
 }
 function downloadDaVinciTimeline() { const episode = (active.episodes || []).find(item => item.id === activeEpisodeId) || (active.episodes || [])[0]; if (!episode) return window.alert('Спочатку створіть або виберіть випуск.'); window.location.href = `/api/projects/${encodeURIComponent(activeId)}/episodes/${encodeURIComponent(episode.id)}/davinci-handoff/timeline.csv`; }
-const baseProductionPageContent = pageContent; pageContent = function () { return ['models', 'queue', 'assistants', 'davinci'].includes(view) ? productionStudioPanel() : baseProductionPageContent(); };
-const baseProductionTitle = viewTitle; viewTitle = function () { return ({ models: 'Центр AI-моделей', queue: 'Черга генерацій', assistants: 'AI-помічники', davinci: 'Підготовка DaVinci' })[view] || baseProductionTitle(); };
+const baseProductionPageContent = pageContent; pageContent = function () { return ['models', 'modelSetup', 'queue', 'assistants', 'davinci'].includes(view) ? productionStudioPanel() : baseProductionPageContent(); };
+const baseProductionTitle = viewTitle; viewTitle = function () { return ({ models: 'Центр AI-моделей', modelSetup: 'Налаштування моделі', queue: 'Черга генерацій', assistants: 'AI-помічники', davinci: 'Підготовка DaVinci' })[view] || baseProductionTitle(); };
 const baseProductionNav = renderWorkspaceNav; renderWorkspaceNav = function () { baseProductionNav(); };
 setTimeout(refreshProductionStudio, 0);

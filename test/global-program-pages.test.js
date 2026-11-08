@@ -53,7 +53,10 @@ test('model center separates my models catalog profiles archive and probes readi
   assert.match(studio,/\/api\/studio\/model-profiles/);
   assert.match(studio,/\/probe/);
   assert.match(studio,/Перевірити готовність/);
-  assert.match(studio,/БЕЗ УДАВАНОГО ВСТАНОВЛЕННЯ/);
+  assert.match(studio,/МАЙСТЕР МОДЕЛІ/);
+  assert.match(studio,/Зберегти конфігурацію/);
+  assert.match(studio,/Перевірити готовність зараз/);
+  assert.match(studio,/Жодної автоматичної інсталяції/);
 });
 
 
@@ -92,4 +95,18 @@ test('generation queue exposes status filter event logs retry cancel and result 
   assert.match(studio,/openQueueJobResult/);
   assert.match(studio,/\/retry/);
   assert.match(studio,/\/cancel/);
+});
+
+
+test('model setup persists configuration separately from readiness probes',()=>{
+  const studio=fs.readFileSync(path.join(root,'public','production-studio-ui.js'),'utf8');
+  const server=fs.readFileSync(path.join(root,'server','index.js'),'utf8');
+  assert.ok(studio.includes("view === 'modelSetup'"));
+  assert.ok(studio.includes('model-readiness-grid'));
+  assert.ok(studio.includes('executionTarget'));
+  assert.ok(studio.includes('/setup'));
+  assert.ok(server.includes("parts[4] === 'setup'"));
+  assert.ok(server.includes('item.lastProbe'));
+  assert.ok(server.includes('hasPiperVoice()'));
+  assert.ok(server.includes('onlineWorkers'));
 });

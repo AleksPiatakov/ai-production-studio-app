@@ -12,7 +12,7 @@ test('approved preview has no internal P-number demo toolbar', () => {
 });
 
 test('approved compact navigation exposes real demo destinations without changing assets', () => {
-  for (const id of ['home','projects','project','projectAssistant','aiChanges','script','storyboard','images','voice','voiceLibrary','sound','video','media','versions','davinci','models','queue','assistant','settings']) {
+  for (const id of ['home','projects','project','projectAssistant','aiChanges','script','storyboard','images','voice','voiceLibrary','sound','video','media','versions','davinci','models','modelSetup','queue','assistant','settings']) {
     assert.match(html, new RegExp('data-screen="'+id+'"'));
     assert.match(html, new RegExp('id="screen-'+id+'"'));
   }
@@ -34,6 +34,8 @@ test('approved compact navigation exposes real demo destinations without changin
   assert.match(html, /Журнал · 3/);
   assert.match(html, /Повторити/);
   assert.match(html, /Відкрити результат/);
+  assert.match(html, /МАЙСТЕР МОДЕЛІ/);
+  assert.match(html, /Жодної автоматичної інсталяції/);
   assert.match(html, /ПЕРЕГЛЯД ЗМІН AI/);
   assert.match(html, /ДОСТУП ДО ПРОЄКТІВ/);
 });
