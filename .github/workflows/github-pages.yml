@@ -1,4 +1,4 @@
-# Canonical Pages workflow — the only deploy path for GitHub Pages; verified by npm test and current main.
+# Canonical Pages workflow — the only deploy path for GitHub Pages; verified by npm test and current main state.
 name: Publish approved UI preview to GitHub Pages
 
 on:
