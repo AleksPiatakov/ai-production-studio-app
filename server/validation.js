@@ -272,6 +272,7 @@ function validateProject(project, scope = {}) {
       errors.push(issue('SCENE_APPROVAL_REQUIRED', `Сцена «${scene.title}» має бути явно затверджена перед створенням production manifest або передачі випуску.`, scene.id));
       continue;
     }
+    if (productionCheck && scene.dependencyStatus === 'needs-review') errors.push(issue('SCENE_DEPENDENCY_REVIEW_REQUIRED', `Сцена «${scene.title}» потребує повторної перевірки після зміни затвердженого сценарію.`, scene.id));
     if (!Number.isFinite(Number(scene.durationSeconds)) || Number(scene.durationSeconds) <= 0) errors.push(issue('SCENE_DURATION_INVALID', `Сцена «${scene.title}» повинна мати додатну тривалість.`, scene.id));
     if (!scene.characterIds?.length) errors.push(issue('SCENE_CHARACTER_REQUIRED', `Сцена «${scene.title}» не містить персонажів.`, scene.id));
     for (const characterId of scene.characterIds || []) if (!approvedCharacters.has(characterId)) errors.push(issue('UNKNOWN_OR_UNAPPROVED_CHARACTER', `Персонаж ${characterId} не затверджений у Character Bible.`, scene.id));
@@ -281,14 +282,17 @@ function validateProject(project, scope = {}) {
         const asset = assetsById.get(assetId);
         if (!asset) errors.push(issue('SHOT_REFERENCE_MISSING', `Шот посилається на відсутній ресурс ${assetId}.`, scene.id, shot.id));
         else if (productionCheck && asset.status !== 'approved') errors.push(issue('SHOT_REFERENCE_NOT_APPROVED', `Ресурс «${asset.label}» у шоті має бути затверджений.`, scene.id, shot.id));
+        else if (productionCheck && asset.dependencyStatus === 'needs-review') errors.push(issue('SHOT_REFERENCE_DEPENDENCY_REVIEW_REQUIRED', `Ресурс «${asset.label}» потребує повторної перевірки після зміни сценарію.`, scene.id, shot.id));
       }
       if (productionCheck) {
         if (shot.status !== 'approved') errors.push(issue('SHOT_APPROVAL_REQUIRED', 'Кожен шот має бути затверджений перед production.', scene.id, shot.id));
+        if (shot.dependencyStatus === 'needs-review') errors.push(issue('SHOT_DEPENDENCY_REVIEW_REQUIRED', 'Кадр потребує повторної перевірки після зміни затвердженого сценарію.', scene.id, shot.id));
         const keyImage = assetsById.get(shot.keyImageAssetId);
         if (!shot.keyImageAssetId) errors.push(issue('SHOT_KEY_IMAGE_REQUIRED', 'Для кожного шоту потрібен обраний ключовий кадр.', scene.id, shot.id));
         else if (!keyImage) errors.push(issue('SHOT_KEY_IMAGE_MISSING', `Ключовий кадр ${shot.keyImageAssetId} не знайдено.`, scene.id, shot.id));
         else if (!['image', 'reference'].includes(keyImage.type)) errors.push(issue('SHOT_KEY_IMAGE_TYPE_INVALID', 'Ключовий кадр має бути зображенням або візуальним референсом.', scene.id, shot.id));
         else if (keyImage.status !== 'approved') errors.push(issue('SHOT_KEY_IMAGE_NOT_APPROVED', `Ключовий кадр «${keyImage.label}» ще не затверджений.`, scene.id, shot.id));
+        else if (keyImage.dependencyStatus === 'needs-review') errors.push(issue('SHOT_KEY_IMAGE_DEPENDENCY_REVIEW_REQUIRED', `Ключовий кадр «${keyImage.label}» потребує повторної перевірки після зміни сценарію.`, scene.id, shot.id));
       }
     }
     const shotSeconds = (scene.shots || []).reduce((total, shot) => total + Number(shot.seconds || 0), 0);
@@ -302,6 +306,7 @@ function validateProject(project, scope = {}) {
       if (!line.language) errors.push(issue('DIALOGUE_LANGUAGE_REQUIRED', 'Репліка повинна мати мову.', scene.id, line.id));
       if (productionCheck) {
         if (line.status !== 'approved') errors.push(issue('DIALOGUE_APPROVAL_REQUIRED', `Репліка «${character.name}» має бути затверджена перед production.`, scene.id, line.id));
+        if (line.dependencyStatus === 'needs-review') errors.push(issue('DIALOGUE_DEPENDENCY_REVIEW_REQUIRED', `Репліка «${character.name}» потребує повторної перевірки після зміни сценарію.`, scene.id, line.id));
         const voice = voiceProfiles.find(profile => profile.id === character.voiceProfileId) || voiceProfiles.find(profile => profile.identityKey === line.voiceIdentityKey && profile.ageBand === character.ageBand);
         if (!voice) errors.push(issue('VOICE_PROFILE_REQUIRED', `Для репліки «${character.name}» потрібен призначений голосовий профіль або профіль з identity key «${line.voiceIdentityKey}».`, scene.id, line.id));
         else {
@@ -309,6 +314,7 @@ function validateProject(project, scope = {}) {
           if (!voice.languages?.includes(line.language)) errors.push(issue('VOICE_LANGUAGE_UNSUPPORTED', `Профіль голосу «${voice.name}» не підтримує мову репліки.`, scene.id, line.id));
         }
         if (!(line.audioDrafts || []).some(audio => audio.language === line.language && audio.status === 'approved')) errors.push(issue('DIALOGUE_AUDIO_REQUIRED', `Для репліки «${character.name}» немає затвердженої озвучки.`, scene.id, line.id));
+        if ((line.audioDrafts || []).some(audio => audio.status === 'needs-review')) errors.push(issue('DIALOGUE_AUDIO_DEPENDENCY_REVIEW_REQUIRED', `Озвучка репліки «${character.name}» потребує повторної перевірки.`, scene.id, line.id));
       }
     }
   }
