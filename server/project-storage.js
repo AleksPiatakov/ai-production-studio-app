@@ -25,21 +25,28 @@ function projectCreationPreflight(dataDirectory) {
   } catch (cause) {
     error = cause.message;
   }
-  let freeBytes = null;
+  let freeBytes = null, freeSpaceChecked = false, freeSpaceAvailable = false, freeSpaceError = '';
   try {
     const stats = fs.statfsSync(probeTarget);
     freeBytes = Number(stats.bavail) * Number(stats.bsize);
-  } catch {}
+    freeSpaceChecked = Number.isFinite(freeBytes) && freeBytes >= 0;
+    freeSpaceAvailable = freeSpaceChecked && freeBytes > 0;
+  } catch (cause) {
+    freeSpaceError = cause.message;
+  }
+  const ok = writable && freeSpaceChecked && freeSpaceAvailable;
   return {
-    ok: writable,
+    ok,
     dataDirectory: root,
     projectsRoot,
     projectsRootExists: fs.existsSync(projectsRoot),
     checkedDirectory: probeTarget,
     writable,
     freeBytes,
+    freeSpaceChecked,
+    freeSpaceAvailable,
     requiredDirectories: ['Project_Data','Scripts','Character_Bible','Style_Bible','Storyboards','Assets/Images','Assets/Video','Assets/Voices','Assets/Music','Assets/SFX','Generated','Exports','Backups'],
-    error: writable ? '' : error || 'Project storage is not writable.'
+    error: !writable ? (error || 'Project storage is not writable.') : !freeSpaceChecked ? (freeSpaceError || 'Could not verify free disk space.') : !freeSpaceAvailable ? 'Project storage has no free disk space.' : ''
   };
 }
 
