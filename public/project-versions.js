@@ -10,7 +10,7 @@ function versionDelta(saved,current,key){
 }
 function versionHistoryCard(version,index,total){
   const saved=versionProjectCounts(version.snapshot||{}),current=versionProjectCounts(active);
-  return `<article class="project-version-card"><header><div><span>ВЕРСІЯ ${total-index}</span><strong>${esc(version.label||'Автоматичне збереження')}</strong></div><time>${esc(new Date(version.createdAt).toLocaleString('uk-UA'))}</time></header><div class="project-version-metrics">${[['scripts','Сценарії'],['episodes','Випуски'],['scenes','Сцени'],['shots','Кадри'],['dialogue','Репліки'],['assets','Ресурси']].map(([key,title])=>`<span><small>${title}</small><b>${saved[key]}</b><em>${esc(versionDelta(saved,current,key))}</em></span>`).join('')}</div><footer><small>Відновлення спочатку збереже поточний стан окремою резервною версією.</small><button type="button" onclick="restoreProjectVersion('${esc(version.id)}','${esc(String(version.label||'Версія').replace(/'/g,'&#39;'))}')">Відновити цю версію</button></footer></article>`;
+  return `<article class="project-version-card"><header><div><span>ВЕРСІЯ ${total-index}</span><strong>${esc(version.label||'Автоматичне збереження')}</strong></div><time>${esc(new Date(version.createdAt).toLocaleString('uk-UA'))}</time></header><div class="project-version-metrics">${[['scripts','Сценарії'],['episodes','Випуски'],['scenes','Сцени'],['shots','Кадри'],['dialogue','Репліки'],['assets','Ресурси']].map(([key,title])=>`<span><small>${title}</small><b>${saved[key]}</b><em>${esc(versionDelta(saved,current,key))}</em></span>`).join('')}</div><footer><small>Відновлення спочатку збереже поточний стан окремою резервною версією.</small><button type="button" onclick="restoreProjectVersion('${esc(version.id)}')">Відновити цю версію</button></footer></article>`;
 }
 function projectVersionsPanel(){
   const versions=[...(active.versionHistory||[])].reverse(),current=versionProjectCounts(active);
@@ -24,7 +24,8 @@ function projectVersionsPanel(){
 function createProjectCheckpoint(){
   modal('Нова контрольна точка',`<p class="muted">Збережеться повний поточний стан проєкту без зміни його даних.</p><label>Назва<input name="label" required maxlength="160" value="Контрольна точка перед важливими змінами"></label>`,f=>api(`/api/projects/${encodeURIComponent(activeId)}/versions`,{method:'POST',body:JSON.stringify({label:String(f.get('label')||'').trim()})}));
 }
-async function restoreProjectVersion(versionId,labelText){
+async function restoreProjectVersion(versionId){
+  const version=(active.versionHistory||[]).find(item=>item.id===versionId),labelText=version?.label||'цю версію';
   if(!window.confirm(`Відновити «${labelText}»? Поточний стан спочатку буде збережено як окрему резервну версію.`))return;
   try{await api(`/api/projects/${encodeURIComponent(activeId)}/versions/${encodeURIComponent(versionId)}/restore`,{method:'POST'});await load(activeId)}
   catch(error){window.alert(error.message)}
