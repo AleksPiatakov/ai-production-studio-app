@@ -13,7 +13,7 @@ function currentVideoShot(scene=currentVideoScene()){
   const shots=[...(scene?.shots||[])].sort((a,b)=>Number(a.order||0)-Number(b.order||0));let shot=shots.find(item=>item.id===videoStudioShotId)||shots[0];
   if(shot)videoStudioShotId=shot.id;return shot;
 }
-function videoModels(){return (productionStudioState?.models||[]).filter(model=>typeof clientModelSupports==='function'&&clientModelSupports(model,'video'))}
+function videoModels(){const models=(productionStudioState?.models||[]).filter(model=>typeof clientModelSupports==='function'&&clientModelSupports(model,'video'));return typeof preferredModelOrder==='function'?preferredModelOrder(models):models}
 function videoAssetsForShot(shotId){return (active.assets||[]).filter(asset=>asset.type==='video'&&asset.linkedShotId===shotId)}
 function playableVideoUri(uri){const value=String(uri||'');return value.startsWith('/')||value.startsWith('data:video/')||value.startsWith('blob:')?value:''}
 function shotKeyImage(shot){
