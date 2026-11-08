@@ -82,7 +82,7 @@ function settingsFields(){
   if(globalSettingsTab==='files')return `
     <label>Коренева папка проєктів<input name="projectRoot" value="${esc(settings.files.projectRoot)}" readonly><small>Поточне безпечне локальне сховище. Перенесення каталогу буде окремою операцією з перевіркою файлів.</small></label>
     <label>Кількість автоматичних версій<input name="versionHistoryLimit" type="number" min="5" max="100" value="${esc(settings.files.versionHistoryLimit)}"><small>Цей параметр реально визначає ліміт історії станів проєкту.</small></label>
-    <label class="settings-check"><input type="checkbox" name="verifyWrites" ${checked(settings.files.verifyWrites)}> Перевіряти записи й пакети проєкту</label>`;
+    <label class="settings-check"><input type="checkbox" name="verifyWrites" ${checked(settings.files.verifyWrites)}> Перевіряти записи й пакети проєкту <small>Preflight запису й вільного місця виконується завжди. Цей параметр керує додатковою перевіркою вже створеного пакета.</small></label>`;
   if(globalSettingsTab==='performance')return `
     <label class="settings-check"><input type="checkbox" name="preferLocal" ${checked(settings.performance.preferLocal)}> Надавати перевагу локальним моделям <small>Локальні сумісні моделі показуються вище у селекторах; профіль і ручний вибір не перезаписуються.</small></label>
     <label class="settings-check"><input type="checkbox" name="releaseModelsAfterTask" ${checked(settings.performance.releaseModelsAfterTask)}> Звільняти пам’ять моделі після завдання <small>Застосовується лише до runtime/worker, який явно підтримує unload. Поточний generic worker contract не імітує цю дію.</small></label>
