@@ -80,3 +80,16 @@ test('approved project rail exposes project assistant and AI change review separ
   assert.match(rail,/\['advisor','✧','AI Помічник проєкту'\]/);
   assert.match(rail,/\['assistantChanges','≠','Зміни AI'\]/);
 });
+
+
+test('generation queue exposes status filter event logs retry cancel and result navigation',()=>{
+  const studio=fs.readFileSync(path.join(root,'public/production-studio-ui.js'),'utf8');
+  assert.match(studio,/studioQueueStatusFilter/);
+  assert.match(studio,/queueJobCard/);
+  assert.match(studio,/queue-events/);
+  assert.match(studio,/retryStudioJob/);
+  assert.match(studio,/cancelStudioJob/);
+  assert.match(studio,/openQueueJobResult/);
+  assert.match(studio,/\/retry/);
+  assert.match(studio,/\/cancel/);
+});
