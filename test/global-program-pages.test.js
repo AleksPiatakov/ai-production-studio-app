@@ -308,3 +308,18 @@ test('P-01 is an operational overview instead of six-module launcher',()=>{
   assert.doesNotMatch(ui,/p01-module-grid/);
   assert.match(app,/currentEpisode:episode\|\|null/);
 });
+
+
+test('P-03 versions approved Bible entries instead of overwriting them',()=>{
+  const server=fs.readFileSync(path.join(root,'server','index.js'),'utf8');
+  const app=fs.readFileSync(path.join(root,'public','app.js'),'utf8');
+  assert.match(server,/existing\.status === 'approved'/);
+  assert.match(server,/Затверджений запис Bible не можна перезаписати напряму/);
+  assert.match(server,/supersedesId/);
+  assert.match(server,/previousVersionId/);
+  assert.match(server,/dependency-review-required/);
+  assert.match(app,/nextBibleVersion/);
+  assert.match(app,/creatingVersion/);
+  assert.match(app,/input\.supersedesId=source\.id/);
+  assert.match(app,/const method=creatingVersion\|\|!entryId\?'POST':'PUT'/);
+});
