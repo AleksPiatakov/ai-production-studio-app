@@ -38,7 +38,7 @@ function globalHomePanel(){
       <section class="global-panel"><div class="global-section-head"><div><p class="eyebrow">ОСТАННІ МАТЕРІАЛИ</p><h4>Локальні ресурси</h4></div></div>
         ${allAssets.length?allAssets.map(({project,asset})=>`<button class="global-list-row" type="button" onclick="openGlobalProject('${esc(project.id)}','assets')"><span><strong>${esc(asset.label||'Ресурс')}</strong><small>${esc(project.name)}</small></span><em>${esc(label('asset',asset.type)||asset.type)}</em></button>`).join(''):'<p class="global-empty">Матеріали з’являться тут після додавання ресурсів у проєкти.</p>'}
       </section>
-      <section class="global-panel global-assistant-entry"><p class="eyebrow">ЗАГАЛЬНИЙ AI ПОМІЧНИК</p><h4>Окремий від проєктів</h4><p>Глобальний помічник не отримує автоматичного доступу до файлів проєктів.</p><button type="button" onclick="goToView('assistants')">Відкрити AI Помічники →</button></section>
+      <section class="global-panel global-assistant-entry"><p class="eyebrow">ЗАГАЛЬНИЙ AI ПОМІЧНИК</p><h4>Окремий від проєктів</h4><p>Глобальний помічник не отримує автоматичного доступу до файлів проєктів.</p><button type="button" onclick="goToView('assistants')">Відкрити Загальний AI Помічник →</button></section>
     </div>
   </section>`;
 }
