@@ -31,3 +31,13 @@ test('project assistant API persists memory and supports clearing it',()=>{
   assert.match(server,/req\.method === 'DELETE'.*parts\[4\] === 'messages'/s);
   assert.match(server,/target\.assistantWorkspace\.memory = \[\]/);
 });
+
+
+test('P-13 decision note is retained in assistant audit history',()=>{
+  const project=projectTemplate({id:'p-note',name:'Note',type:'general',defaultLanguage:'uk',targetMinutes:5,description:'Before'});
+  const action=createProjectAssistantAction(project,{kind:'project-description',summary:'Update',after:'After'});
+  project.assistantWorkspace.actions.push(action);
+  decideProjectAssistantAction(project,action.id,'reject','Потрібне додаткове узгодження');
+  assert.equal(action.status,'rejected');
+  assert.equal(action.decisionNote,'Потрібне додаткове узгодження');
+});
