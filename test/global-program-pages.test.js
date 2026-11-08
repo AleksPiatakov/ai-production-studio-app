@@ -184,3 +184,15 @@ test('Pages preview mirrors P-04 statuses and P-12 document actions',()=>{
   assert.match(preview,/advisor-document-open/);
   assert.match(preview,/advisor-document-delete/);
 });
+
+
+test('Pages preview mirrors P-02 independent side-panel controls',()=>{
+  const preview=fs.readFileSync(path.join(root,'preview','index.html'),'utf8');
+  const demo=fs.readFileSync(path.join(root,'preview','script-editor-demo.js'),'utf8');
+  assert.match(preview,/id="demo-toggle-scenes"/);
+  assert.match(preview,/id="demo-toggle-ai"/);
+  assert.match(demo,/scenesCollapsed/);
+  assert.match(demo,/aiCollapsed/);
+  assert.match(demo,/scenes-collapsed/);
+  assert.match(demo,/ai-collapsed/);
+});
