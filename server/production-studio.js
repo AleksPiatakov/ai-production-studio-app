@@ -5,7 +5,7 @@ const terminalStates = new Set(['completed', 'cancelled']);
 
 function defaultStudioSettings() {
   return {
-    general: { interfaceLanguage: 'uk', startView: 'home', confirmDestructive: true },
+    general: { interfaceLanguage: 'uk', startView: 'overview', confirmDestructive: true },
     files: { projectRoot: 'data/projects', versionHistoryLimit: 30, verifyWrites: true },
     performance: { preferLocal: true, releaseModelsAfterTask: true, maxConcurrentJobs: 1 },
     assistants: { generalAutonomy: 'suggestions-only', projectAutonomy: 'suggestions-only', confirmExpensive: true, keepActionLog: true },
@@ -22,7 +22,7 @@ function normalizeStudioSettings(value = {}) {
     export: { ...base.export, ...(value.export || {}) }
   };
   next.general.interfaceLanguage = next.general.interfaceLanguage === 'en' ? 'en' : 'uk';
-  next.general.startView = ['home','projects','overview'].includes(next.general.startView) ? next.general.startView : 'home';
+  next.general.startView = ['home','projects','overview'].includes(next.general.startView) ? next.general.startView : 'overview';
   next.general.confirmDestructive = next.general.confirmDestructive !== false;
   next.files.projectRoot = String(next.files.projectRoot || 'data/projects');
   next.files.versionHistoryLimit = Math.max(5, Math.min(100, Number(next.files.versionHistoryLimit) || 30));
