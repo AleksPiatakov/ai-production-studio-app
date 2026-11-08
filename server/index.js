@@ -673,6 +673,11 @@ const server = http.createServer(async (req, res) => {
         const existing = project.assets.find(item => item.id === parts[4]);
         if (!existing) return send(res, 404, { error: 'asset not found' });
         const asset = { id: existing.id, ...validateAssetInput(await body(req)), currentVersionId: existing.currentVersionId || null };
+        if (existing.status === 'approved') {
+          const protectedFields = ['type','scope','linkedCharacterId','linkedSceneId','linkedShotId','uri','version','audioEdit','status'];
+          const changedProtectedField = protectedFields.find(key => JSON.stringify(existing[key] ?? null) !== JSON.stringify(asset[key] ?? null));
+          if (changedProtectedField) return send(res, 409, { error: 'Затверджений ресурс не можна перезаписати напряму. Створіть нову версію ресурсу.', field: changedProtectedField, assetId: existing.id });
+        }
         if (asset.linkedCharacterId && !project.bibles.characters.some(item => item.id === asset.linkedCharacterId)) return send(res, 400, { error: 'linkedCharacterId must reference a character in this project' });
         if (asset.linkedSceneId && !project.scenes.some(item => item.id === asset.linkedSceneId)) return send(res, 400, { error: 'linkedSceneId must reference a scene in this project' });
         if (asset.linkedShotId && !project.scenes.some(scene => (scene.shots || []).some(shot => shot.id === asset.linkedShotId) && (!asset.linkedSceneId || scene.id === asset.linkedSceneId))) return send(res, 400, { error: 'linkedShotId must reference a shot in the linked scene' });
