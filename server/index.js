@@ -691,5 +691,5 @@ const server = http.createServer(async (req, res) => {
     send(res, 404, { error: 'not found' });
   } catch (error) { send(res, error.status || 400, { error: error.message }); }
 });
-if (require.main === module) server.listen(process.env.PORT || 4173, () => console.log('AI Video Studio: http://localhost:4173'));
+if (require.main === module) server.listen(process.env.PORT || 4173, () => console.log('AI Production Studio: http://localhost:4173'));
 module.exports = { server, findProject, allowedAgeBands, supportedLanguages };
