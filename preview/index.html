@@ -356,10 +356,10 @@ body:has(#screen-script.active) .preview-warning{display:none}
  </div>
  <div class="preview-screen" id="screen-projects">
   <section class="global-projects-page"><div class="global-toolbar"><div><p class="eyebrow">ПРОЄКТИ</p><h3>Каталог проєктів</h3><p>Пошук, фільтри та створення окремих локальних робочих просторів.</p></div><button class="primary" type="button" data-screen="newProject">＋ Новий проєкт</button></div>
-   <div class="global-project-filters"><label>Пошук<input type="search" placeholder="Назва або опис…"></label><label>Тип<select><option>Усі типи</option><option>Анімаційний серіал</option><option>Універсальне відео</option></select></label></div>
+   <div class="global-project-filters"><label>Пошук<input type="search" placeholder="Назва або опис…"></label><label>Тип<select><option>Усі типи</option><option>Анімаційний фільм</option><option>Анімаційний серіал</option><option>Відео</option><option>Короткий формат</option><option>Інший</option></select></label></div>
    <div class="global-project-grid global-project-grid-large">
     <article class="global-project-card"><button class="global-project-open" type="button" data-screen="project"><span class="global-project-icon">▣</span><span class="global-project-copy"><strong>Демонстраційний проєкт</strong><small>Анімаційний серіал · UK</small></span></button><div class="global-project-meta"><span>2 випуски</span><span>3 ресурси</span><span>1920x1080</span></div></article>
-    <article class="global-project-card"><button class="global-project-open" type="button"><span class="global-project-icon">▣</span><span class="global-project-copy"><strong>Приклад короткого відео</strong><small>Універсальне відео · UK</small></span></button><div class="global-project-meta"><span>0 випусків</span><span>0 ресурсів</span><span>1080x1920</span></div></article>
+    <article class="global-project-card"><button class="global-project-open" type="button"><span class="global-project-icon">▣</span><span class="global-project-copy"><strong>Приклад короткого відео</strong><small>Короткий формат · UK</small></span></button><div class="global-project-meta"><span>0 випусків</span><span>0 ресурсів</span><span>1080x1920</span></div></article>
    </div>
   </section>
  </div>
@@ -372,7 +372,7 @@ body:has(#screen-script.active) .preview-warning{display:none}
     <div class="wizard-summary"><div><span>Проєкт</span><strong>Новий анімаційний серіал</strong></div><div><span>Тип</span><strong>Анімаційний серіал</strong></div><div><span>Мова</span><strong>UK + EN</strong></div><div><span>Формат</span><strong>1920x1080 · 16:9 · 24 FPS</strong></div><div><span>План</span><strong>10 епізодів · 10 хв</strong></div><div><span>Сховище</span><strong>готове</strong></div></div>
     <div class="wizard-storage-status ok"><span>✓</span><div><strong>Папка готова до створення проєкту</strong><small>data/projects · синтетичний статус у Pages</small></div><button type="button" disabled>Перевірити ще раз</button></div>
     <div class="wizard-directory-list"><span>✓ Project_Data</span><span>✓ Scripts</span><span>✓ Character_Bible</span><span>✓ Style_Bible</span><span>✓ Storyboards</span><span>✓ Assets/Images</span><span>✓ Assets/Video</span><span>✓ Assets/Voices</span><span>✓ Assets/Music</span><span>✓ Assets/SFX</span><span>✓ Generated</span><span>✓ Exports</span><span>✓ Backups</span></div>
-    <p class="wizard-note">У локальній програмі backend перевіряє доступ на запис, створює manifest + SQLite і після перевірки відкриває новий робочий стіл. GitHub Pages нічого не створює.</p>
+    <p class="wizard-note">У локальній програмі backend перевіряє доступ на запис, створює manifest + SQLite, перевіряє пакет і лише після успіху відкриває новий робочий стіл. Якщо перевірка не проходить, створення відкочується. GitHub Pages нічого не створює.</p>
     <div class="settings-actions"><span>AI не створює сценарій, персонажів або медіа автоматично.</span><div><button type="button" data-screen="projects">Назад</button><button class="primary" type="button" disabled>Створити проєкт</button></div></div>
    </div>
   </section>
