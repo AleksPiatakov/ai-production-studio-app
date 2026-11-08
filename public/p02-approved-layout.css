@@ -39,6 +39,18 @@ body.is-editor .p02-editor form#script-workspace-form{display:flex!important;fle
  background:linear-gradient(130deg,#8d25e5,#af37f1);color:white;box-shadow:0 0 13px #9227ea50
 }
 .p02-approved-layout .p02-commandbar-right select{background:#161931;border-color:var(--approved-stroke)}
+/* Keep the screenplay command bar inside the approved navy/violet surface.
+   Legacy button rules otherwise leave these three editor controls light. */
+.p02-approved-layout .p02-commandbar-right button{
+ background:#1a1d36!important;border-color:#454168!important;color:#e9e2f7!important;
+ box-shadow:none!important
+}
+.p02-approved-layout .p02-commandbar-right button:hover{
+ background:#282047!important;border-color:#8a45c7!important;color:#fff!important
+}
+.p02-approved-layout .p02-commandbar-right [data-p02-focus]{
+ background:linear-gradient(130deg,#6220a7,#8f2bce)!important;border-color:#a541e1!important;color:#fff!important
+}
 .p02-approved-layout>.p02-edit-layout{
  display:grid;grid-template-columns:minmax(210px,265px) minmax(0,1fr) minmax(275px,320px);
  flex:1 1 auto;min-height:0!important;height:auto;overflow:hidden;border:none;border-radius:0;background:#090d20
