@@ -78,7 +78,12 @@ function assistantActionTarget(action){
 }
 function assistantDiffText(value){return String(value??'')||'—'}
 function assistantChangeCard(action){
-  return `<article class="assistant-change-card ${esc(action.status)}"><header><div><span class="assistant-change-kind">${esc(assistantActionTarget(action))}</span><strong>${esc(action.summary)}</strong></div><span class="tag">${esc(({proposed:'очікує рішення',accepted:'прийнято',rejected:'відхилено'})[action.status]||action.status)}</span></header><div class="assistant-diff"><section class="before"><span>ДО</span><pre>${esc(assistantDiffText(action.before))}</pre></section><section class="after"><span>ПІСЛЯ</span><pre>${esc(assistantDiffText(action.after))}</pre></section></div><footer><small>${esc(new Date(action.createdAt).toLocaleString('uk-UA'))}${action.decidedAt?' · рішення '+esc(new Date(action.decidedAt).toLocaleString('uk-UA')):''}${action.decisionNote?' · '+esc(action.decisionNote):''}</small>${action.status==='proposed'?'<div><button type="button" onclick="decideAssistantChange(\''+esc(action.id)+'\',\'reject\')">Відхилити</button><button class="primary" type="button" onclick="decideAssistantChange(\''+esc(action.id)+'\',\'accept\')">Прийняти цю зміну</button></div>':''}</footer></article>`;
+  const decisionActions=action.status==='proposed'
+    ? '<div><button type="button" onclick="decideAssistantChange(\''+esc(action.id)+'\',\'reject\')">Відхилити</button><button class="primary" type="button" onclick="decideAssistantChange(\''+esc(action.id)+'\',\'accept\')">Прийняти цю зміну</button></div>'
+    : action.status==='accepted'&&action.rollbackVersionId
+      ? '<div><button type="button" onclick="goToView(\'versions\')">Версії проєкту</button><button type="button" onclick="rollbackAssistantChange(\''+esc(action.id)+'\')">↶ Відкотити цю зміну</button></div>'
+      : '';
+  return `<article class="assistant-change-card ${esc(action.status)}"><header><div><span class="assistant-change-kind">${esc(assistantActionTarget(action))}</span><strong>${esc(action.summary)}</strong></div><span class="tag">${esc(({proposed:'очікує рішення',accepted:'прийнято',rejected:'відхилено'})[action.status]||action.status)}</span></header><div class="assistant-diff"><section class="before"><span>ДО</span><pre>${esc(assistantDiffText(action.before))}</pre></section><section class="after"><span>ПІСЛЯ</span><pre>${esc(assistantDiffText(action.after))}</pre></section></div><footer><small>${esc(new Date(action.createdAt).toLocaleString('uk-UA'))}${action.decidedAt?' · рішення '+esc(new Date(action.decidedAt).toLocaleString('uk-UA')):''}${action.decisionNote?' · '+esc(action.decisionNote):''}${action.rollbackVersionCreatedAt?' · rollback '+esc(new Date(action.rollbackVersionCreatedAt).toLocaleString('uk-UA')):''}</small>${decisionActions}</footer></article>`;
 }
 function assistantChangesPanel(){
   const counts={proposed:projectAssistantActions.filter(x=>x.status==='proposed').length,accepted:projectAssistantActions.filter(x=>x.status==='accepted').length,rejected:projectAssistantActions.filter(x=>x.status==='rejected').length};
@@ -103,6 +108,17 @@ async function decideAssistantChange(id,decision){
   try{
     await api(`/api/projects/${encodeURIComponent(activeId)}/assistant/actions/${encodeURIComponent(id)}/decision`,{method:'POST',body:JSON.stringify({decision,note})});
     if(decision==='accept')await load(activeId);
+    await refreshProjectAssistantActions();
+    render();
+  }catch(error){projectAssistantActionsError=error.message;render()}
+}
+async function rollbackAssistantChange(id){
+  const action=projectAssistantActions.find(item=>item.id===id);
+  if(!action?.rollbackVersionId)return;
+  if(!window.confirm('Відкотити саме цю прийняту AI-зміну? Поточний стан буде автоматично збережено як резервну версію.'))return;
+  try{
+    await api(`/api/projects/${encodeURIComponent(activeId)}/versions/${encodeURIComponent(action.rollbackVersionId)}/restore`,{method:'POST'});
+    await load(activeId);
     await refreshProjectAssistantActions();
     render();
   }catch(error){projectAssistantActionsError=error.message;render()}
