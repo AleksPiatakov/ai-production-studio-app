@@ -170,7 +170,7 @@ function projectWizardFields(){
     <label>Основна мова<select name="defaultLanguage"><option value="uk" ${d.defaultLanguage==='uk'?'selected':''}>Українська</option><option value="en" ${d.defaultLanguage==='en'?'selected':''}>English</option></select></label>
     <label class="settings-check"><input type="checkbox" name="addOtherLanguage" ${d.additionalLanguages.length?'checked':''}> Запланувати другу мовну версію</label>
     <label>Опис<textarea name="description" maxlength="4000" placeholder="Коротко: для чого цей проєкт і що в ньому створюється">${esc(d.description)}</textarea></label>
-    <p class="wizard-note compact">На цьому етапі створюються тільки налаштування проєкту. Сценарій, персонажі та медіа не генеруються автоматично.</p>`;
+    <p class="wizard-note compact">На цьому етапі створюються тільки налаштування проєкту. AI не створює сценарій, персонажів або медіа автоматично.</p>`;
   if(projectWizard.step===2)return `<div class="wizard-progress"><i class="done"></i><i class="active"></i><i></i></div><div class="wizard-step-title"><span>02</span><div><p class="wizard-lead">Виробництво та сховище</p><small>Технічний формат і перевірка локальної папки.</small></div></div>
     <div class="wizard-grid"><label>Роздільна здатність<select name="resolution"><option value="1920x1080" ${d.resolution==='1920x1080'?'selected':''}>1920×1080</option><option value="3840x2160" ${d.resolution==='3840x2160'?'selected':''}>3840×2160</option><option value="1280x720" ${d.resolution==='1280x720'?'selected':''}>1280×720</option></select></label>
     <label>Співвідношення<select name="aspectRatio">${['16:9','9:16','1:1','4:3'].map(v=>`<option value="${v}" ${d.aspectRatio===v?'selected':''}>${v}</option>`).join('')}</select></label>
