@@ -101,7 +101,7 @@ const server = http.createServer(async (req, res) => {
       const allowed = ['name', 'capability', 'runtime', 'version', 'status', 'execution', 'notes'];
       const next = { ...current };
       for (const key of allowed) if (input[key] !== undefined) next[key] = String(input[key]).trim();
-      if (!['ready', 'available', 'not-installed', 'not-connected', 'disabled'].includes(next.status)) throw new Error('invalid model status');
+      if (!['ready','available','installed','connected','running','failed','not-installed','not-connected','disabled'].includes(next.status)) throw new Error('invalid model status');
       store.update(data => { const models = data.studio.modelRegistry; models[models.findIndex(item => item.id === current.id)] = next; });
       return send(res, 200, publicModel(next));
     }
