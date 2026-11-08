@@ -61,6 +61,7 @@
        const variantCount=Math.max(1,Math.min(4,Number(root.querySelector('#p06-variants-count')?.value)||1));
        const prompt=String(shot.imagePrompt||shot.prompt||'').trim();
        if(!modelId||!prompt)break;
+       if(!confirmExpensiveGeneration('image',variantCount))break;
        const inputAssetIds=[...(shot.referenceAssetIds||[])];
        imageStudioNotice='Додаємо image-задачі в чергу…';render();
        (async()=>{try{
