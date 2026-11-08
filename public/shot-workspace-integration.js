@@ -6,7 +6,10 @@
   if(view!=='shotStudio')return previousPage();
   const scene=(active.scenes||[]).find(s=>s.id===activeSceneId)||(active.scenes||[])[0];
   const shot=(scene?.shots||[]).find(s=>s.id===activeShotId)||scene?.shots?.[0];
-  return window.APSShotWorkspace.render({projectName:active.name,scene,shot,shots:scene?.shots||[],sceneIndex:scene?.order,assets:active.assets||[],selectedAssetId});
+  const imageModels=(productionStudioState?.models||[]).filter(model=>typeof clientModelSupports==='function'&&clientModelSupports(model,'image'));
+  const preferred=productionStudioState?.profiles?.image;
+  const imageModel=imageModels.find(model=>model.id===preferred)||imageModels[0]||null;
+  return window.APSShotWorkspace.render({projectName:active.name,scene,shot,shots:scene?.shots||[],sceneIndex:scene?.order,assets:active.assets||[],selectedAssetId,imageModel});
  };
  const previousTitle=viewTitle;
  viewTitle=function(){return view==='shotStudio'?'Редактор кадру · P-05':previousTitle()};
