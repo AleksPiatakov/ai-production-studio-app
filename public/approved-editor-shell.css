@@ -117,3 +117,27 @@ body.aps-approved-studio-shell .aps-nav-project-picker select:focus-visible{
 
 /* Navigation sections are defined by Master Specification §3. */
 .aps-nav-label{margin:11px 10px 5px;color:#a995ce;font-size:10px;font-weight:800;letter-spacing:.08em}
+
+
+/* v0.4 global/project separation.
+   Global pages never expose project modules until a project workspace is opened. */
+body.aps-global-zone .aps-project-only,
+body.aps-global-zone .aps-nav-main [data-aps-scope="project"]{
+  display:none!important;
+}
+body.aps-global-zone .aps-nav-main{
+  padding-top:18px;
+}
+body.aps-global-zone #aps-approved-nav{
+  background:linear-gradient(165deg,#090d20 0%,#0d1127 62%,#15102a 100%);
+}
+body.aps-approved-studio-shell:not(.aps-approved-editor-shell) #content{
+  width:100%;
+  max-width:1440px;
+  margin-inline:auto;
+}
+@media (min-width:981px){
+  body.aps-approved-studio-shell:not(.aps-approved-editor-shell)>main:not(.sidebar-collapsed){
+    grid-template-columns:216px minmax(0,1fr);
+  }
+}
