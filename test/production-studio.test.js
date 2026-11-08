@@ -90,3 +90,13 @@ test('model readiness probe reports runtime facts without pretending inference r
   assert.equal(probeStudioModel(models.find(m => m.id === 'gpu-worker'), { onlineWorkers: 0 }).ok, false);
   assert.equal(probeStudioModel(models.find(m => m.id === 'gpu-worker'), { onlineWorkers: 1 }).ok, true);
 });
+
+
+test('connected and running model states remain distinct from execution readiness', () => {
+  const models = defaultModelRegistry();
+  const connected = { ...models.find(model => model.id === 'gpu-worker'), status: 'connected' };
+  const running = { ...connected, status: 'running' };
+  assert.equal(require('../server/production-studio').publicModel(connected).configured, true);
+  assert.equal(createGenerationJob({ projectId: 'p-1', type: 'video', modelId: connected.id }, [connected]).status, 'blocked');
+  assert.equal(createGenerationJob({ projectId: 'p-1', type: 'video', modelId: running.id }, [running]).status, 'queued');
+});
