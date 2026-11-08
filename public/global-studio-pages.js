@@ -76,7 +76,7 @@ function settingsFields(){
   const settings=globalStudioSettings;
   if(!settings)return '<p class="global-empty">Завантаження налаштувань…</p>';
   if(globalSettingsTab==='general')return `
-    <label>Мова інтерфейсу<select name="interfaceLanguage"><option value="uk" ${settings.general.interfaceLanguage==='uk'?'selected':''}>Українська</option><option value="en" ${settings.general.interfaceLanguage==='en'?'selected':''}>English</option></select></label>
+    <label>Мова інтерфейсу<select name="interfaceLanguage"><option value="uk" selected>Українська</option><option value="en" disabled>English · заплановано</option></select><small>Повна англійська локалізація інтерфейсу ще не реалізована. Мова матеріалів проєкту й export-мова налаштовуються окремо.</small></label>
     <label>Початковий екран<select name="startView"><option value="home" ${settings.general.startView==='home'?'selected':''}>Головна</option><option value="projects" ${settings.general.startView==='projects'?'selected':''}>Проєкти</option><option value="overview" ${settings.general.startView==='overview'?'selected':''}>Останній проєкт</option></select></label>
     <label class="settings-check"><input type="checkbox" name="confirmDestructive" ${checked(settings.general.confirmDestructive)}> Підтверджувати руйнівні дії</label>`;
   if(globalSettingsTab==='files')return `
