@@ -451,9 +451,9 @@ test('P-06 keeps negative prompt draft per shot across renders',()=>{
   const integration=fs.readFileSync(path.join(root,'public','image-studio-integration.js'),'utf8');
   assert.match(renderer,/const negativePrompt=data\.negativePrompt\|\|''/);
   assert.match(renderer,/\$\{esc\(negativePrompt\)\}<\/textarea>/);
-  assert.match(integration,/const negativePromptDrafts=new Map\(\)/);
-  assert.match(integration,/negativePrompt:shot\?\.id\?negativePromptDrafts\.get\(shot\.id\)\|\|''/);
-  assert.match(integration,/negativePromptDrafts\.set\(shot\.id,event\.target\.value\)/);
+  assert.match(integration,/const imageJobDrafts=new Map\(\)/);
+  assert.match(integration,/negativePrompt:draft\.negativePrompt\|\|''/);
+  assert.match(integration,/imageJobDrafts\.set\(shot\.id/);
 });
 
 
