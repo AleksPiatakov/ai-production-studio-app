@@ -107,8 +107,9 @@ function packageFileRecord(sourcePath, destination, meta = {}) {
   const checksum = exists ? packageFileChecksum(sourcePath) : '';
   return { sourcePath: sourcePath || '', destination, exists, checksum, ...meta };
 }
-function buildDaVinciPackage(project, episode, mode = 'draft') {
+function buildDaVinciPackage(project, episode, mode = 'draft', options = {}) {
   const packageMode = mode === 'final' ? 'final' : 'draft';
+  const verifyFiles = packageMode === 'final' ? true : options.verifyFiles !== false;
   const handoff = buildDaVinciHandoff(project, episode);
   const sceneIds = new Set(project.scenes.filter(scene => scene.episodeId === episode.id).map(scene => scene.id));
   const includeAsset = asset => sceneIds.has(asset.linkedSceneId) && (packageMode === 'draft' || (asset.status === 'approved' && asset.dependencyStatus !== 'needs-review'));
@@ -136,7 +137,7 @@ function buildDaVinciPackage(project, episode, mode = 'draft') {
     if (source.subtitlesPath) folders.Subtitles.push(packageFileRecord(source.subtitlesPath, `Subtitles/${String(source.language || 'uk').toUpperCase()}${path.extname(source.subtitlesPath) || '.srt'}`, { status: source.status, language: source.language, kind: 'subtitles' }));
   }
   const physical = Object.values(folders).flat().filter(file => !file.virtual);
-  const missingFiles = physical.filter(file => !file.exists).map(file => `Файл відсутній: ${file.destination}`);
+  const missingFiles = verifyFiles ? physical.filter(file => !file.exists).map(file => `Файл відсутній: ${file.destination}`) : [];
   const readinessIssues = handoff.blockers.filter(item => !item.startsWith('Це чернетковий монтажний лист'));
   if (!['approved','production','released'].includes(episode.status)) readinessIssues.unshift('Випуск не має затвердженого production-статусу.');
   const issues = [...new Set([...readinessIssues, ...missingFiles])];
@@ -150,6 +151,7 @@ function buildDaVinciPackage(project, episode, mode = 'draft') {
     episode: handoff.episode,
     canExport: packageMode === 'draft' ? true : finalReady,
     finalReady,
+    verifyFiles,
     issues,
     folders,
     summary: {
