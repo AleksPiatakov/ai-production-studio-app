@@ -542,7 +542,8 @@ window.goToView=function(name){
 };
 document.getElementById('preview-dashboard').innerHTML=window.APSProjectDashboard.render({
  name:'Демонстраційний проєкт',
- episodes:[{title:'Епізод 01',status:'draft'},{title:'Епізод 02',status:'planned'}],
+ currentEpisode:{title:'Епізод 01',status:'draft',seasonNumber:1,episodeNumber:1},
+ episodes:[{title:'Епізод 01',status:'draft',seasonNumber:1,episodeNumber:1},{title:'Епізод 02',status:'planned',seasonNumber:1,episodeNumber:2}],
  assets:[{status:'approved'},{status:'draft'},{status:'draft'}],
  characters:[{name:'Міра'},{name:'Бурштин'}],
  tasks:[{id:'task-demo',title:'Перевірити затвердження ключових кадрів',status:'open'}],
