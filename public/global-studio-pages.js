@@ -52,7 +52,7 @@ function globalProjectsPanel(){
   const q=projectGallerySearch.trim().toLowerCase();
   const items=(projects||[]).filter(project=>(projectGalleryType==='all'||project.type===projectGalleryType)&&(!q||[project.name,project.description,label('type',project.type)].some(value=>String(value||'').toLowerCase().includes(q))));
   return `<section class="global-projects-page">
-    <div class="global-toolbar"><div><p class="eyebrow">G-02 · ПРОЄКТИ</p><h3>Каталог проєктів</h3><p>Кожен проєкт має окремі дані, ресурси, пам’ять помічника та історію версій.</p></div><button class="primary" type="button" onclick="openProjectWizard()">＋ Новий проєкт</button></div>
+    <div class="global-toolbar"><div><p class="eyebrow">ПРОЄКТИ</p><h3>Каталог проєктів</h3><p>Кожен проєкт має окремі дані, ресурси, пам’ять помічника та історію версій.</p></div><button class="primary" type="button" onclick="openProjectWizard()">＋ Новий проєкт</button></div>
     <div class="global-project-filters"><label>Пошук<input type="search" value="${esc(projectGallerySearch)}" placeholder="Назва або опис…" oninput="setProjectGallerySearch(this.value)"></label><label>Тип<select onchange="setProjectGalleryType(this.value)"><option value="all">Усі типи</option><option value="animated-series" ${projectGalleryType==='animated-series'?'selected':''}>Анімаційний серіал</option><option value="general" ${projectGalleryType==='general'?'selected':''}>Універсальне відео</option><option value="science" ${projectGalleryType==='science'?'selected':''}>Наукове відео</option></select></label></div>
     <div class="global-project-grid global-project-grid-large">${items.length?items.map(project=>globalProjectCard(project)).join(''):'<div class="global-empty">За цим фільтром проєктів немає.</div>'}</div>
   </section>`;
@@ -96,7 +96,7 @@ function autonomyOptions(current){
   return [['suggestions-only','Тільки пропозиції'],['safe-actions','Автоматичні безпечні дії'],['extended','Розширена автономність']].map(([id,title])=>`<option value="${id}" ${current===id?'selected':''}>${title}</option>`).join('');
 }
 function globalSettingsPanel(){
-  return `<section class="global-settings-page"><div class="global-toolbar"><div><p class="eyebrow">G-08 · НАЛАШТУВАННЯ</p><h3>Налаштування AI Production Studio</h3><p>Глобальні параметри не змінюють затверджені матеріали проєктів.</p></div></div>
+  return `<section class="global-settings-page"><div class="global-toolbar"><div><p class="eyebrow">НАЛАШТУВАННЯ</p><h3>Налаштування AI Production Studio</h3><p>Глобальні параметри не змінюють затверджені матеріали проєктів.</p></div></div>
     ${settingsTabs()}<form class="settings-form" onsubmit="saveGlobalSettings(event)">${settingsFields()}<div class="settings-actions"><span>${esc(globalSettingsNotice)}</span><button class="primary" type="submit" ${globalStudioSettings?'':'disabled'}>Зберегти</button></div></form>
   </section>`;
 }
