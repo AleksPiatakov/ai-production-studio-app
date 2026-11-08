@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { buildDaVinciHandoff, handoffMarkdown, handoffTimelineCsv } = require('../server/davinci-handoff');
+const { buildDaVinciHandoff, buildDaVinciPackage, packageManifestJson, handoffMarkdown, handoffTimelineCsv } = require('../server/davinci-handoff');
 
 test('builds a DaVinci handoff without treating draft material as production-ready', () => {
   const project = {
@@ -26,4 +26,49 @@ test('builds a DaVinci handoff without treating draft material as production-rea
   assert.match(csv, /timeline_start/);
   assert.match(csv, /00:00:00:00/);
   assert.match(csv, /luma-prelude-draft-v1\.png/);
+});
+
+
+test('draft DaVinci package is exportable with warnings while final is blocked until ready', () => {
+  const project = {
+    id: 'project-package', name: 'Package Test', defaultLanguage: 'uk', productionSettings: { fps: 25 },
+    assets: [],
+    localizations: [],
+    scenes: [{
+      id: 'scene-package', episodeId: 'episode-package', order: 1, title: 'Scene', durationSeconds: 5,
+      shots: [{ id: 'shot-package', seconds: 5, status: 'draft', camera: 'wide', keyImageAssetId: '', referenceAssetIds: [] }],
+      dialogue: []
+    }]
+  };
+  const episode = { id: 'episode-package', title: 'Episode', status: 'development', targetMinutes: 1 };
+  const draft = buildDaVinciPackage(project, episode, 'draft');
+  const final = buildDaVinciPackage(project, episode, 'final');
+  assert.equal(draft.mode, 'draft');
+  assert.equal(draft.canExport, true);
+  assert.equal(draft.finalReady, false);
+  assert.equal(final.mode, 'final');
+  assert.equal(final.canExport, false);
+  assert.ok(final.issues.some(item => item.includes('Випуск не має затвердженого')));
+  assert.ok(final.issues.some(item => item.includes('відеокліп')));
+  assert.equal(draft.folders.Edit_Data[0].destination, 'Edit_Data/timeline.csv');
+  assert.equal(draft.folders.Manifest[0].destination, 'Manifest/package-manifest.json');
+  const manifest = JSON.parse(packageManifestJson(draft));
+  assert.equal(manifest.kind, 'davinci-package-plan');
+  assert.ok(manifest.files.some(file => file.destination === 'Manifest/package-manifest.json'));
+});
+
+test('timeline prefers generated video clip when a shot has one', () => {
+  const project = {
+    id: 'p-video', name: 'Video Package', defaultLanguage: 'uk',
+    assets: [
+      { id: 'key', label: 'Key', type: 'image', uri: '/assets/test-animatic/luma-prelude-draft-v1.png', status: 'approved' },
+      { id: 'clip', label: 'Clip', type: 'video', uri: '/assets/test-animatic/luma-prelude-draft-v1.png', status: 'approved', linkedShotId: 'shot-1' }
+    ],
+    localizations: [],
+    scenes: [{ id:'scene-1',episodeId:'episode-1',order:1,title:'S',durationSeconds:4,shots:[{id:'shot-1',seconds:4,status:'approved',camera:'wide',keyImageAssetId:'key',referenceAssetIds:[]}],dialogue:[] }]
+  };
+  const handoff=buildDaVinciHandoff(project,{id:'episode-1',title:'E',status:'approved',targetMinutes:1});
+  assert.equal(handoff.clips[0].videoClip.id,'clip');
+  const csv=handoffTimelineCsv(handoff,24);
+  assert.match(csv,/luma-prelude-draft-v1\.png/);
 });
