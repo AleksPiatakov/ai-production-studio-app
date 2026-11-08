@@ -122,7 +122,7 @@ function openProjectWizard(step){
   dlg.classList.remove('focus-dialog','reference-dialog');title.textContent='Новий проєкт · крок '+projectWizard.step+' із 3';
   fields.innerHTML=projectWizardFields();submit.textContent=projectWizard.step<3?'Далі':'Створити проєкт';
   document.getElementById('modal-cancel').textContent=projectWizard.step>1?'Назад':'Скасувати';
-  document.getElementById('modal-cancel').onclick=()=>{if(projectWizard.step>1){projectWizard.step--;openProjectWizard(projectWizard.step)}else dlg.close()};
+  document.getElementById('modal-cancel').onclick=()=>{if(projectWizard.step>1){projectWizard.step--;openProjectWizard(projectWizard.step)}else{dlg.close();document.getElementById('modal-cancel').onclick=closeModal}};
   form.onsubmit=handleProjectWizardSubmit;dlg.showModal();
 }
 function projectWizardFields(){
@@ -166,7 +166,7 @@ async function handleProjectWizardSubmit(event){
   const submit=form.querySelector('button[type="submit"]');submit.disabled=true;submit.textContent='Створення…';
   try{
     const created=await api('/api/projects',{method:'POST',body:JSON.stringify(projectWizard.data)});
-    document.getElementById('modal').close();view='overview';await load(created.id);
+    document.getElementById('modal').close();document.getElementById('modal-cancel').onclick=closeModal;view='overview';await load(created.id);
   }catch(error){submit.disabled=false;submit.textContent='Створити проєкт';window.alert(error.message)}
 }
 
