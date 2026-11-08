@@ -1,12 +1,14 @@
 /* Integrates approved P-06 in the local app without changing storage or worker behavior. */
 (()=>{
  let selectedAssetId=null;
+ let imageStudioNotice='';
  const oldPage=pageContent;
  pageContent=function(){
   if(view!=='imageStudio')return oldPage();
   const scene=(active.scenes||[]).find(s=>s.id===activeSceneId)||(active.scenes||[])[0];
   const shot=(scene?.shots||[]).find(s=>s.id===activeShotId)||scene?.shots?.[0];
-  return window.APSImageStudio.render({scene,shot,shots:scene?.shots||[],assets:active.assets||[],selectedAssetId});
+  const imageModels=(productionStudioState?.models||[]).filter(model=>typeof clientModelSupports==='function'&&clientModelSupports(model,'image'));
+  return window.APSImageStudio.render({scene,shot,shots:scene?.shots||[],assets:active.assets||[],selectedAssetId,imageModels,imageProfile:productionStudioState?.profiles?.image||'',notice:imageStudioNotice});
  };
  const oldTitle=viewTitle;
  viewTitle=function(){return view==='imageStudio'?'Image Studio · Генерація зображень':oldTitle()};
@@ -43,6 +45,7 @@
   root.querySelector('#p06-shot')?.addEventListener('change',event=>{
    activeShotId=event.target.value;render();
   });
+  if(imageStudioNotice&&!root.querySelector('.p06-generation-notice'))root.querySelector('.p06-settings')?.insertAdjacentHTML('beforeend','<p class="p06-generation-notice">'+(typeof esc==='function'?esc(imageStudioNotice):imageStudioNotice)+'</p>');
   root.querySelectorAll('[data-p06-action]').forEach(button=>button.addEventListener('click',()=>{
    const scene=(active.scenes||[]).find(s=>s.id===activeSceneId)||(active.scenes||[])[0];
    const shot=(scene?.shots||[]).find(s=>s.id===activeShotId)||scene?.shots?.[0];
@@ -51,6 +54,21 @@
    switch(button.dataset.p06Action){
     case 'edit-shot':if(scene&&shot)openShot(scene.id,shot.id);break;
     case 'prepare-brief':if(scene&&shot)openShotImageBrief(scene.id,shot.id);break;
+    case 'generate':
+      if(scene&&shot){
+       const modelId=root.querySelector('#p06-model')?.value||'';
+       const resolution=root.querySelector('#p06-resolution')?.value||'1920x1080';
+       const variantCount=Math.max(1,Math.min(4,Number(root.querySelector('#p06-variants-count')?.value)||1));
+       const prompt=String(shot.imagePrompt||shot.prompt||'').trim();
+       if(!modelId||!prompt)break;
+       const inputAssetIds=[...(shot.referenceAssetIds||[])];
+       imageStudioNotice='Додаємо image-задачі в чергу…';render();
+       (async()=>{try{
+         for(let n=1;n<=variantCount;n++)await api('/api/studio/generation-jobs',{method:'POST',body:JSON.stringify({projectId:activeId,type:'image',modelId,prompt,inputAssetIds,parameters:{resolution,variantIndex:n,variantCount,aspectRatio:active.aspectRatio||'16:9'},context:{sceneId:scene.id,shotId:shot.id}})});
+         await refreshProductionStudio();imageStudioNotice='Додано '+variantCount+' задач(і) в глобальну чергу.';
+       }catch(error){imageStudioNotice='Помилка: '+error.message}render()})();
+      }
+      break;
     case 'upload':openImageUpload();break;
     case 'open-image':if(selected)showReference(selected.id);break;
     case 'asset-details':if(selected)openAsset(selected.id);break;
