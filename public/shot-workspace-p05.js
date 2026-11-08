@@ -31,7 +31,7 @@
      <div class="p05-local-state">Локальна генерація зображень<br><strong>${imageModel?esc(imageModel.name):'Не підключена'}</strong></div>
     </aside>
     <section class="p05-canvas">
-     <div class="p05-canvas-top"><strong>Кадр ${Math.max(1,shots.findIndex(s=>s.id===shot?.id)+1)} · Сцена ${esc(sceneIndex)}</strong><span>${esc(shot?.seconds||'—')} с · ${esc(shot?.status||'чернетка')}</span></div>
+     <div class="p05-canvas-top"><strong>Кадр ${Math.max(1,shots.findIndex(s=>s.id===shot?.id)+1)} · Сцена ${esc(sceneIndex)}</strong><span>${esc(shot?.seconds||'—')} с · ${shot?.dependencyStatus==='needs-review'?'Потрібна перевірка':esc(shot?.status||'чернетка')}</span></div>
      <div class="p05-large-frame">
        ${main?`<img src="${esc(main.uri)}" alt="${esc(main.label)}">`:'<div class="p05-no-image"><span aria-hidden="true">▧</span><strong>Ключове зображення ще не додано</strong><small>Для цього кадру можна вибрати або завантажити референс, а потім створити новий варіант через підключену модель.</small></div>'}
      </div>
@@ -54,7 +54,7 @@
       <div class="p05-assistant-title"><span>✧</span><div><strong>AI Помічник проєкту</strong><small>${esc(d.projectName||'Проєкт')}</small></div></div>
       <p>Контекст поточного кадру. Для аналізу відкрийте помічника проєкту; його пропозиції не застосовуються автоматично.</p>
       <div class="p05-context-line"><span>Сцена</span><strong>${esc(scene?.title||'Не обрано')}</strong></div>
-      <div class="p05-context-line"><span>Статус</span><strong>${esc(shot?.status||'чернетка')}</strong></div>
+      <div class="p05-context-line"><span>Статус</span><strong>${shot?.dependencyStatus==='needs-review'?'Потрібна перевірка':esc(shot?.status||'чернетка')}</strong></div>${shot?.dependencyStatus==='needs-review'?'<div class="p05-context-line"><span>Причина</span><strong>Змінено затверджений сценарій</strong></div>':''}
       <button data-p05-action="assistant" type="button">✧ Відкрити помічника</button>
     </aside>
    </div>
