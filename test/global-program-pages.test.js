@@ -101,12 +101,12 @@ test('generation queue exposes status filter event logs retry cancel and result 
 test('model setup persists configuration separately from readiness probes',()=>{
   const studio=fs.readFileSync(path.join(root,'public','production-studio-ui.js'),'utf8');
   const server=fs.readFileSync(path.join(root,'server','index.js'),'utf8');
-  assert.match(studio,/view === 'modelSetup'/);
-  assert.match(studio,/model-readiness-grid/);
-  assert.match(studio,/executionTarget/);
-  assert.match(studio,//setup/);
+  assert.ok(studio.includes("view === 'modelSetup'"));
+  assert.ok(studio.includes('model-readiness-grid'));
+  assert.ok(studio.includes('executionTarget'));
+  assert.ok(studio.includes('/setup'));
   assert.ok(server.includes("parts[4] === 'setup'"));
-  assert.match(server,/item\.lastProbe/);
-  assert.match(server,/hasPiperVoice\(\)/);
-  assert.match(server,/onlineWorkers/);
+  assert.ok(server.includes('item.lastProbe'));
+  assert.ok(server.includes('hasPiperVoice()'));
+  assert.ok(server.includes('onlineWorkers'));
 });
