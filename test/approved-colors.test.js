@@ -28,6 +28,6 @@ test('approved shell has visible navy and violet surfaces with cache refresh',()
   assert.match(css,/--violet:#9a27f0/);
   assert.match(css,/body \.p01-dashboard \.p01-module/);
   assert.match(css,/body \.preview-rail button\.active/);
-  assert.match(app,/approved-color-unification\.css\?v=20261108c/);
-  assert.match(preview,/approved-color-unification\.css\?v=20261108c/);
+  assert.match(app,/approved-color-unification\.css\?v=20261108d/);
+  assert.match(preview,/approved-color-unification\.css\?v=20261108d/);
 });
