@@ -22,13 +22,13 @@
   const globalRoutes=[
     ['home','⌂','Головна'],
     ['projects','▤','Проєкти'],
-    ['assistants','✧','AI Помічники'],
+    ['assistants','✧','Загальний AI Помічник'],
     ['models','◈','AI Моделі'],
     ['queue','≡','Черга генерацій'],
     ['settings','⚙','Налаштування']
   ];
-  const routeMarkup=routes=>routes.map(([id,icon,title])=>
-    '<button type="button" data-aps-destination="'+id+'" '+(view===id?'class="active" aria-current="page"':'')+'><span aria-hidden="true">'+icon+'</span>'+title+'</button>'
+  const routeMarkup=(routes,scope)=>routes.map(([id,icon,title])=>
+    '<button type="button" data-aps-scope="'+scope+'" data-aps-destination="'+id+'" '+(view===id?'class="active" aria-current="page"':'')+'><span aria-hidden="true">'+icon+'</span>'+title+'</button>'
   ).join('');
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function setup(){
@@ -49,8 +49,8 @@
       projectList.map(p=>'<option value="'+esc(p.id)+'" '+(p.id===current?'selected':'')+'>'+esc(p.name)+'</option>').join('')+
       '</select></div>'+
       '<nav class="aps-nav-main" aria-label="Розділи студії">'+
-      '<p class="aps-nav-label">МОДУЛІ ПРОЄКТУ</p>'+routeMarkup(projectRoutes)+
-      '<p class="aps-nav-label">ГЛОБАЛЬНІ ІНСТРУМЕНТИ</p>'+routeMarkup(globalRoutes)+
+      '<p class="aps-nav-label aps-project-only">МОДУЛІ ПРОЄКТУ</p>'+routeMarkup(projectRoutes,'project')+
+      '<p class="aps-nav-label">ГЛОБАЛЬНІ ІНСТРУМЕНТИ</p>'+routeMarkup(globalRoutes,'global')+
       '</nav>'+
       '<div class="aps-nav-bottom"><span aria-hidden="true">◉</span><span>Локальний проєкт<br><small>Дані зберігаються на цьому Mac</small></span></div>';
     rail.querySelectorAll('[data-aps-destination]').forEach(button=>{
