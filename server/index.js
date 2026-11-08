@@ -310,6 +310,42 @@ const server = http.createServer(async (req, res) => {
         }
         return send(res, 200, updated);
       }
+      if (req.method === 'POST' && parts[3] === 'assistant' && parts[4] === 'actions' && parts[5] && parts[6] === 'rollback') {
+        const action = project.assistantWorkspace?.actions?.find(item => item.id === parts[5]);
+        if (!action) return send(res, 404, { error: 'assistant action not found' });
+        if (action.status !== 'accepted' || !action.rollbackVersionId) return send(res, 409, { error: 'only an accepted action with a rollback snapshot can be rolled back' });
+        const version = (project.versionHistory || []).find(item => item.id === action.rollbackVersionId);
+        if (!version) return send(res, 404, { error: 'rollback version not found' });
+        const input = await body(req), note = String(input.note || '').trim().slice(0, 1000);
+        const audit = {
+          id: randomUUID(), actionId: action.id, summary: action.summary, kind: action.kind,
+          before: action.before, after: action.after, acceptedAt: action.decidedAt,
+          rolledBackAt: new Date().toISOString(), rollbackVersionId: version.id,
+          decisionNote: action.decisionNote || '', note
+        };
+        store.update(data => {
+          const index = data.projects.findIndex(item => item.id === projectId);
+          const current = data.projects[index];
+          const limit = Math.max(5, Math.min(100, Number(data.studio?.settings?.files?.versionHistoryLimit) || 30));
+          const backup = { id: randomUUID(), createdAt: new Date().toISOString(), label: 'Автоматично збережено перед відкатом AI-зміни', snapshot: JSON.parse(JSON.stringify({ ...current, versionHistory: undefined })) };
+          const history = [...(current.versionHistory || []), backup].slice(-limit);
+          const restored = JSON.parse(JSON.stringify(version.snapshot));
+          restored.assistantWorkspace = { ...(restored.assistantWorkspace || {}) };
+          const priorRollbackLog = Array.isArray(restored.assistantWorkspace.rollbackLog) ? restored.assistantWorkspace.rollbackLog : [];
+          const currentRollbackLog = Array.isArray(current.assistantWorkspace?.rollbackLog) ? current.assistantWorkspace.rollbackLog : [];
+          const rollbackById = new Map([...priorRollbackLog, ...currentRollbackLog, audit].map(item => [item.id, item]));
+          restored.assistantWorkspace.rollbackLog = [...rollbackById.values()].slice(-500);
+          restored.assistantWorkspace.actions = Array.isArray(restored.assistantWorkspace.actions) ? restored.assistantWorkspace.actions : [];
+          const restoredAction = restored.assistantWorkspace.actions.find(item => item.id === action.id);
+          if (restoredAction) Object.assign(restoredAction, {
+            status:'rolled-back', decidedAt:action.decidedAt, decisionNote:action.decisionNote || '',
+            rollbackVersionId:version.id, rollbackVersionCreatedAt:action.rollbackVersionCreatedAt || version.createdAt,
+            rolledBackAt:audit.rolledBackAt, rollbackAuditId:audit.id
+          });
+          data.projects[index] = { ...restored, versionHistory: history };
+        }, { noSnapshot: true });
+        return send(res, 200, audit);
+      }
       if (req.method === 'POST' && parts[3] === 'assistant' && parts[4] === 'advice') {
         const input = await body(req);
         const result = await askProjectAdvisor(project, input);
