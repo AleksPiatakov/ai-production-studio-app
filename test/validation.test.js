@@ -195,3 +195,24 @@ test('Character Bible keeps approved visual and voice links',()=>{
   assert.equal(entry.wardrobeAccessories,'Blue utility scarf');
   assert.deepEqual(entry.referenceAssetIds,['asset-front','asset-side']);
 });
+
+
+test('blocks production while approved script dependencies still need review',()=>{
+  const scene={
+    id:'stale-scene',title:'Stale',status:'approved',dependencyStatus:'needs-review',durationSeconds:5,characterIds:['luma'],
+    shots:[{id:'stale-shot',seconds:5,status:'approved',dependencyStatus:'needs-review',keyImageAssetId:'stale-frame',referenceAssetIds:['stale-frame']}],
+    dialogue:[]
+  };
+  const result=validateProject({
+    bibles:{style:[{status:'approved'}],characters:[{id:'luma',status:'approved',name:'Лума',ageBand:'teen',identityKey:'luma-v1'}]},
+    assets:[{id:'stale-frame',type:'image',status:'approved',label:'Stale frame',dependencyStatus:'needs-review'}],
+    voiceProfiles:[],
+    scenes:[scene]
+  },{sceneId:scene.id});
+  const codes=result.errors.map(error=>error.code);
+  assert.equal(result.valid,false);
+  assert.ok(codes.includes('SCENE_DEPENDENCY_REVIEW_REQUIRED'));
+  assert.ok(codes.includes('SHOT_DEPENDENCY_REVIEW_REQUIRED'));
+  assert.ok(codes.includes('SHOT_REFERENCE_DEPENDENCY_REVIEW_REQUIRED'));
+  assert.ok(codes.includes('SHOT_KEY_IMAGE_DEPENDENCY_REVIEW_REQUIRED'));
+});
