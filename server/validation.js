@@ -71,6 +71,9 @@ function validateBibleInput(input, kind) {
     entry.role = optionalString(input.role, 'role');
     entry.appearance = optionalString(input.appearance, 'appearance');
     entry.voiceNotes = optionalString(input.voiceNotes, 'voiceNotes');
+    entry.wardrobeAccessories = optionalString(input.wardrobeAccessories, 'wardrobeAccessories');
+    entry.voiceProfileId = optionalString(input.voiceProfileId, 'voiceProfileId');
+    entry.referenceAssetIds = stringArray(input.referenceAssetIds, 'referenceAssetIds');
   }
   return entry;
 }
