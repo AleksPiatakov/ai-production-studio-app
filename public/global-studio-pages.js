@@ -142,8 +142,8 @@ async function refreshProjectWizardPreflight(){
 function projectWizardStorageStatus(){
   if(projectWizard.preflightLoading)return '<div class="wizard-storage-status loading"><span>◌</span><div><strong>Перевіряємо локальне сховище…</strong><small>Перевіряється доступ на запис і вільне місце.</small></div></div>';
   const p=projectWizard.preflight;
-  if(!p?.ok)return `<div class="wizard-storage-status error"><span>!</span><div><strong>Сховище недоступне</strong><small>${esc(p?.error||projectWizard.preflightError||'Не вдалося підтвердити доступ на запис.')}</small></div><button type="button" onclick="refreshProjectWizardPreflight()">Повторити</button></div>`;
-  return `<div class="wizard-storage-status ok"><span>✓</span><div><strong>Папка готова до створення проєкту</strong><small>${esc(p.projectsRoot||'data/projects')} · вільно ${esc(projectStorageSize(p.freeBytes))}</small></div><button type="button" onclick="refreshProjectWizardPreflight()">Перевірити ще раз</button></div>`;
+  if(!p?.ok)return `<div class="wizard-storage-status error"><span>!</span><div><strong>Сховище не пройшло перевірку</strong><small>${esc(p?.error||projectWizard.preflightError||'Не вдалося підтвердити запис і вільне місце.')}</small></div><button type="button" onclick="refreshProjectWizardPreflight()">Повторити</button></div>`;
+  return `<div class="wizard-storage-status ok"><span>✓</span><div><strong>Папка готова до створення проєкту</strong><small>${esc(p.projectsRoot||'data/projects')} · запис: підтверджено · вільне місце: ${esc(projectStorageSize(p.freeBytes))}</small></div><button type="button" onclick="refreshProjectWizardPreflight()">Перевірити ще раз</button></div>`;
 }
 function renderProjectWizardModal(){
   const dlg=document.getElementById('modal'),form=document.getElementById('modal-form'),fields=document.getElementById('modal-fields'),title=document.getElementById('modal-title'),submit=form.querySelector('button[type="submit"]'),cancel=document.getElementById('modal-cancel');
