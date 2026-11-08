@@ -59,13 +59,14 @@
        const modelId=root.querySelector('#p06-model')?.value||'';
        const resolution=root.querySelector('#p06-resolution')?.value||'1920x1080';
        const variantCount=Math.max(1,Math.min(4,Number(root.querySelector('#p06-variants-count')?.value)||1));
+       const negativePrompt=String(root.querySelector('#p06-negative')?.value||'').trim();
        const prompt=String(shot.imagePrompt||shot.prompt||'').trim();
        if(!modelId||!prompt)break;
        if(!confirmExpensiveGeneration('image',variantCount))break;
        const inputAssetIds=[...(shot.referenceAssetIds||[])];
        imageStudioNotice='Додаємо image-задачі в чергу…';render();
        (async()=>{try{
-         for(let n=1;n<=variantCount;n++)await api('/api/studio/generation-jobs',{method:'POST',body:JSON.stringify({projectId:activeId,type:'image',modelId,prompt,inputAssetIds,parameters:{resolution,variantIndex:n,variantCount,aspectRatio:active.aspectRatio||'16:9'},context:{sceneId:scene.id,shotId:shot.id}})});
+         for(let n=1;n<=variantCount;n++)await api('/api/studio/generation-jobs',{method:'POST',body:JSON.stringify({projectId:activeId,type:'image',modelId,prompt,inputAssetIds,parameters:{resolution,variantIndex:n,variantCount,aspectRatio:active.aspectRatio||'16:9',...(negativePrompt?{negativePrompt}:{})},context:{sceneId:scene.id,shotId:shot.id}})});
          await refreshProductionStudio();imageStudioNotice='Додано '+variantCount+' задач(і) в глобальну чергу.';
        }catch(error){imageStudioNotice='Помилка: '+error.message}render()})();
       }
