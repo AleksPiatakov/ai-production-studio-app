@@ -642,7 +642,11 @@ const server = http.createServer(async (req, res) => {
           if (!line) return send(res, 404, { error: 'dialogue line not found' });
           const input = await body(req); const character = project.bibles.characters.find(item => item.id === input.characterId);
           const validated = validateDialogueInput(input, character);
-          const updated = { id: line.id, ...validated, generationSettings: validated.generationSettings === undefined ? line.generationSettings : validated.generationSettings, audioDrafts: line.audioDrafts || [] };
+          const dialogueTextChanged = line.text !== validated.text || line.textUk !== validated.textUk || line.textEn !== validated.textEn || line.language !== validated.language;
+          const audioDrafts = (line.audioDrafts || []).map(draft => dialogueTextChanged
+            ? { ...draft, previousStatus: draft.status === 'needs-review' ? (draft.previousStatus || 'draft') : (draft.status || 'draft'), status: 'needs-review', reviewReason: 'dialogue-text-changed' }
+            : draft);
+          const updated = { id: line.id, ...validated, generationSettings: validated.generationSettings === undefined ? line.generationSettings : validated.generationSettings, audioDrafts };
           store.update(data => { const lines = data.projects.find(item => item.id === projectId).scenes.find(item => item.id === scene.id).dialogue; lines[lines.findIndex(item => item.id === line.id)] = updated; }); return send(res, 200, updated);
         }
       }
