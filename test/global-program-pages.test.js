@@ -74,3 +74,9 @@ test('project AI changes render a two-column diff and require explicit decisions
   assert.match(ui,/decision/);
   assert.match(css,/\.assistant-diff/);
 });
+
+
+test('approved project rail exposes project assistant and AI change review separately',()=>{
+  assert.match(rail,/\['advisor','✧','AI Помічник проєкту'\]/);
+  assert.match(rail,/\['assistantChanges','≠','Зміни AI'\]/);
+});
