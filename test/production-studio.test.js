@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { normalizeStudio, defaultModelRegistry, updateStudioSettings, createGenerationJob, transitionGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs } = require('../server/production-studio');
+const { normalizeStudio, defaultModelRegistry, defaultModelCatalog, updateModelProfiles, probeStudioModel, updateStudioSettings, createGenerationJob, transitionGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs } = require('../server/production-studio');
 
 test('migrates existing projects to the production-studio architecture without losing their data', () => {
   const data = normalizeStudio({ projects: [{ id: 'p-1', name: 'Existing project', assets: [{ id: 'a-1' }] }] });
@@ -69,4 +69,34 @@ test('normalizes and updates five persistent studio settings sections', () => {
 test('normalizes production settings for pre-existing projects', () => {
   const data = normalizeStudio({ projects: [{ id: 'p-old' }] });
   assert.deepEqual(data.projects[0].productionSettings, { resolution: '1920x1080', aspectRatio: '16:9', fps: 24, plannedEpisodes: 1 });
+});
+
+
+test('model center catalog and profiles keep task compatibility explicit', () => {
+  const models = defaultModelRegistry();
+  const catalog = defaultModelCatalog();
+  assert.ok(catalog.some(item => item.id === 'piper' && item.installMode === 'manual-local'));
+  const profiles = updateModelProfiles({}, { planning: 'local-planner', voice: 'macos-tts', image: 'gpu-worker' }, models);
+  assert.equal(profiles.planning, 'local-planner');
+  assert.equal(profiles.image, 'gpu-worker');
+  assert.throws(() => updateModelProfiles(profiles, { voice: 'gpu-worker' }, models), /does not support voice/);
+});
+
+test('model readiness probe reports runtime facts without pretending inference ran', () => {
+  const models = defaultModelRegistry();
+  assert.equal(probeStudioModel(models.find(m => m.id === 'local-planner'), {}).ok, true);
+  assert.equal(probeStudioModel(models.find(m => m.id === 'piper'), { piperReady: false }).ok, false);
+  assert.equal(probeStudioModel(models.find(m => m.id === 'piper'), { piperReady: true }).ok, true);
+  assert.equal(probeStudioModel(models.find(m => m.id === 'gpu-worker'), { onlineWorkers: 0 }).ok, false);
+  assert.equal(probeStudioModel(models.find(m => m.id === 'gpu-worker'), { onlineWorkers: 1 }).ok, true);
+});
+
+
+test('connected and running model states remain distinct from execution readiness', () => {
+  const models = defaultModelRegistry();
+  const connected = { ...models.find(model => model.id === 'gpu-worker'), status: 'connected' };
+  const running = { ...connected, status: 'running' };
+  assert.equal(require('../server/production-studio').publicModel(connected).configured, true);
+  assert.equal(createGenerationJob({ projectId: 'p-1', type: 'video', modelId: connected.id }, [connected]).status, 'blocked');
+  assert.equal(createGenerationJob({ projectId: 'p-1', type: 'video', modelId: running.id }, [running]).status, 'queued');
 });

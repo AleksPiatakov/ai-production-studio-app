@@ -58,6 +58,48 @@ const transitions = {
   completed: [], cancelled: []
 };
 
+function defaultModelCatalog() {
+  return [
+    { id: 'local-planner', name: 'Local Planner', capability: 'planning', category: 'Текст і планування', license: 'Built-in', installMode: 'built-in', requirements: 'CPU', sizeNote: 'Вбудований', description: 'Локальний планувальник для безпечних текстових чернеток і службових задач.' },
+    { id: 'macos-tts', name: 'macOS Speech', capability: 'voice', category: 'Голос', license: 'macOS system voices', installMode: 'system', requirements: 'macOS', sizeNote: 'Системний', description: 'Системний TTS для локальних тестових озвучок. Не є клонуванням голосу.' },
+    { id: 'piper', name: 'Piper', capability: 'voice', category: 'Голос', license: 'Залежить від голосової моделі', installMode: 'manual-local', requirements: 'CPU / Apple Silicon', sizeNote: 'Залежить від голосу', description: 'Локальний TTS. Потрібна окрема сумісна голосова модель.' },
+    { id: 'gpu-worker', name: 'GPU Worker', capability: 'image-video', category: 'Зображення і відео', license: 'Залежить від підключеної моделі', installMode: 'remote-worker', requirements: 'Окремий GPU worker', sizeNote: 'Віддалено', description: 'Контракт віддаленого виконавця для image/video моделей. Сам по собі не є генеративною моделлю.' }
+  ];
+}
+function defaultModelProfiles() {
+  return { planning: 'local-planner', voice: 'macos-tts', image: '', video: '', music: '', sfx: '' };
+}
+function modelSupports(model, task) {
+  const capability=String(model?.capability||'');
+  if(task==='planning')return capability==='planning';
+  if(task==='voice')return capability==='voice';
+  if(task==='image'||task==='video')return capability===task||capability==='image-video';
+  if(task==='music'||task==='sfx')return capability===task||capability==='audio'||capability==='music-sfx';
+  return false;
+}
+function updateModelProfiles(current, input, models) {
+  const next={...defaultModelProfiles(),...(current||{})};
+  for(const task of Object.keys(next)){
+    if(input?.[task]===undefined)continue;
+    const id=String(input[task]||'');
+    if(!id){next[task]='';continue}
+    const model=models.find(item=>item.id===id);
+    if(!model||!modelSupports(model,task))throw new Error(`model ${id} does not support ${task}`);
+    next[task]=id;
+  }
+  return next;
+}
+function probeStudioModel(model, facts={}) {
+  if(!model)return { ok:false, status:'missing', message:'Модель не знайдена в реєстрі.' };
+  let ok=false,message='';
+  if(model.id==='local-planner'){ok=true;message='Вбудований локальний планувальник доступний.'}
+  else if(model.id==='macos-tts'){ok=facts.platform==='darwin';message=ok?'Системний macOS TTS доступний.':'Системний macOS TTS доступний лише на Mac.'}
+  else if(model.id==='piper'){ok=facts.piperReady===true;message=ok?'Piper і локальна голосова модель доступні.':'Piper або голосова модель не встановлені.'}
+  else if(model.id==='gpu-worker'){ok=Number(facts.onlineWorkers||0)>0;message=ok?'Підключено сумісний online GPU worker.':'Немає підключеного online GPU worker.'}
+  else {ok=['ready','available','running'].includes(model.status);message=ok?'Конфігурація моделі позначена як доступна.':'Модель ще не готова до виконання.'}
+  return { ok, status:ok?'ready':model.status, message, checkedAt:new Date().toISOString() };
+}
+
 function defaultModelRegistry() {
   return [
     { id: 'local-planner', name: 'Local Planner', capability: 'planning', runtime: 'built-in', version: '1.0', status: 'ready', execution: 'local', notes: 'Створює лише текстові чернетки та не генерує медіа.' },
@@ -72,6 +114,7 @@ function normalizeStudio(data) {
   data.studio.modelRegistry = Array.isArray(data.studio.modelRegistry) && data.studio.modelRegistry.length ? data.studio.modelRegistry : defaultModelRegistry();
   data.studio.generationJobs = Array.isArray(data.studio.generationJobs) ? data.studio.generationJobs : [];
   data.studio.workers = Array.isArray(data.studio.workers) ? data.studio.workers : [];
+  data.studio.modelProfiles = updateModelProfiles(data.studio.modelProfiles, {}, data.studio.modelRegistry);
   data.studio.settings = normalizeStudioSettings(data.studio.settings);
   data.studio.generalAssistant = data.studio.generalAssistant || { id: 'general-assistant', scope: 'studio-only', autonomy: 'suggestions-only', memory: [] };
   for (const project of data.projects || []) {
@@ -83,7 +126,7 @@ function normalizeStudio(data) {
   return data;
 }
 
-function publicModel(model) { return { ...model, configured: ['ready', 'available'].includes(model.status) }; }
+function publicModel(model) { return { ...model, configured: ['ready', 'available', 'connected', 'running'].includes(model.status) }; }
 function createGenerationJob(input, models) {
   const type = String(input.type || '');
   if (!['image', 'video', 'voice', 'music', 'sfx'].includes(type)) throw new Error('generation type must be image, video, voice, music, or sfx');
@@ -91,7 +134,7 @@ function createGenerationJob(input, models) {
   if (!projectId) throw new Error('projectId is required');
   const model = models.find(item => item.id === input.modelId);
   if (!model) throw new Error('selected model is not registered');
-  const status = model.status === 'ready' || model.status === 'available' ? 'queued' : 'blocked';
+  const status = ['ready','available','running'].includes(model.status) ? 'queued' : 'blocked';
   return { id: randomUUID(), projectId, type, modelId: model.id, status, priority: ['low', 'normal', 'high'].includes(input.priority) ? input.priority : 'normal', prompt: String(input.prompt || '').trim(), inputAssetIds: Array.isArray(input.inputAssetIds) ? input.inputAssetIds : [], outputAssetId: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), executor: null, error: status === 'blocked' ? `Модель «${model.name}» не готова до виконання.` : null, note: 'Завдання зареєстровано. Виконання почнеться лише після підключення сумісного локального або GPU worker.' };
 }
 function transitionGenerationJob(job, nextStatus, note = '') {
@@ -136,4 +179,4 @@ function registerWorkerOutputs(project, job) {
   return { assets, versions };
 }
 
-module.exports = { normalizeStudio, defaultModelRegistry, defaultStudioSettings, normalizeStudioSettings, updateStudioSettings, publicModel, createGenerationJob, transitionGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs };
+module.exports = { normalizeStudio, defaultModelRegistry, defaultModelCatalog, defaultModelProfiles, modelSupports, updateModelProfiles, probeStudioModel, defaultStudioSettings, normalizeStudioSettings, updateStudioSettings, publicModel, createGenerationJob, transitionGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs };

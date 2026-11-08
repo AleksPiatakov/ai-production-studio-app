@@ -13,7 +13,7 @@ const { synthesizeMacVoice, synthesizePiperVoice, hasPiperVoice } = require('./l
 const { configuration: elevenLabsConfiguration, listVoices: listElevenLabsVoices, synthesizeElevenLabsVoice } = require('./elevenlabs');
 const { validateProject, validateProjectInput, validateBibleInput, validateSceneInput, validateShotInput, validateDialogueInput, validateAssetInput, validateProfileInput, validateWorkflowInput, validateScriptInput, validateVoiceProfileInput, validateLocalizationInput, validateRenderJobInput, validateEpisodeInput } = require('./validation');
 const { projectTemplate, allowedAgeBands, supportedLanguages, workflowStages } = require('../shared/schema');
-const { publicModel, updateStudioSettings, createGenerationJob, transitionGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs } = require('./production-studio');
+const { publicModel, updateStudioSettings, defaultModelCatalog, updateModelProfiles, probeStudioModel, createGenerationJob, transitionGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs } = require('./production-studio');
 const store = createStore();
 
 function send(res, status, payload) { res.writeHead(status, { 'content-type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(payload)); }
@@ -71,6 +71,21 @@ const server = http.createServer(async (req, res) => {
       store.update(data => { data.studio.settings = updateStudioSettings(data.studio.settings, input); updated = data.studio.settings; }, { noSnapshot: true });
       return send(res, 200, updated);
     }
+    if (req.method === 'GET' && url.pathname === '/api/studio/model-catalog') {
+      const data = store.read(), registry = new Map(data.studio.modelRegistry.map(model => [model.id, model]));
+      return send(res, 200, defaultModelCatalog().map(entry => ({ ...entry, registry: registry.has(entry.id) ? publicModel(registry.get(entry.id)) : null })));
+    }
+    if (req.method === 'GET' && url.pathname === '/api/studio/model-profiles') return send(res, 200, store.read().studio.modelProfiles);
+    if (req.method === 'PUT' && url.pathname === '/api/studio/model-profiles') {
+      const input = await body(req); let updated;
+      store.update(data => { data.studio.modelProfiles = updateModelProfiles(data.studio.modelProfiles, input, data.studio.modelRegistry); updated = data.studio.modelProfiles; }, { noSnapshot: true });
+      return send(res, 200, updated);
+    }
+    if (req.method === 'POST' && parts[0] === 'api' && parts[1] === 'studio' && parts[2] === 'models' && parts[3] && parts[4] === 'probe') {
+      const data = store.read(), model = data.studio.modelRegistry.find(item => item.id === parts[3]);
+      if (!model) return send(res, 404, { error: 'model not found' });
+      return send(res, 200, probeStudioModel(model, { platform: process.platform, piperReady: hasPiperVoice(), onlineWorkers: data.studio.workers.filter(worker => worker.status === 'online').length }));
+    }
     if (req.method === 'GET' && url.pathname === '/api/studio/models') return send(res, 200, store.read().studio.modelRegistry.map(publicModel));
     if (req.method === 'POST' && url.pathname === '/api/studio/models') {
       const input = await body(req);
@@ -86,7 +101,7 @@ const server = http.createServer(async (req, res) => {
       const allowed = ['name', 'capability', 'runtime', 'version', 'status', 'execution', 'notes'];
       const next = { ...current };
       for (const key of allowed) if (input[key] !== undefined) next[key] = String(input[key]).trim();
-      if (!['ready', 'available', 'not-installed', 'not-connected', 'disabled'].includes(next.status)) throw new Error('invalid model status');
+      if (!['ready','available','installed','connected','running','failed','not-installed','not-connected','disabled'].includes(next.status)) throw new Error('invalid model status');
       store.update(data => { const models = data.studio.modelRegistry; models[models.findIndex(item => item.id === current.id)] = next; });
       return send(res, 200, publicModel(next));
     }

@@ -23,4 +23,5 @@ test('approved compact navigation exposes real demo destinations without changin
   assert.match(html, /global-studio-pages\.css/);
   assert.match(html, /preview-global-zone/);
   assert.match(html, /data-preview-settings-tab/);
+  assert.match(html, /data-preview-model-tab/);
 });

@@ -44,3 +44,14 @@ test('generation queue is global and can filter or target a project',()=>{
 test('internal G screen identifiers are not shown in program page markup',()=>{
   assert.doesNotMatch(pages,/>G-0[1289]/);
 });
+
+
+test('model center separates my models catalog profiles archive and probes readiness',()=>{
+  const studio=fs.readFileSync(path.join(root,'public/production-studio-ui.js'),'utf8');
+  for(const tab of ['mine','catalog','profiles','archive'])assert.match(studio,new RegExp("setModelCenterTab\\('"+tab+"'\\)"));
+  assert.match(studio,/\/api\/studio\/model-catalog/);
+  assert.match(studio,/\/api\/studio\/model-profiles/);
+  assert.match(studio,/\/probe/);
+  assert.match(studio,/Перевірити готовність/);
+  assert.match(studio,/БЕЗ УДАВАНОГО ВСТАНОВЛЕННЯ/);
+});

@@ -294,7 +294,24 @@ body:has(#screen-script.active) .preview-warning{display:none}
   </section>
  </div>
  <div class="preview-screen" id="screen-queue"><div class="preview-main-card"><p class="eyebrow">ЧЕРГА ГЕНЕРАЦІЙ</p><h3>Глобальна черга</h3><p>У локальній програмі черга показує завдання всіх проєктів і дозволяє фільтрувати їх. Онлайн-прев’ю нічого не запускає.</p><div class="studio-queue-filter"><label>Показати проєкт<select><option>Усі проєкти</option><option>Демонстраційний проєкт</option></select></label><span>0 завдань</span></div><p class="global-empty">Немає демонстраційних завдань.</p></div></div>
- <div class="preview-screen" id="screen-models"><div class="preview-main-card"><p class="eyebrow">ЦЕНТР AI-МОДЕЛЕЙ</p><h3>Мої моделі</h3><p>Онлайн-прев’ю не підключається до локальних моделей. Реєстр і генерація працюватимуть у настільній програмі.</p></div></div>
+ <div class="preview-screen" id="screen-models">
+  <article class="card full studio-layer model-center">
+   <div class="model-center-head"><div><p class="eyebrow">ЦЕНТР AI-МОДЕЛЕЙ</p><h3>Моделі для всієї студії</h3><p class="muted">Онлайн-прев’ю показує лише інтерфейс. Перевірка моделей виконується локально на Mac.</p></div></div>
+   <nav class="model-tabs"><button class="active" type="button" data-preview-model-tab="mine">Мої моделі</button><button type="button" data-preview-model-tab="catalog">Каталог</button><button type="button" data-preview-model-tab="profiles">Профілі</button><button type="button" data-preview-model-tab="archive">Архів</button></nav>
+   <div class="model-center-body">
+    <div data-preview-model-panel="mine" class="model-grid">
+      <section class="model-card"><div class="model-card-head"><div><strong>Local Planner</strong><span class="tag">Текст і планування</span></div><span class="model-state ready">готова</span></div><p>Вбудований локальний планувальник.</p><div class="model-facts"><span>Рушій<b>built-in</b></span><span>Версія<b>1.0</b></span><span>Запуск<b>local</b></span></div><div class="model-card-actions"><button disabled>Параметри</button><button class="primary" disabled>Перевірити</button></div></section>
+      <section class="model-card"><div class="model-card-head"><div><strong>macOS Speech</strong><span class="tag">Голос</span></div><span class="model-state ready">доступна</span></div><p>Системний TTS для локальних тестів.</p><div class="model-facts"><span>Рушій<b>macOS</b></span><span>Версія<b>system</b></span><span>Запуск<b>local</b></span></div><div class="model-card-actions"><button disabled>Параметри</button><button class="primary" disabled>Перевірити</button></div></section>
+    </div>
+    <div data-preview-model-panel="catalog" class="model-grid" hidden>
+      <section class="model-card"><div class="model-card-head"><div><strong>Piper</strong><span class="tag">Голос</span></div><span class="model-state pending">не встановлена</span></div><p>Локальний TTS; потрібна окрема голосова модель.</p><div class="model-facts"><span>Тип<b>voice</b></span><span>Підключення<b>manual-local</b></span><span>Вимоги<b>CPU / Apple Silicon</b></span></div></section>
+      <section class="model-card"><div class="model-card-head"><div><strong>GPU Worker</strong><span class="tag">Зображення і відео</span></div><span class="model-state pending">не підключена</span></div><p>Віддалений виконавець для сумісних image/video моделей.</p><div class="model-facts"><span>Тип<b>image-video</b></span><span>Підключення<b>remote-worker</b></span><span>Вимоги<b>GPU node</b></span></div></section>
+    </div>
+    <form data-preview-model-panel="profiles" class="model-profiles" hidden onsubmit="return false"><label><span>Планування / текст</span><select><option>Local Planner</option></select></label><label><span>Голос</span><select><option>macOS Speech</option></select></label><label><span>Зображення</span><select><option>Не призначено</option></select></label><label><span>Відео</span><select><option>Не призначено</option></select></label><div class="model-profile-actions"><span>Демо · не зберігається</span><button class="primary" type="button" disabled>Зберегти профілі</button></div></form>
+    <p data-preview-model-panel="archive" class="global-empty" hidden>Архів моделей порожній.</p>
+   </div>
+  </article>
+ </div>
  <div class="preview-screen" id="screen-assistant"><div class="preview-main-card"><p class="eyebrow">AI ПОМІЧНИКИ</p><h3>Два ізольовані робочі простори</h3><p><strong>Загальний помічник</strong> працює поза проєктами. <strong>Помічник проєкту</strong> має доступ лише до активного проєкту. Онлайн-прев’ю не передає приватні дані й не виконує AI-запити.</p></div></div>
  <p class="preview-warning" id="preview-feedback" role="status">Відкрито демонстрацію екрана P-01. Кнопки модулів показують майбутню навігацію, а не запускають генерацію.</p>
  </section>
@@ -394,6 +411,10 @@ document.getElementById('preview-dashboard').innerHTML=window.APSProjectDashboar
 })();
 </script>
 
+
+<script>
+(()=>{const root=document.getElementById('screen-models');if(!root)return;root.querySelectorAll('[data-preview-model-tab]').forEach(button=>button.addEventListener('click',()=>{const id=button.dataset.previewModelTab;root.querySelectorAll('[data-preview-model-tab]').forEach(x=>x.classList.toggle('active',x===button));root.querySelectorAll('[data-preview-model-panel]').forEach(panel=>panel.hidden=panel.dataset.previewModelPanel!==id)}));})();
+</script>
 <script>
 (()=>{const root=document.getElementById('screen-settings');if(!root)return;root.querySelectorAll('[data-preview-settings-tab]').forEach(button=>button.addEventListener('click',()=>{const id=button.dataset.previewSettingsTab;root.querySelectorAll('[data-preview-settings-tab]').forEach(x=>x.classList.toggle('active',x===button));root.querySelectorAll('[data-preview-settings-panel]').forEach(panel=>panel.hidden=panel.dataset.previewSettingsPanel!==id)}));})();
 </script>
