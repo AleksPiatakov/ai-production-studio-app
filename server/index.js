@@ -262,7 +262,27 @@ const server = http.createServer(async (req, res) => {
         store.update(data => { const target=data.projects.find(item=>item.id===projectId); updated=decideProjectAssistantAction(target, parts[5], input.decision, input.note); }, apply ? {} : { noSnapshot: true });
         return send(res, 200, updated);
       }
-      if (req.method === 'POST' && parts[3] === 'assistant' && parts[4] === 'advice') return send(res, 200, await askProjectAdvisor(project, await body(req)));
+      if (req.method === 'POST' && parts[3] === 'assistant' && parts[4] === 'advice') {
+        const input = await body(req);
+        const result = await askProjectAdvisor(project, input);
+        const now = new Date().toISOString();
+        const userMessage = { id: randomUUID(), role: 'user', text: String(input.message || '').trim(), createdAt: now };
+        const assistantMessage = { id: randomUUID(), role: 'advisor', answer: result.reply.answer, observations: result.reply.observations || [], nextSteps: result.reply.nextSteps || [], engine: result.engine, model: result.model, createdAt: new Date().toISOString() };
+        let memory;
+        store.update(data => {
+          const target = data.projects.find(item => item.id === projectId);
+          target.assistantWorkspace.memory = [...(target.assistantWorkspace.memory || []), userMessage, assistantMessage].slice(-100);
+          memory = target.assistantWorkspace.memory;
+        }, { noSnapshot: true });
+        return send(res, 200, { ...result, messages: [userMessage, assistantMessage], memory });
+      }
+      if (req.method === 'DELETE' && parts[3] === 'assistant' && parts[4] === 'messages') {
+        store.update(data => {
+          const target = data.projects.find(item => item.id === projectId);
+          target.assistantWorkspace.memory = [];
+        }, { noSnapshot: true });
+        return send(res, 200, { cleared: true });
+      }
       if (req.method === 'POST' && parts[3] === 'autopilot' && parts[4] === 'episode') {
         const blueprint = buildAutopilotBlueprint(project, await body(req));
         const baseSeason = Number(project.episodes[0]?.seasonNumber || 1);
