@@ -1,5 +1,6 @@
 const path = require('node:path');
 const fs = require('node:fs');
+const crypto = require('node:crypto');
 
 const projectRoot = path.join(__dirname, '..');
 
@@ -90,9 +91,16 @@ function handoffTimelineCsv(handoff, fps = 24) {
 }
 
 
+function packageFileChecksum(sourcePath) {
+  if (!sourcePath || !fs.existsSync(sourcePath) || !fs.statSync(sourcePath).isFile()) return '';
+  const hash = crypto.createHash('sha256');
+  hash.update(fs.readFileSync(sourcePath));
+  return hash.digest('hex');
+}
 function packageFileRecord(sourcePath, destination, meta = {}) {
   const exists = Boolean(sourcePath && fs.existsSync(sourcePath));
-  return { sourcePath: sourcePath || '', destination, exists, ...meta };
+  const checksum = exists ? packageFileChecksum(sourcePath) : '';
+  return { sourcePath: sourcePath || '', destination, exists, checksum, ...meta };
 }
 function buildDaVinciPackage(project, episode, mode = 'draft') {
   const packageMode = mode === 'final' ? 'final' : 'draft';
@@ -160,7 +168,7 @@ function packageManifestJson(packagePlan) {
     canExport: packagePlan.canExport,
     finalReady: packagePlan.finalReady,
     issues: packagePlan.issues,
-    files: Object.entries(packagePlan.folders).flatMap(([folder,files]) => files.map(file => ({ folder, destination: file.destination, sourcePath: file.sourcePath, exists: file.exists, virtual: Boolean(file.virtual), status: file.status || '', kind: file.kind || '' })))
+    files: Object.entries(packagePlan.folders).flatMap(([folder,files]) => files.map(file => ({ folder, destination: file.destination, sourcePath: file.sourcePath, exists: file.exists, virtual: Boolean(file.virtual), status: file.status || '', kind: file.kind || '', checksum: file.checksum || '' })))
   };
   return JSON.stringify(manifest, null, 2);
 }
