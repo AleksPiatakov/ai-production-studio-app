@@ -362,3 +362,23 @@ test('G-09 preflight requires writable storage and verified free disk space',()=
   assert.match(ui,/вільне місце:/);
   assert.match(ui,/Сховище не пройшло перевірку/);
 });
+
+
+test('stale dependency review is explicitly resolved and audited',()=>{
+  const server=fs.readFileSync(path.join(root,'server','index.js'),'utf8');
+  const app=fs.readFileSync(path.join(root,'public','app.js'),'utf8');
+  const p05=fs.readFileSync(path.join(root,'public','shot-workspace-p05.js'),'utf8');
+  const p05integration=fs.readFileSync(path.join(root,'public','shot-workspace-integration.js'),'utf8');
+  const video=fs.readFileSync(path.join(root,'public','video-studio.js'),'utf8');
+  const media=fs.readFileSync(path.join(root,'public','media-library.js'),'utf8');
+  assert.match(server,/dependency-review' && parts\[4\] === 'resolve'/);
+  assert.match(server,/dependencyReviewLog/);
+  assert.match(server,/delete target\.dependencyStatus/);
+  assert.match(server,/target does not currently require dependency review/);
+  assert.match(app,/resolveDependencyReview/);
+  assert.match(app,/Файл і статус затвердження не зміняться/);
+  assert.match(p05,/Позначити кадр перевіреним/);
+  assert.match(p05integration,/resolveDependencyReview\('shot',shot\.id\)/);
+  assert.match(video,/resolveDependencyReview\('asset'/);
+  assert.match(media,/resolveDependencyReview\('asset'/);
+});
