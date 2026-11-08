@@ -223,3 +223,20 @@ test('Pages preview mirrors G-03 model and context controls',()=>{
   assert.match(preview,/preview-global-ai-layout/);
   assert.match(preview,/context-collapsed/);
 });
+
+
+test('G-09 project creation rolls back failed packages and exposes approved types',()=>{
+  const server=fs.readFileSync(path.join(root,'server','index.js'),'utf8');
+  const schema=fs.readFileSync(path.join(root,'shared','schema.js'),'utf8');
+  const ui=fs.readFileSync(path.join(root,'public','global-studio-pages.js'),'utf8');
+  assert.match(server,/const previousData = store\.read\(\)/);
+  assert.match(server,/store\.write\(previousData\)/);
+  assert.match(server,/fs\.rmSync\(layout\.root, \{ recursive: true, force: true \}\)/);
+  assert.match(server,/project package verification failed/);
+  assert.match(schema,/animation-film/);
+  assert.match(schema,/short-form/);
+  assert.match(schema,/other/);
+  assert.match(ui,/Анімаційний фільм/);
+  assert.match(ui,/Короткий формат/);
+  assert.match(ui,/Інший/);
+});
