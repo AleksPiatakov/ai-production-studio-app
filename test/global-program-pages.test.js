@@ -323,3 +323,10 @@ test('P-03 versions approved Bible entries instead of overwriting them',()=>{
   assert.match(app,/input\.supersedesId=source\.id/);
   assert.match(app,/const method=creatingVersion\|\|!entryId\?'POST':'PUT'/);
 });
+
+
+test('local app does not replace P-01 with legacy story-first route card',()=>{
+  const app=fs.readFileSync(path.join(root,'public','app.js'),'utf8');
+  assert.match(app,/const previousOverviewNextSteps=overviewNextSteps;overviewNextSteps=function\(\)\{return previousOverviewNextSteps\(\)\}/);
+  assert.doesNotMatch(app,/Спочатку сезон і сценарії/);
+});
