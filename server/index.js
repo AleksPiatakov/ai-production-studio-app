@@ -281,8 +281,10 @@ const server = http.createServer(async (req, res) => {
         let updated;
         store.update(data => {
           const target=data.projects.find(item=>item.id===projectId);
+          const previousAutonomy=target.assistantWorkspace.autonomy||'suggestions-only';
           target.assistantWorkspace.autonomy=autonomy;
           target.assistantWorkspace.autonomyUpdatedAt=new Date().toISOString();
+          appendAssistantActivity(data, projectId, 'autonomy-changed', 'Змінено автономність AI Помічника', { from:previousAutonomy, to:autonomy });
           updated={ autonomy:target.assistantWorkspace.autonomy, autonomyUpdatedAt:target.assistantWorkspace.autonomyUpdatedAt };
         }, { noSnapshot: true });
         return send(res, 200, updated);
@@ -382,6 +384,7 @@ const server = http.createServer(async (req, res) => {
         store.update(data => {
           const target = data.projects.find(item => item.id === projectId);
           target.assistantWorkspace.tasks = [...(target.assistantWorkspace.tasks || []), task];
+          appendAssistantActivity(data, projectId, 'task-created', 'Створено завдання помічника', { taskId:task.id, title:task.title });
         }, { noSnapshot: true });
         return send(res, 201, task);
       }
@@ -399,6 +402,7 @@ const server = http.createServer(async (req, res) => {
             task.status = input.status;
             task.completedAt = input.status === 'done' ? new Date().toISOString() : null;
           }
+          appendAssistantActivity(data, projectId, 'task-updated', 'Оновлено завдання помічника', { taskId:task.id, title:task.title, status:task.status });
           updated = task;
         }, { noSnapshot: true });
         return updated ? send(res, 200, updated) : send(res, 404, { error: 'assistant task not found' });
@@ -408,8 +412,10 @@ const server = http.createServer(async (req, res) => {
         store.update(data => {
           const target = data.projects.find(item => item.id === projectId);
           const before = target.assistantWorkspace.tasks || [];
+          const removedTask = before.find(item => item.id === parts[5]);
           target.assistantWorkspace.tasks = before.filter(item => item.id !== parts[5]);
           removed = target.assistantWorkspace.tasks.length !== before.length;
+          if (removed) appendAssistantActivity(data, projectId, 'task-deleted', 'Видалено завдання помічника', { taskId:parts[5], title:removedTask?.title||'' });
         }, { noSnapshot: true });
         return removed ? send(res, 200, { deleted: true }) : send(res, 404, { error: 'assistant task not found' });
       }
@@ -421,6 +427,7 @@ const server = http.createServer(async (req, res) => {
         store.update(data => {
           const target = data.projects.find(item => item.id === projectId);
           target.assistantWorkspace.documents = [...(target.assistantWorkspace.documents || []), document];
+          appendAssistantActivity(data, projectId, 'document-created', 'Створено документ помічника', { documentId:document.id, title:document.title });
         }, { noSnapshot: true });
         return send(res, 201, document);
       }
@@ -436,6 +443,7 @@ const server = http.createServer(async (req, res) => {
           }
           if (input.content !== undefined) document.content = String(input.content || '');
           document.updatedAt = new Date().toISOString();
+          appendAssistantActivity(data, projectId, 'document-updated', 'Оновлено документ помічника', { documentId:document.id, title:document.title });
           updated = document;
         }, { noSnapshot: true });
         return updated ? send(res, 200, updated) : send(res, 404, { error: 'assistant document not found' });
@@ -445,8 +453,10 @@ const server = http.createServer(async (req, res) => {
         store.update(data => {
           const target = data.projects.find(item => item.id === projectId);
           const before = target.assistantWorkspace.documents || [];
+          const removedDocument = before.find(item => item.id === parts[5]);
           target.assistantWorkspace.documents = before.filter(item => item.id !== parts[5]);
           removed = target.assistantWorkspace.documents.length !== before.length;
+          if (removed) appendAssistantActivity(data, projectId, 'document-deleted', 'Видалено документ помічника', { documentId:parts[5], title:removedDocument?.title||'' });
         }, { noSnapshot: true });
         return removed ? send(res, 200, { deleted: true }) : send(res, 404, { error: 'assistant document not found' });
       }
