@@ -51,7 +51,7 @@
       '<button type="button" class="p07-new-take" data-p07-action="generate">＋ Створити ще один дубль</button></div>'+
       '<div class="p07-takes">'+(drafts.length?drafts.slice().reverse().map((draft,index)=>{
         const itemNumber=drafts.length-index;
-        const changed=status(draft,item).startsWith('Потрібна');
+        const changed=draft.status==='needs-review'||status(draft,item).startsWith('Потрібна');
         return '<article class="p07-take" data-p07-take="'+safe(draft.id)+'"><div class="p07-take-name"><strong>Варіант '+itemNumber+'</strong><span class="p07-take-status '+(changed?'needs-review':'')+'">'+(changed?'Потрібна перевірка':'Чернетка')+'</span></div>'+
           '<audio controls preload="none" src="'+safe(draft.uri)+'" aria-label="Прослухати варіант '+itemNumber+'"></audio>'+
           '<small>'+safe(draft.durationSeconds??'—')+' с · '+safe(draft.engine||'Невідомий рушій')+'</small>'+\n          '<small>Профіль: '+safe(draft.voiceProfileId||item.voice?.id||'—')+(draft.modelId?' · модель: '+safe(draft.modelId):'')+'</small>'+
