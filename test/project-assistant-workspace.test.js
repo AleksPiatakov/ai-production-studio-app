@@ -50,3 +50,16 @@ test('P-12 document cards expose edit and delete actions',()=>{
   assert.match(ui,/deleteAdvisorDocument/);
   assert.match(ui,/assistant\/documents\/\$\{encodeURIComponent\(id\)\}.*method:'DELETE'/s);
 });
+
+
+test('P-13 accepted action exposes its exact rollback snapshot',()=>{
+  const server=fs.readFileSync(path.join(__dirname,'../server/index.js'),'utf8');
+  const ui=fs.readFileSync(path.join(__dirname,'../public/assistant-workspaces.js'),'utf8');
+  assert.match(server,/rollbackVersionId=rollbackVersion\.id/);
+  assert.match(server,/rollbackVersionCreatedAt=rollbackVersion\.createdAt/);
+  assert.match(server,/store\.update\(data => \{[\s\S]*rollbackVersionId[\s\S]*\}, \{ noSnapshot: true \}\)/);
+  assert.match(ui,/rollbackAssistantChange/);
+  assert.match(ui,/action\.rollbackVersionId/);
+  assert.match(ui,/versions\/\$\{encodeURIComponent\(action\.rollbackVersionId\)\}\/restore/);
+  assert.match(ui,/Відкотити цю зміну/);
+});
