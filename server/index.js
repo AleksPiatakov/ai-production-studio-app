@@ -413,6 +413,7 @@ const server = http.createServer(async (req, res) => {
       if (req.method === 'POST' && parts[3] === 'assets' && parts.length === 4) {
         const asset = { id: randomUUID(), ...validateAssetInput(await body(req)) };
         if (asset.linkedCharacterId && !project.bibles.characters.some(item => item.id === asset.linkedCharacterId)) return send(res, 400, { error: 'linkedCharacterId must reference a character in this project' });
+        if (asset.linkedSceneId && !project.scenes.some(item => item.id === asset.linkedSceneId)) return send(res, 400, { error: 'linkedSceneId must reference a scene in this project' });
         store.update(data => data.projects.find(item => item.id === projectId).assets.push(asset)); return send(res, 201, asset);
       }
       if (req.method === 'POST' && parts[3] === 'assets' && parts[4] && parts[5] === 'versions') {
@@ -432,6 +433,7 @@ const server = http.createServer(async (req, res) => {
         if (!existing) return send(res, 404, { error: 'asset not found' });
         const asset = { id: existing.id, ...validateAssetInput(await body(req)), currentVersionId: existing.currentVersionId || null };
         if (asset.linkedCharacterId && !project.bibles.characters.some(item => item.id === asset.linkedCharacterId)) return send(res, 400, { error: 'linkedCharacterId must reference a character in this project' });
+        if (asset.linkedSceneId && !project.scenes.some(item => item.id === asset.linkedSceneId)) return send(res, 400, { error: 'linkedSceneId must reference a scene in this project' });
         store.update(data => { const items = data.projects.find(item => item.id === projectId).assets; items[items.findIndex(item => item.id === existing.id)] = asset; }); return send(res, 200, asset);
       }
       if (req.method === 'POST' && parts[3] === 'productions') {
