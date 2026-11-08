@@ -49,7 +49,7 @@ jobs:
       - name: Capture desktop and mobile layout
         run: |
           mkdir -p preview-screenshots
-          for screen in project projectAssistant aiChanges media versions davinci home projects assistant models queue settings; do
+          for screen in project script storyboard shot images voice voiceLibrary projectAssistant aiChanges media versions davinci home projects assistant models queue settings; do
             npx playwright@1.58.2 screenshot --browser chromium --viewport-size='1440,900' --wait-for-timeout=700 "file://$PWD/preview-dist/index.html?screen=$screen" "preview-screenshots/$screen-desktop.png"
           done
           npx playwright@1.58.2 screenshot --browser chromium --viewport-size='390,844' --wait-for-timeout=700 "file://$PWD/preview-dist/index.html?screen=project" preview-screenshots/project-mobile.png
