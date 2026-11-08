@@ -27,6 +27,7 @@
        <div class="p05-reference-grid">${refs.length?refs.map(a=>`<button class="p05-ref" type="button" data-p05-asset="${esc(a.id)}"><img src="${esc(a.uri)}" alt="${esc(a.label)}"><small>${esc(a.label)}</small></button>`).join(''):'<p class="p05-empty">Референси поки не прикріплено. Додайте їх у бібліотеку.</p>'}</div>
      </div>
      <button class="p05-outline" data-p05-action="edit" type="button" ${shot?'':'disabled'}>✎ Параметри кадру</button>
+     ${shot?.dependencyStatus==='needs-review'?'<button class="p05-outline p05-review-resolve" data-p05-action="resolve-review" type="button">✓ Позначити кадр перевіреним</button>':''}
      <button class="p05-outline" data-p05-action="upload" type="button">＋ Завантажити референс</button>
      <div class="p05-local-state">Локальна генерація зображень<br><strong>${imageModel?esc(imageModel.name):'Не підключена'}</strong></div>
     </aside>
