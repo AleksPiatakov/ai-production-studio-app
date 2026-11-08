@@ -54,6 +54,7 @@
         <span class="p04-shot-number">${index+1}</span>
         ${asset?'<img loading="lazy" alt="Затверджений або чернетковий референс кадру" src="'+safe(asset.uri)+'">':'<span class="p04-image-pending">Кадр '+(index+1)+'<small>Зображення не додано</small></span>'}
         <small>${safe(item.seconds||'—')} с · ${safe(item.camera||'План не задано')}</small>
+        <span class="p04-shot-status">${safe(typeof label==='function'?(label('status',item.status)||item.status):(item.status||'чернетка'))}</span>
        </button>`}).join('')}</div>`;
    desk.after(strip);
    strip.querySelector('.p04-add-shot')?.addEventListener('click',()=>openShot(scene.id));
