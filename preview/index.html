@@ -574,5 +574,13 @@ document.getElementById('preview-dashboard').innerHTML=window.APSProjectDashboar
   });
   refresh();
 })();
-</script></body>
+</script><script id="preview-screen-param">
+(()=>{
+  const requested=new URLSearchParams(window.location.search).get('screen');
+  if(requested&&typeof window.previewNavigate==='function'){
+    window.previewNavigate(requested);
+  }
+})();
+</script>
+</body>
 </html>
