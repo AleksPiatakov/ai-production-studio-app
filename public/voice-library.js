@@ -8,6 +8,24 @@ let voiceLibraryLanguage='all';
 let voiceLibraryAge='all';
 let voiceLibraryCompare=new Set();
 
+
+// P-08 Voice Cloning — explicit consent-first workspace.
+// The current backend supports voice profiles and TTS, but deliberately exposes no cloning endpoint.
+function voiceCloningPanel(){
+  const characters=(active.bibles?.characters||[]).filter(character=>character.status==='approved');
+  const samples=(active.assets||[]).filter(asset=>asset.type==='audio');
+  const configured=typeof elevenLabsInfo!=='undefined'&&Boolean(elevenLabsInfo?.configured);
+  return `<section class="voice-clone-page">
+    <header class="voice-library-head"><div><p class="eyebrow">P-08 · КЛОНУВАННЯ ГОЛОСУ</p><h3>Підготовка авторизованого голосового профілю</h3><p>Тільки для власного голосу або голосу, на використання якого є явне право та згода.</p></div><div><button type="button" onclick="goToView('voiceLibrary')">Бібліотека голосів</button></div></header>
+    <div class="voice-clone-grid">
+      <section class="voice-clone-card"><h4>1. Персонаж і призначення</h4><label>Персонаж<select id="voice-clone-character"><option value="">Оберіть персонажа…</option>${characters.map(character=>`<option value="${esc(character.id)}">${esc(character.name)} · ${esc(label('age',character.ageBand))}</option>`).join('')}</select></label><p class="muted">Після реального створення профіль буде явно прив’язаний до Character Bible через voiceProfileId.</p></section>
+      <section class="voice-clone-card"><h4>2. Зразки голосу</h4><div class="voice-clone-samples">${samples.length?samples.map(asset=>`<label class="check"><input type="checkbox" disabled> ${esc(asset.label)} <small>${esc(asset.uri||'локальний аудіофайл')}</small></label>`).join(''):'<p class="global-empty">У Медіабібліотеці ще немає аудіозразків. Додайте власні або авторизовані записи як audio assets.</p>'}</div><button type="button" onclick="goToView('mediaLibrary')">Відкрити Медіабібліотеку</button></section>
+      <section class="voice-clone-card"><h4>3. Право та згода</h4><label class="settings-check"><input type="checkbox" disabled> Я підтверджую право та необхідну згоду на клонування цього голосу</label><label>Підстава / документ<textarea readonly placeholder="Власний голос, письмова згода, договір або інша правова підстава"></textarea></label><p class="voice-rights-warning">Без підтвердження прав створення clone-origin профілю не повинно запускатися.</p></section>
+      <section class="voice-clone-card"><h4>4. Провайдер і створення</h4><div class="voice-clone-provider"><span>ElevenLabs</span><strong>${configured?'підключено для TTS':'не підключено'}</strong></div><p>${configured?'API-ключ доступний локальному серверу, але поточний backend ще не реалізує endpoint клонування.':'Підключення ElevenLabs використовується лише для доступних голосів і TTS.'}</p><button type="button" class="primary" disabled>Створити клон — endpoint не підключено</button><small>AI Production Studio не імітує створення клону й не відправляє аудіо зовнішньому сервісу з цього екрана.</small></section>
+    </div>
+  </section>`;
+}
+
 function voiceOriginLabel(value){
   return ({synthetic:'Синтетичний голос',system:'Системний голос','licensed-library':'Ліцензована бібліотека','self-recorded':'Власний запис','authorized-clone':'Авторизований клон'})[value]||'Не вказано';
 }
@@ -63,7 +81,7 @@ function voiceComparePanel(){
 function voiceLibraryPanel(){
   const items=voiceLibraryItems();
   return `<section class="voice-library-page">
-    <header class="voice-library-head"><div><p class="eyebrow">БІБЛІОТЕКА ГОЛОСІВ</p><h3>Голоси поточного проєкту</h3><p>Пошук, порівняння, права використання та безпечне призначення персонажам.</p></div><button class="primary" type="button" onclick="openVoiceProfile()">＋ Новий профіль</button></header>
+    <header class="voice-library-head"><div><p class="eyebrow">БІБЛІОТЕКА ГОЛОСІВ</p><h3>Голоси поточного проєкту</h3><p>Пошук, порівняння, права використання та безпечне призначення персонажам.</p></div><div><button type="button" onclick="goToView('voiceClone')">Клонування голосу</button><button class="primary" type="button" onclick="openVoiceProfile()">＋ Новий профіль</button></div></header>
     <div class="voice-library-filters"><label>Пошук<input type="search" value="${esc(voiceLibraryQuery)}" placeholder="Назва, рушій, ліцензія…" oninput="setVoiceLibraryFilter('query',this.value)"></label><label>Сервіс<select onchange="setVoiceLibraryFilter('provider',this.value)"><option value="all">Усі</option><option value="local" ${voiceLibraryProvider==='local'?'selected':''}>Local</option><option value="elevenlabs" ${voiceLibraryProvider==='elevenlabs'?'selected':''}>ElevenLabs</option></select></label><label>Мова<select onchange="setVoiceLibraryFilter('language',this.value)"><option value="all">Усі</option><option value="uk" ${voiceLibraryLanguage==='uk'?'selected':''}>Українська</option><option value="en" ${voiceLibraryLanguage==='en'?'selected':''}>Англійська</option></select></label><label>Вік<select onchange="setVoiceLibraryFilter('age',this.value)"><option value="all">Усі</option>${['child','teen','young-adult','adult','elder'].map(age=>`<option value="${age}" ${voiceLibraryAge===age?'selected':''}>${esc(label('age',age))}</option>`).join('')}</select></label><label>Статус<select onchange="setVoiceLibraryFilter('status',this.value)"><option value="all">Усі</option><option value="draft" ${voiceLibraryStatus==='draft'?'selected':''}>Чернетка</option><option value="approved" ${voiceLibraryStatus==='approved'?'selected':''}>Затверджено</option><option value="retired" ${voiceLibraryStatus==='retired'?'selected':''}>Не використовувати</option></select></label></div>
     <div class="voice-library-summary"><span><b>${(active.voiceProfiles||[]).length}</b> профілів</span><span><b>${(active.voiceProfiles||[]).filter(v=>v.status==='approved').length}</b> затверджено</span><span><b>${(active.voiceProfiles||[]).filter(v=>voiceAssignedCharacter(v)).length}</b> призначено</span><span><b>${[...voiceLibraryCompare].length}</b> у порівнянні</span></div>
     ${voiceComparePanel()}
@@ -109,8 +127,8 @@ if(typeof voiceEditorPanel==='function'){
   };
 }
 const voiceLibraryBasePageContent=pageContent;
-pageContent=function(){return view==='voiceLibrary'?voiceLibraryPanel():voiceLibraryBasePageContent()};
+pageContent=function(){return view==='voiceLibrary'?voiceLibraryPanel():view==='voiceClone'?voiceCloningPanel():voiceLibraryBasePageContent()};
 const voiceLibraryBaseTitle=viewTitle;
-viewTitle=function(){return view==='voiceLibrary'?'Бібліотека голосів':voiceLibraryBaseTitle()};
+viewTitle=function(){return view==='voiceLibrary'?'Бібліотека голосів':view==='voiceClone'?'Клонування голосу':voiceLibraryBaseTitle()};
 const voiceLibraryBaseActions=viewActions;
-viewActions=function(){return view==='voiceLibrary'?'<button class="primary" onclick="openVoiceProfile()">＋ Голосовий профіль</button>':voiceLibraryBaseActions()};
+viewActions=function(){return view==='voiceLibrary'?'<button onclick="goToView(\'voiceClone\')">Клонування голосу</button><button class="primary" onclick="openVoiceProfile()">＋ Голосовий профіль</button>':view==='voiceClone'?'<button onclick="goToView(\'voiceLibrary\')">До бібліотеки голосів</button>':voiceLibraryBaseActions()};
