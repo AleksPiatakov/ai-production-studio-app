@@ -51,12 +51,12 @@ function mediaLibraryFiltered(){
   });
 }
 function mediaCard(asset){
-  const versions=assetVersions(asset.id),uses=mediaUsage(asset),approved=asset.status==='approved';
-  return `<article class="media-card">
+  const versions=assetVersions(asset.id),uses=mediaUsage(asset),approved=asset.status==='approved',stale=asset.dependencyStatus==='needs-review';
+  return `<article class="media-card ${stale?'needs-review':''}">
     <div class="media-preview">${mediaPreview(asset)}</div>
     <div class="media-card-body">
-      <div class="media-card-title"><div><strong>${esc(asset.label)}</strong><span>${esc(label('asset',asset.type)||asset.type)}</span></div><span class="tag">${esc(label('status',asset.status)||asset.status)}</span></div>
-      <p>${esc(asset.notes||'Без нотатки')}</p>
+      <div class="media-card-title"><div><strong>${esc(asset.label)}</strong><span>${esc(label('asset',asset.type)||asset.type)}</span></div><span class="tag ${stale?'needs-review':''}">${stale?'Потрібна перевірка':esc(label('status',asset.status)||asset.status)}</span></div>
+      <p>${stale?'Залежний затверджений сценарій змінено. Матеріал збережено без автоматичної регенерації.':esc(asset.notes||'Без нотатки')}</p>
       <div class="media-meta"><span>v${esc(asset.version||'0.1.0')}</span><span>${versions.length} версій</span><span>${uses.length} зв’язків</span></div>
       <div class="media-usage">${uses.length?uses.slice(0,3).map(item=>`<span>${esc(item)}</span>`).join(''):'<span>Не прив’язано до сцени/кадру</span>'}${uses.length>3?`<span>+${uses.length-3}</span>`:''}</div>
       <div class="media-card-actions"><button type="button" onclick="openMediaVersionHistory('${esc(asset.id)}')">Версії</button><button type="button" onclick="openNewAssetVersion('${esc(asset.id)}')">＋ Нова версія</button><button type="button" onclick="openAsset('${esc(asset.id)}')">${approved?'Переглянути':'Редагувати'}</button></div>
