@@ -279,3 +279,16 @@ test('P-02 structured editor keeps script.body canonical',()=>{
   assert.match(css,/aps-structured-block\.dialogue/);
   assert.match(css,/contenteditable="true"/);
 });
+
+
+test('Pages preview mirrors P-02 read structured and text surfaces',()=>{
+  const preview=fs.readFileSync(path.join(root,'preview','index.html'),'utf8');
+  const demo=fs.readFileSync(path.join(root,'preview','script-editor-demo.js'),'utf8');
+  assert.match(preview,/data-demo-script-surface="read"/);
+  assert.match(preview,/data-demo-script-surface="structured"/);
+  assert.match(preview,/data-demo-script-surface="text"/);
+  assert.match(preview,/id="demo-script-structured"/);
+  assert.match(demo,/surface='read'/);
+  assert.match(demo,/APSApprovedScriptFormat\.classify/);
+  assert.match(demo,/aps-structured-block/);
+});
