@@ -695,14 +695,44 @@ const server = http.createServer(async (req, res) => {
         store.update(data => data.projects.find(item => item.id === projectId).productions.push(manifest)); return send(res, 201, manifest);
       }
       if (req.method === 'POST' && parts[3] === 'bibles' && ['style', 'characters'].includes(parts[4])) {
-        const input = validateBibleInput(await body(req), parts[4]); const entry = { id: randomUUID(), ...input };
-        store.update(data => data.projects.find(x => x.id === projectId).bibles[parts[4]].push(entry)); return send(res, 201, entry);
+        const raw = await body(req);
+        const input = validateBibleInput(raw, parts[4]);
+        const supersedesId = typeof raw.supersedesId === 'string' ? raw.supersedesId.trim() : '';
+        let previous = null;
+        if (supersedesId) {
+          previous = project.bibles[parts[4]].find(item => item.id === supersedesId);
+          if (!previous) return send(res, 404, { error: 'previous bible version not found' });
+          if (previous.status !== 'approved') return send(res, 409, { error: 'only an approved bible entry can be superseded' });
+          input.status = 'draft';
+        }
+        const entry = { id: randomUUID(), ...input, ...(previous ? { previousVersionId: previous.id, supersedesId: previous.id } : {}), createdAt: new Date().toISOString() };
+        store.update(data => data.projects.find(x => x.id === projectId).bibles[parts[4]].push(entry));
+        return send(res, 201, entry);
       }
       if (req.method === 'PUT' && parts[3] === 'bibles' && ['style', 'characters'].includes(parts[4]) && parts[5]) {
         const entries = project.bibles[parts[4]]; const existing = entries.find(item => item.id === parts[5]);
         if (!existing) return send(res, 404, { error: 'bible entry not found' });
-        const updated = { id: existing.id, ...validateBibleInput(await body(req), parts[4]) };
-        store.update(data => { const target = data.projects.find(item => item.id === projectId).bibles[parts[4]]; target[target.findIndex(item => item.id === existing.id)] = updated; }); return send(res, 200, updated);
+        const validated = validateBibleInput(await body(req), parts[4]);
+        if (existing.status === 'approved') {
+          const mutableKeys = Object.keys(validated);
+          const changed = mutableKeys.find(key => JSON.stringify(existing[key] ?? null) !== JSON.stringify(validated[key] ?? null));
+          if (changed) return send(res, 409, { error: 'Затверджений запис Bible не можна перезаписати напряму. Створіть нову версію.', field: changed, bibleEntryId: existing.id });
+        }
+        const updated = { ...existing, ...validated, id: existing.id, updatedAt: new Date().toISOString() };
+        store.update(data => {
+          const target = data.projects.find(item => item.id === projectId).bibles[parts[4]];
+          const index = target.findIndex(item => item.id === existing.id);
+          target[index] = updated;
+          if (updated.status === 'approved' && updated.supersedesId) {
+            const previous = target.find(item => item.id === updated.supersedesId);
+            if (previous && previous.status === 'approved') {
+              previous.status = 'superseded';
+              previous.supersededById = updated.id;
+              previous.supersededAt = new Date().toISOString();
+            }
+          }
+        });
+        return send(res, 200, updated);
       }
     }
     if (staticFile(res, url.pathname)) return;
