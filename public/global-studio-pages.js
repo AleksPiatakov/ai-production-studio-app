@@ -190,4 +190,4 @@ viewActions=function(){if(view==='home'||view==='projects'||view==='settings')re
 const oldOpenProject=openProject;
 openProject=function(){openProjectWizard()};
 if(document.getElementById('new-project'))document.getElementById('new-project').onclick=openProjectWizard;
-setTimeout(()=>refreshGlobalStudioSettings().then(()=>render()),0);
+setTimeout(()=>refreshGlobalStudioSettings().then(()=>{if(active)render()}),0);
