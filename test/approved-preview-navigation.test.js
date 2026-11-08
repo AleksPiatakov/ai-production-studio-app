@@ -12,7 +12,7 @@ test('approved preview has no internal P-number demo toolbar', () => {
 });
 
 test('approved compact navigation exposes real demo destinations without changing assets', () => {
-  for (const id of ['home','projects','project','projectAssistant','aiChanges','script','storyboard','images','voice','voiceLibrary','sound','video','media','versions','davinci','models','modelSetup','queue','assistant','settings']) {
+  for (const id of ['home','projects','newProject','project','projectAssistant','aiChanges','script','storyboard','images','voice','voiceLibrary','sound','video','media','versions','davinci','models','modelSetup','queue','assistant','settings']) {
     assert.match(html, new RegExp('data-screen="'+id+'"'));
     assert.match(html, new RegExp('id="screen-'+id+'"'));
   }
@@ -38,4 +38,7 @@ test('approved compact navigation exposes real demo destinations without changin
   assert.match(html, /Жодної автоматичної інсталяції/);
   assert.match(html, /ПЕРЕГЛЯД ЗМІН AI/);
   assert.match(html, /ДОСТУП ДО ПРОЄКТІВ/);
+  assert.match(html, /Крок 3 із 3 · Перевірка й створення/);
+  assert.match(html, /Project_Data/);
+  assert.match(html, /GitHub Pages нічого не створює/);
 });
