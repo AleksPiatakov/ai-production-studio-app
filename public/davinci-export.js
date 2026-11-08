@@ -23,7 +23,7 @@ function setDaVinciMode(mode){davinciExportMode=mode==='final'?'final':'draft';r
 function davinciFolderTree(report){
   const folders=report?.folders||{};
   const order=['Video','Dialogue/UK','Dialogue/EN','Music','Atmosphere','SFX','Subtitles','Edit_Data','Manifest','Reports'];
-  return `<div class="davinci-tree">${order.map(folder=>{const files=folders[folder]||[];return `<details open><summary><span>▾</span><strong>${folder}</strong><em>${files.length}</em></summary><div>${files.length?files.map(file=>`<div class="davinci-file ${file.exists?'exists':'missing'}"><span>${file.virtual?'◇':file.exists?'✓':'!'}</span><code>${esc(file.destination)}</code><small>${file.virtual?'створюється програмою':file.exists?'файл знайдено':'файл відсутній'}</small></div>`).join(''):'<p>Порожньо</p>'}</div></details>`}).join('')}</div>`;
+  return `<div class="davinci-tree">${order.map(folder=>{const files=folders[folder]||[];return `<details open><summary><span>▾</span><strong>${folder}</strong><em>${files.length}</em></summary><div>${files.length?files.map(file=>`<div class="davinci-file ${file.exists?'exists':'missing'}"><span>${file.virtual?'◇':file.exists?'✓':'!'}</span><code>${esc(file.destination)}</code><small>${file.virtual?'створюється програмою':file.exists?(file.checksum?'SHA-256 '+esc(file.checksum.slice(0,12))+'…':'файл знайдено'):'файл відсутній'}</small></div>`).join(''):'<p>Порожньо</p>'}</div></details>`}).join('')}</div>`;
 }
 function davinciIssues(report){
   const issues=report?.issues||[];
