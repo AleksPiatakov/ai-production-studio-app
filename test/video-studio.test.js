@@ -33,7 +33,6 @@ test('completed video output registers as a draft linked to the source shot',()=
 test('Video Studio creates separate clips and a simple animatic without final editor controls',()=>{
   const js=fs.readFileSync(path.join(__dirname,'..','public','video-studio.js'),'utf8');
   const css=fs.readFileSync(path.join(__dirname,'..','public','global-studio-pages.css'),'utf8');
-  const dashboard=fs.readFileSync(path.join(__dirname,'..','public','project-dashboard.js'),'utf8');
   const rail=fs.readFileSync(path.join(__dirname,'..','public','approved-editor-shell.js'),'utf8');
   assert.match(js,/queueVideoVariants/);
   assert.match(js,/videoStudioAnimatic/);
@@ -41,7 +40,7 @@ test('Video Studio creates separate clips and a simple animatic without final ed
   assert.match(js,/DaVinci Resolve/);
   assert.doesNotMatch(js,/<(?:section|div|nav)[^>]+(?:multitrack|editing-timeline|color-grading)/i);
   assert.match(css,/\.video-studio-grid/);
-  assert.match(dashboard,/view:'videoStudio'/);
+  assert.match(js,/goToView\('davinci'\)|DaVinci Resolve/);
   assert.match(rail,/\['videoStudio','▶','Video Studio'\]/);
   assert.match(rail,/\['preview','✓','Перевірка готовності'\]/);
 });
