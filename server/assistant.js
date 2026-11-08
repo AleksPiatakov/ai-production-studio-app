@@ -92,13 +92,36 @@ async function connectedGeneralAnswer(message, history = []) {
   const reply = extractJson(raw);
   return { answer: asText(reply.answer), nextSteps: Array.isArray(reply.nextSteps) ? reply.nextSteps.filter(Boolean).slice(0, 3) : [] };
 }
+function localGeneralAssistantAnswer(message) {
+  const question=String(message||'').trim();
+  const lower=question.toLowerCase();
+  let answer='Я працюю в локальному режимі без доступу до проєктів. Можу підказати, де в AI Production Studio знаходяться глобальні інструменти та який наступний крок зробити.';
+  const nextSteps=[];
+  if (/модел|model/.test(lower)) {
+    answer='Відкрийте «AI Моделі»: там окремо показані Мої моделі, Каталог, Профілі та перевірка готовності. Локальний режим не встановлює моделі самостійно.';
+    nextSteps.push('Відкрити AI Моделі','Перевірити готовність потрібної моделі');
+  } else if (/черг|queue|генерац/.test(lower)) {
+    answer='Глобальна черга показує задачі всіх проєктів. Можна відфільтрувати проєкт і побачити blocked/queued/running/completed стани.';
+    nextSteps.push('Відкрити Чергу генерацій','Перевірити blocked задачі та їхні моделі');
+  } else if (/налашт|setting|параметр/.test(lower)) {
+    answer='У «Налаштуваннях» є п’ять глобальних розділів: Загальні, Файли та сховище, Продуктивність, AI Помічники та Експорт.';
+    nextSteps.push('Відкрити Налаштування','Змінити лише потрібний глобальний параметр');
+  } else if (/проєкт|project/.test(lower)) {
+    answer='Я не бачу дані конкретних проєктів автоматично. Для сценарію, персонажів, медіа або виробничого стану відкрийте потрібний проєкт і його Проєктний AI-помічник.';
+    nextSteps.push('Відкрити Проєкти','Вибрати проєкт і перейти до його AI-помічника');
+  } else {
+    nextSteps.push('Уточнити, з яким глобальним інструментом студії потрібна допомога');
+  }
+  return { answer, nextSteps: nextSteps.slice(0,3) };
+}
+
 async function askGeneralAssistant({ message, history = [] } = {}) {
   const question = String(message || '').trim();
   if (!question) throw new Error('Напишіть питання для Загального AI Помічника.');
   const config = assistantConfiguration();
-  if (!config.configured) throw new Error('Загальний AI Помічник ще не підключено. Підключіть текстову модель у налаштуваннях або локальному середовищі.');
   let reply;
-  if (config.engine === 'openai') {
+  if (config.engine === 'local-planner') reply = localGeneralAssistantAnswer(question);
+  else if (config.engine === 'openai') {
     const result = await openAIJsonResponse(generalAssistantSystemPrompt(), { question, history: history.slice(-12).map(item => ({ role: item.role, text: item.text || item.answer || '' })), projectAccess: 'none' });
     reply = { answer: asText(result.answer), nextSteps: Array.isArray(result.nextSteps) ? result.nextSteps.filter(Boolean).slice(0, 3) : [] };
   } else reply = await connectedGeneralAnswer(question, history);
