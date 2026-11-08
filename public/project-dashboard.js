@@ -15,7 +15,7 @@ window.APSProjectDashboard = Object.freeze({ render: function renderDashboard(da
   {icon:'▦',title:'Сторіборд',view:'storyboard',description:'Плани, кадри та референси'},
   {icon:'▧',title:'Зображення',view:'imageStudio',description:'Варіанти зображень і ресурси'},
   {icon:'◖',title:'Голос і звук',view:'audio',description:'Озвучення, мови й голоси'},
-  {icon:'▣',title:'Відео',view:'preview',description:'Кліпи, перевірка, DaVinci'}
+  {icon:'▶',title:'Відео',view:'videoStudio',description:'Кліпи, рух та простий аніматик'}
  ];
  const episodes=(data.episodes||[]).slice(-3).reverse(), assets=data.assets||[], characters=data.characters||[], statusLabel=typeof data.statusLabel==='function'?data.statusLabel:(x=>x);
  const approvedAssets=assets.filter(a=>a.status==='approved').length;

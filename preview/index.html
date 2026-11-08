@@ -104,6 +104,7 @@ body:has(#screen-script.active) .preview-warning{display:none}
     <button type="button" data-screen="images"><span aria-hidden="true">▧</span> Зображення</button>
     <button type="button" data-screen="voice"><span aria-hidden="true">◖</span> Озвучування</button>
     <button type="button" data-screen="sound"><span aria-hidden="true">♫</span> Звук і музика</button>
+    <button type="button" data-screen="video"><span aria-hidden="true">▶</span> Video Studio</button>
   </nav>
   <p class="preview-rail-label">ГЛОБАЛЬНІ ІНСТРУМЕНТИ</p>
   <nav class="preview-rail" aria-label="Глобальні інструменти">
@@ -208,6 +209,18 @@ body:has(#screen-script.active) .preview-warning{display:none}
      </div>
    </section>
   </article>
+ </div>
+ <div class="preview-screen" id="screen-video">
+  <section class="video-studio"><header class="video-studio-head"><div><p class="eyebrow">VIDEO STUDIO</p><h3>Окремі кліпи для монтажу</h3><p>Ключовий кадр + рух + модель → варіанти → перегляд → затвердження.</p></div><button type="button" disabled>Перевірка готовності →</button></header>
+  <nav class="video-mode-tabs"><button class="active" type="button" data-preview-video-mode="clips">Кліпи</button><button type="button" data-preview-video-mode="animatic">Аніматик</button></nav>
+  <div data-preview-video-panel="clips" class="video-studio-grid">
+   <aside class="video-shot-rail"><div class="video-panel-title"><span>КОНТЕКСТ</span><strong>Сцена та кадр</strong></div><label>Сцена<select disabled><option>Демонстраційна сцена</option></select></label><div class="video-shot-list"><button class="active" type="button"><span>1</span><strong>Кадр для перевірки UI</strong><small>5 с · medium</small></button><button type="button"><span>2</span><strong>Другий кадр</strong><small>4 с · close</small></button></div></aside>
+   <section class="video-source-panel"><div class="video-panel-title"><span>КЛЮЧОВИЙ КАДР</span><strong>Вхід для генерації</strong></div><div class="video-source-frame"><div class="video-empty-preview"><span>▧</span><small>Локальний keyframe не передається в Pages</small></div></div><dl class="video-shot-facts"><div><dt>Тривалість</dt><dd>5 с</dd></div><div><dt>Камера</dt><dd>medium</dd></div><div><dt>Статус</dt><dd>чернетка</dd></div></dl></section>
+   <form class="video-generate-panel" onsubmit="return false"><div class="video-panel-title"><span>ГЕНЕРАЦІЯ КЛІПУ</span><strong>Рух і камера</strong></div><label>Опис руху<textarea readonly placeholder="Опис руху персонажа та камери…"></textarea></label><label>Модель<select disabled><option>Локальні video-моделі недоступні у прев’ю</option></select></label><div class="video-generate-options"><label>Тривалість<input readonly value="5"></label><label>Варіанти<select disabled><option>2</option></select></label></div><button class="primary" type="button" disabled>Створити варіанти</button></form>
+   <section class="video-variants-panel"><div class="video-panel-title"><span>ВАРІАНТИ</span><strong>Кліпи поточного кадру</strong></div><p class="global-empty">GitHub Pages не містить локальних відеофайлів.</p></section>
+  </div>
+  <section data-preview-video-panel="animatic" class="animatic-sequence" hidden><div class="animatic-summary"><div><p class="eyebrow">ПРОСТИЙ АНІМАТИК</p><h4>Порядок і приблизний хронометраж</h4><p>Не монтажний редактор. Фінальний монтаж — у DaVinci Resolve.</p></div><span>2 кадри · ~9 с</span></div><div class="animatic-cards"><article class="animatic-card"><span class="animatic-number">1</span><div class="animatic-thumb"><span>▶</span></div><div><strong>Демонстраційна сцена · Кадр 1</strong><p>Кліп відсутній у публічному прев’ю</p><small>5 с · чернетка</small></div></article><article class="animatic-card"><span class="animatic-number">2</span><div class="animatic-thumb"><span>▶</span></div><div><strong>Демонстраційна сцена · Кадр 2</strong><p>Кліп відсутній у публічному прев’ю</p><small>4 с · кліп відсутній</small></div></article></div></section>
+  <p class="video-rule">Без багатодоріжкового монтажу, переходів, кольорокорекції та фінального рендера.</p></section>
  </div>
  <div class="preview-screen" id="screen-sound">
   <section class="sound-studio">
@@ -389,7 +402,7 @@ document.getElementById('preview-image-studio').addEventListener('change',event=
 
 <script>
 window.goToView=function(name){
- const demoRoutes={home:'home',projects:'projects',script:'script',storyboard:'storyboard',imageStudio:'images',audio:'voice',sound:'sound',shot:'shot',models:'models',queue:'queue',assistants:'assistant',settings:'settings'};
+ const demoRoutes={home:'home',projects:'projects',script:'script',storyboard:'storyboard',imageStudio:'images',audio:'voice',sound:'sound',videoStudio:'video',shot:'shot',models:'models',queue:'queue',assistants:'assistant',settings:'settings'};
  if(demoRoutes[name]){window.previewNavigate(demoRoutes[name]);return;}
  const labels={assets:'Персонажі та бібліотека',episodes:'Епізоди',preview:'Відео та експорт',davinci:'Експорт для DaVinci'};
  document.getElementById('preview-feedback').textContent='«'+(labels[name]||name)+'»: екран поки не включено до статичного прев’ю. Реальні дані доступні лише в локальній програмі.';
@@ -429,6 +442,9 @@ document.getElementById('preview-dashboard').innerHTML=window.APSProjectDashboar
 </script>
 <script>
 (()=>{const root=document.getElementById('screen-sound');if(!root)return;const labels={music:'Музика',ambient:'Атмосфера',sfx:'SFX'};root.querySelectorAll('[data-preview-sound-kind]').forEach(button=>button.addEventListener('click',()=>{root.querySelectorAll('[data-preview-sound-kind]').forEach(x=>x.classList.toggle('active',x===button));root.querySelector('#preview-sound-title').textContent=labels[button.dataset.previewSoundKind]}));})();
+</script>
+<script>
+(()=>{const root=document.getElementById('screen-video');if(!root)return;root.querySelectorAll('[data-preview-video-mode]').forEach(button=>button.addEventListener('click',()=>{const mode=button.dataset.previewVideoMode;root.querySelectorAll('[data-preview-video-mode]').forEach(x=>x.classList.toggle('active',x===button));root.querySelectorAll('[data-preview-video-panel]').forEach(panel=>panel.hidden=panel.dataset.previewVideoPanel!==mode)}));})();
 </script>
 <script>
 (()=>{const root=document.getElementById('screen-settings');if(!root)return;root.querySelectorAll('[data-preview-settings-tab]').forEach(button=>button.addEventListener('click',()=>{const id=button.dataset.previewSettingsTab;root.querySelectorAll('[data-preview-settings-tab]').forEach(x=>x.classList.toggle('active',x===button));root.querySelectorAll('[data-preview-settings-panel]').forEach(panel=>panel.hidden=panel.dataset.previewSettingsPanel!==id)}));})();
