@@ -29,6 +29,7 @@ function overviewNextSteps(){
  if(!window.APSProjectDashboard?.render)throw new Error('Project dashboard renderer not loaded');
  return window.APSProjectDashboard.render({
   name:active.name,
+  currentEpisode:episode||null,
   episodes:active.episodes||[],
   assets:active.assets||[],
   characters:active.bibles?.characters||[],
