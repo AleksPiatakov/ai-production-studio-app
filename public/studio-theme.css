@@ -233,3 +233,17 @@ body:has(.dashboard-hero) .p01-dashboard{
 @media(max-width:440px){
  .p01-dashboard .p01-status-grid,.p01-dashboard .p01-kpis,.p01-dashboard .p01-asset-summary{grid-template-columns:1fr}
 }
+
+
+/* P-12 per-project assistant autonomy policy. */
+.advisor-context-strip .advisor-autonomy{
+ display:flex;align-items:center;gap:7px;padding:5px 8px;border:1px solid var(--line);
+ border-radius:9px;background:#17182e;color:var(--muted);font-size:10px
+}
+.advisor-context-strip .advisor-autonomy select{
+ min-width:170px;padding:5px 7px;font-size:10px
+}
+.advisor-autonomy-policy{
+ margin:0;padding:9px 12px;border-left:3px solid rgba(162,138,245,.55);
+ background:rgba(162,138,245,.07);color:var(--muted);font-size:11px;line-height:1.5
+}
