@@ -120,35 +120,71 @@ async function saveGlobalSettings(event){
   render();
 }
 function resetProjectWizard(){
-  projectWizard={step:1,data:{name:'',type:'animated-series',defaultLanguage:'uk',additionalLanguages:['en'],targetMinutes:10,description:'',resolution:'1920x1080',aspectRatio:'16:9',fps:24,plannedEpisodes:1}};
+  projectWizard={step:1,preflight:null,preflightLoading:true,preflightError:'',data:{name:'',type:'animated-series',defaultLanguage:'uk',additionalLanguages:['en'],targetMinutes:10,description:'',resolution:'1920x1080',aspectRatio:'16:9',fps:24,plannedEpisodes:1}};
+}
+function projectStorageSize(bytes){
+  const value=Number(bytes);
+  if(!Number.isFinite(value)||value<0)return 'невідомо';
+  if(value>=1024**3)return (value/(1024**3)).toFixed(value>=10*1024**3?0:1)+' GB';
+  if(value>=1024**2)return (value/(1024**2)).toFixed(0)+' MB';
+  return Math.round(value/1024)+' KB';
+}
+async function refreshProjectWizardPreflight(){
+  projectWizard.preflightLoading=true;projectWizard.preflightError='';
+  try{projectWizard.preflight=await api('/api/projects/preflight')}
+  catch(error){projectWizard.preflight={ok:false,writable:false,error:error.message};projectWizard.preflightError=error.message}
+  finally{
+    projectWizard.preflightLoading=false;
+    const dlg=document.getElementById('modal');
+    if(dlg?.open&&document.getElementById('modal-title')?.textContent?.startsWith('Новий проєкт'))renderProjectWizardModal();
+  }
+}
+function projectWizardStorageStatus(){
+  if(projectWizard.preflightLoading)return '<div class="wizard-storage-status loading"><span>◌</span><div><strong>Перевіряємо локальне сховище…</strong><small>Перевіряється доступ на запис і вільне місце.</small></div></div>';
+  const p=projectWizard.preflight;
+  if(!p?.ok)return `<div class="wizard-storage-status error"><span>!</span><div><strong>Сховище недоступне</strong><small>${esc(p?.error||projectWizard.preflightError||'Не вдалося підтвердити доступ на запис.')}</small></div><button type="button" onclick="refreshProjectWizardPreflight()">Повторити</button></div>`;
+  return `<div class="wizard-storage-status ok"><span>✓</span><div><strong>Папка готова до створення проєкту</strong><small>${esc(p.projectsRoot||'data/projects')} · вільно ${esc(projectStorageSize(p.freeBytes))}</small></div><button type="button" onclick="refreshProjectWizardPreflight()">Перевірити ще раз</button></div>`;
+}
+function renderProjectWizardModal(){
+  const dlg=document.getElementById('modal'),form=document.getElementById('modal-form'),fields=document.getElementById('modal-fields'),title=document.getElementById('modal-title'),submit=form.querySelector('button[type="submit"]'),cancel=document.getElementById('modal-cancel');
+  dlg.classList.remove('focus-dialog','reference-dialog');dlg.classList.add('project-wizard-dialog');
+  title.textContent='Новий проєкт · крок '+projectWizard.step+' із 3';
+  fields.innerHTML=projectWizardFields();
+  submit.textContent=projectWizard.step<3?'Далі':'Створити проєкт';
+  submit.disabled=projectWizard.step===3&&(projectWizard.preflightLoading||!projectWizard.preflight?.ok);
+  cancel.textContent=projectWizard.step>1?'Назад':'Скасувати';
+  cancel.onclick=()=>{if(projectWizard.step>1){projectWizard.step--;renderProjectWizardModal()}else{dlg.close();dlg.classList.remove('project-wizard-dialog');cancel.onclick=closeModal}};
+  form.onsubmit=handleProjectWizardSubmit;
 }
 function openProjectWizard(step){
-  if(step===undefined)resetProjectWizard(); else projectWizard.step=step;
-  const dlg=document.getElementById('modal'),form=document.getElementById('modal-form'),fields=document.getElementById('modal-fields'),title=document.getElementById('modal-title'),submit=form.querySelector('button[type="submit"]');
-  dlg.classList.remove('focus-dialog','reference-dialog');title.textContent='Новий проєкт · крок '+projectWizard.step+' із 3';
-  fields.innerHTML=projectWizardFields();submit.textContent=projectWizard.step<3?'Далі':'Створити проєкт';
-  document.getElementById('modal-cancel').textContent=projectWizard.step>1?'Назад':'Скасувати';
-  document.getElementById('modal-cancel').onclick=()=>{if(projectWizard.step>1){projectWizard.step--;openProjectWizard(projectWizard.step)}else{dlg.close();document.getElementById('modal-cancel').onclick=closeModal}};
-  form.onsubmit=handleProjectWizardSubmit;dlg.showModal();
+  const dlg=document.getElementById('modal');
+  if(step===undefined){resetProjectWizard();refreshProjectWizardPreflight()}else projectWizard.step=step;
+  renderProjectWizardModal();
+  if(!dlg.open)dlg.showModal();
 }
 function projectWizardFields(){
   const d=projectWizard.data;
-  if(projectWizard.step===1)return `<div class="wizard-progress"><i class="active"></i><i></i><i></i></div><p class="wizard-lead">Основне</p>
-    <label>Назва проєкту<input name="name" required value="${esc(d.name)}" autofocus></label>
+  if(projectWizard.step===1)return `<div class="wizard-progress"><i class="active"></i><i></i><i></i></div><div class="wizard-step-title"><span>01</span><div><p class="wizard-lead">Основне</p><small>Назва, тип і мови майбутнього проєкту.</small></div></div>
+    <label>Назва проєкту<input name="name" required maxlength="160" value="${esc(d.name)}" autofocus placeholder="Наприклад: Новий анімаційний серіал"></label>
     <label>Тип<select name="type"><option value="animated-series" ${d.type==='animated-series'?'selected':''}>Анімаційний серіал</option><option value="general" ${d.type==='general'?'selected':''}>Універсальне відео</option><option value="science" ${d.type==='science'?'selected':''}>Наукове відео</option></select></label>
     <label>Основна мова<select name="defaultLanguage"><option value="uk" ${d.defaultLanguage==='uk'?'selected':''}>Українська</option><option value="en" ${d.defaultLanguage==='en'?'selected':''}>English</option></select></label>
-    <label class="settings-check"><input type="checkbox" name="addOtherLanguage" ${d.additionalLanguages.length?'checked':''}> Додаткова друга мовна версія</label>
-    <label>Опис<textarea name="description" placeholder="Короткий опис проєкту">${esc(d.description)}</textarea></label>`;
-  if(projectWizard.step===2)return `<div class="wizard-progress"><i class="done"></i><i class="active"></i><i></i></div><p class="wizard-lead">Параметри виробництва</p>
-    <div class="wizard-grid"><label>Роздільна здатність<select name="resolution"><option>1920x1080</option><option ${d.resolution==='3840x2160'?'selected':''}>3840x2160</option><option ${d.resolution==='1280x720'?'selected':''}>1280x720</option></select></label>
-    <label>Співвідношення<select name="aspectRatio">${['16:9','9:16','1:1','4:3'].map(v=>`<option ${d.aspectRatio===v?'selected':''}>${v}</option>`).join('')}</select></label>
+    <label class="settings-check"><input type="checkbox" name="addOtherLanguage" ${d.additionalLanguages.length?'checked':''}> Запланувати другу мовну версію</label>
+    <label>Опис<textarea name="description" maxlength="4000" placeholder="Коротко: для чого цей проєкт і що в ньому створюється">${esc(d.description)}</textarea></label>
+    <p class="wizard-note compact">На цьому етапі створюються тільки налаштування проєкту. AI не створює сценарій, персонажів або медіа автоматично.</p>`;
+  if(projectWizard.step===2)return `<div class="wizard-progress"><i class="done"></i><i class="active"></i><i></i></div><div class="wizard-step-title"><span>02</span><div><p class="wizard-lead">Виробництво та сховище</p><small>Технічний формат і перевірка локальної папки.</small></div></div>
+    <div class="wizard-grid"><label>Роздільна здатність<select name="resolution"><option value="1920x1080" ${d.resolution==='1920x1080'?'selected':''}>1920×1080</option><option value="3840x2160" ${d.resolution==='3840x2160'?'selected':''}>3840×2160</option><option value="1280x720" ${d.resolution==='1280x720'?'selected':''}>1280×720</option></select></label>
+    <label>Співвідношення<select name="aspectRatio">${['16:9','9:16','1:1','4:3'].map(v=>`<option value="${v}" ${d.aspectRatio===v?'selected':''}>${v}</option>`).join('')}</select></label>
     <label>FPS<input name="fps" type="number" min="12" max="60" value="${esc(d.fps)}"></label>
     <label>Планова кількість епізодів<input name="plannedEpisodes" type="number" min="1" max="200" value="${esc(d.plannedEpisodes)}"></label>
-    <label>Цільова тривалість, хв<input name="targetMinutes" type="number" min="1" value="${esc(d.targetMinutes)}"></label></div>
-    <div class="wizard-storage"><strong>Локальне сховище</strong><span>data/projects/&lt;project-id&gt;</span><small>Програма створить окремі Project_Data, Assets, Generated, Exports і Backups.</small></div>`;
-  return `<div class="wizard-progress"><i class="done"></i><i class="done"></i><i class="active"></i></div><p class="wizard-lead">Перевірка й створення</p>
-    <div class="wizard-summary"><div><span>Проєкт</span><strong>${esc(d.name)}</strong></div><div><span>Тип</span><strong>${esc(label('type',d.type))}</strong></div><div><span>Мова</span><strong>${esc(d.defaultLanguage.toUpperCase())}${d.additionalLanguages.length?' + '+d.additionalLanguages.map(x=>x.toUpperCase()).join(', '):''}</strong></div><div><span>Формат</span><strong>${esc(d.resolution)} · ${esc(d.aspectRatio)} · ${esc(d.fps)} FPS</strong></div><div><span>План</span><strong>${esc(d.plannedEpisodes)} епізодів · ${esc(d.targetMinutes)} хв</strong></div></div>
-    <p class="wizard-note">Будуть створені порожні структури програми. AI не створює сценарій, персонажів або медіа автоматично.</p>`;
+    <label>Цільова тривалість епізоду, хв<input name="targetMinutes" type="number" min="1" max="240" value="${esc(d.targetMinutes)}"></label></div>
+    ${projectWizardStorageStatus()}
+    <div class="wizard-storage"><strong>Окрема структура проєкту</strong><span>data/projects/&lt;project-id&gt;</span><small>Project_Data · Scripts · Character_Bible · Style_Bible · Storyboards · Assets · Generated · Exports · Backups</small></div>`;
+  const p=projectWizard.preflight;
+  return `<div class="wizard-progress"><i class="done"></i><i class="done"></i><i class="active"></i></div><div class="wizard-step-title"><span>03</span><div><p class="wizard-lead">Перевірка й створення</p><small>Остання перевірка перед записом локальних даних.</small></div></div>
+    <div class="wizard-summary"><div><span>Проєкт</span><strong>${esc(d.name)}</strong></div><div><span>Тип</span><strong>${esc(label('type',d.type))}</strong></div><div><span>Мова</span><strong>${esc(d.defaultLanguage.toUpperCase())}${d.additionalLanguages.length?' + '+d.additionalLanguages.map(x=>x.toUpperCase()).join(', '):''}</strong></div><div><span>Формат</span><strong>${esc(d.resolution)} · ${esc(d.aspectRatio)} · ${esc(d.fps)} FPS</strong></div><div><span>План</span><strong>${esc(d.plannedEpisodes)} епізодів · ${esc(d.targetMinutes)} хв</strong></div><div><span>Сховище</span><strong>${projectWizard.preflightLoading?'перевіряється':p?.ok?'готове':'помилка'}</strong></div></div>
+    ${projectWizardStorageStatus()}
+    <div class="wizard-directory-list">${(p?.requiredDirectories||['Project_Data','Assets/Images','Assets/Video','Assets/Voices','Assets/Music','Assets/SFX','Generated','Exports','Backups']).map(item=>`<span>✓ ${esc(item)}</span>`).join('')}</div>
+    <p class="wizard-note">Після натискання «Створити проєкт» backend створить окрему структуру, manifest і SQLite-індекс, перевірить їх і лише після успішної перевірки відкриє новий робочий стіл.</p>`;
 }
 async function handleProjectWizardSubmit(event){
   event.preventDefault();
@@ -159,7 +195,7 @@ async function handleProjectWizardSubmit(event){
     projectWizard.data.defaultLanguage=fd.get('defaultLanguage')||'uk';
     projectWizard.data.additionalLanguages=fd.get('addOtherLanguage')?[projectWizard.data.defaultLanguage==='uk'?'en':'uk']:[];
     projectWizard.data.description=String(fd.get('description')||'').trim();
-    projectWizard.step=2;openProjectWizard(2);return;
+    projectWizard.step=2;renderProjectWizardModal();return;
   }
   if(projectWizard.step===2){
     projectWizard.data.resolution=fd.get('resolution')||'1920x1080';
@@ -167,12 +203,18 @@ async function handleProjectWizardSubmit(event){
     projectWizard.data.fps=Number(fd.get('fps'))||24;
     projectWizard.data.plannedEpisodes=Number(fd.get('plannedEpisodes'))||1;
     projectWizard.data.targetMinutes=Number(fd.get('targetMinutes'))||10;
-    projectWizard.step=3;openProjectWizard(3);return;
+    if(projectWizard.preflightLoading)return;
+    if(!projectWizard.preflight?.ok){await refreshProjectWizardPreflight();if(!projectWizard.preflight?.ok)return}
+    projectWizard.step=3;renderProjectWizardModal();return;
   }
-  const submit=form.querySelector('button[type="submit"]');submit.disabled=true;submit.textContent='Створення…';
+  if(projectWizard.preflightLoading||!projectWizard.preflight?.ok){await refreshProjectWizardPreflight();if(!projectWizard.preflight?.ok)return}
+  const submit=form.querySelector('button[type="submit"]');submit.disabled=true;submit.textContent='Створення та перевірка…';
   try{
     const created=await api('/api/projects',{method:'POST',body:JSON.stringify(projectWizard.data)});
-    document.getElementById('modal').close();document.getElementById('modal-cancel').onclick=closeModal;view='overview';await load(created.id);
+    if(!created.creation?.storageVerified)throw new Error('Проєкт створено, але перевірка локального пакета не підтверджена.');
+    const dlg=document.getElementById('modal');dlg.close();dlg.classList.remove('project-wizard-dialog');document.getElementById('modal-cancel').onclick=closeModal;
+    view='overview';workspaceMode='guided';activeEpisodeId=null;localStorage.setItem('ai-video-studio:workspace-mode','guided');
+    await load(created.id);
   }catch(error){submit.disabled=false;submit.textContent='Створити проєкт';window.alert(error.message)}
 }
 
