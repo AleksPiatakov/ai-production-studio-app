@@ -84,8 +84,8 @@ function settingsFields(){
     <label>Кількість автоматичних версій<input name="versionHistoryLimit" type="number" min="5" max="100" value="${esc(settings.files.versionHistoryLimit)}"><small>Цей параметр реально визначає ліміт історії станів проєкту.</small></label>
     <label class="settings-check"><input type="checkbox" name="verifyWrites" ${checked(settings.files.verifyWrites)}> Перевіряти записи й пакети проєкту</label>`;
   if(globalSettingsTab==='performance')return `
-    <label class="settings-check"><input type="checkbox" name="preferLocal" ${checked(settings.performance.preferLocal)}> Надавати перевагу локальним моделям</label>
-    <label class="settings-check"><input type="checkbox" name="releaseModelsAfterTask" ${checked(settings.performance.releaseModelsAfterTask)}> Звільняти пам’ять моделі після завдання</label>
+    <label class="settings-check"><input type="checkbox" name="preferLocal" ${checked(settings.performance.preferLocal)}> Надавати перевагу локальним моделям <small>Локальні сумісні моделі показуються вище у селекторах; профіль і ручний вибір не перезаписуються.</small></label>
+    <label class="settings-check"><input type="checkbox" name="releaseModelsAfterTask" ${checked(settings.performance.releaseModelsAfterTask)}> Звільняти пам’ять моделі після завдання <small>Застосовується лише до runtime/worker, який явно підтримує unload. Поточний generic worker contract не імітує цю дію.</small></label>
     <label>Максимум паралельних генерацій<select name="maxConcurrentJobs">${[1,2,3,4].map(n=>`<option value="${n}" ${Number(settings.performance.maxConcurrentJobs)===n?'selected':''}>${n}</option>`).join('')}</select></label>`;
   if(globalSettingsTab==='assistants')return `
     <label>Загальний помічник<select name="generalAutonomy">${autonomyOptions(settings.assistants.generalAutonomy)}</select></label>
