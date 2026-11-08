@@ -47,8 +47,14 @@
       '</nav>'+
       '<div class="aps-nav-bottom"><span aria-hidden="true">◉</span><span>Локальний проєкт<br><small>Дані зберігаються на цьому Mac</small></span></div>';
     rail.querySelectorAll('[data-aps-destination]').forEach(button=>{
-      button.addEventListener('click',()=>{
+      button.addEventListener('click',async()=>{
         const destination=button.dataset.apsDestination;
+        if(['models','queue','assistants'].includes(destination)&&typeof refreshProductionStudio==='function'){
+          view=destination;
+          await refreshProductionStudio();
+          render();
+          return;
+        }
         if(destination==='davinci')goToView('davinci');
         else goToView(destination);
       });
