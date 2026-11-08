@@ -126,6 +126,48 @@ function normalizeStudio(data) {
   return data;
 }
 
+function createProjectAssistantAction(project, input = {}) {
+  const kind = String(input.kind || '');
+  const summary = String(input.summary || '').trim();
+  if (!summary) throw new Error('assistant action summary is required');
+  let targetType='', targetId='', field='', beforeValue='', afterValue='';
+  if (kind === 'project-description') {
+    targetType='project'; targetId=project.id; field='description';
+    beforeValue=String(project.description || ''); afterValue=String(input.after || '').trim();
+  } else if (kind === 'workflow-note') {
+    const stage=project.workflow?.find(item=>item.id===input.targetId);
+    if (!stage) throw new Error('workflow stage not found');
+    targetType='workflow'; targetId=stage.id; field='note';
+    beforeValue=String(stage.note || ''); afterValue=String(input.after || '').trim();
+  } else throw new Error('unsupported assistant action kind');
+  if (beforeValue === afterValue) throw new Error('assistant action does not change the target');
+  return { id: randomUUID(), kind, targetType, targetId, field, summary, before: beforeValue, after: afterValue, status: 'proposed', createdAt: new Date().toISOString(), decidedAt: null, decisionNote: '' };
+}
+function decideProjectAssistantAction(project, actionId, decision, note = '') {
+  const actions=project.assistantWorkspace?.actions || [], action=actions.find(item=>item.id===actionId);
+  if (!action) throw new Error('assistant action not found');
+  if (action.status !== 'proposed') throw new Error('assistant action has already been decided');
+  if (!['accept','reject'].includes(decision)) throw new Error('decision must be accept or reject');
+  if (decision === 'reject') {
+    action.status='rejected'; action.decidedAt=new Date().toISOString(); action.decisionNote=String(note||'');
+    return action;
+  }
+  let current='';
+  if (action.kind === 'project-description') current=String(project.description || '');
+  else if (action.kind === 'workflow-note') {
+    const stage=project.workflow?.find(item=>item.id===action.targetId); if(!stage)throw new Error('workflow stage not found');
+    current=String(stage.note || '');
+  } else throw new Error('unsupported assistant action kind');
+  if (current !== String(action.before || '')) throw new Error('assistant action is stale because the target changed after the proposal');
+  if (action.kind === 'project-description') project.description=String(action.after || '');
+  else {
+    const stage=project.workflow.find(item=>item.id===action.targetId);
+    stage.note=String(action.after || ''); stage.updatedAt=new Date().toISOString();
+  }
+  action.status='accepted'; action.decidedAt=new Date().toISOString(); action.decisionNote=String(note||'');
+  return action;
+}
+
 function publicModel(model) { return { ...model, configured: ['ready', 'available', 'connected', 'running'].includes(model.status) }; }
 function createGenerationJob(input, models) {
   const type = String(input.type || '');
@@ -183,4 +225,4 @@ function registerWorkerOutputs(project, job) {
   return { assets, versions };
 }
 
-module.exports = { normalizeStudio, defaultModelRegistry, defaultModelCatalog, defaultModelProfiles, modelSupports, updateModelProfiles, probeStudioModel, defaultStudioSettings, normalizeStudioSettings, updateStudioSettings, publicModel, createGenerationJob, transitionGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs };
+module.exports = { normalizeStudio, defaultModelRegistry, defaultModelCatalog, defaultModelProfiles, modelSupports, updateModelProfiles, probeStudioModel, defaultStudioSettings, normalizeStudioSettings, updateStudioSettings, createProjectAssistantAction, decideProjectAssistantAction, publicModel, createGenerationJob, transitionGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs };
