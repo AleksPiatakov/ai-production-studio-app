@@ -181,3 +181,17 @@ test('validates production parameters from the three-step project wizard', () =>
   assert.throws(() => validateProjectInput({ name: 'Broken', fps: 120 }), /fps/);
   assert.throws(() => validateProjectInput({ name: 'Broken', resolution: '800x600' }), /resolution/);
 });
+
+
+test('Character Bible keeps approved visual and voice links',()=>{
+  const { validateBibleInput }=require('../server/validation');
+  const entry=validateBibleInput({
+    name:'Mira',version:'1.0.0',status:'approved',rules:'Keep design stable',
+    ageBand:'young-adult',identityKey:'mira-v1',role:'Lead',appearance:'Fennec engineer',
+    wardrobeAccessories:'Blue utility scarf',voiceNotes:'Warm precise delivery',
+    voiceProfileId:'voice-mira',referenceAssetIds:['asset-front','asset-side']
+  },'characters');
+  assert.equal(entry.voiceProfileId,'voice-mira');
+  assert.equal(entry.wardrobeAccessories,'Blue utility scarf');
+  assert.deepEqual(entry.referenceAssetIds,['asset-front','asset-side']);
+});
