@@ -12,6 +12,7 @@
   const selected=assets.find(x=>x.id===data.selectedAssetId)||assets[0];
   const src=selected?.uri||'';
   const shotPrompt=shot?.imagePrompt||shot?.prompt||'';
+  const negativePrompt=data.negativePrompt||'';
   const imageModels=data.imageModels||[];
   const imageProfile=data.imageProfile||'';
   const modelOptions=imageModels.map(model=>`<option value="${esc(model.id)}" ${model.id===imageProfile?'selected':''}>${esc(model.name)} · ${esc(model.status||'')}</option>`).join('');
@@ -29,7 +30,7 @@
      <button type="button" class="p06-secondary" data-p06-action="edit-shot" ${shot?'':'disabled'}>✎ Редагувати опис кадру</button>
      <button type="button" class="p06-secondary p06-brief-action" data-p06-action="prepare-brief" ${shotPrompt.trim()?'':'disabled'}>✧ Підготувати запит на зображення</button>
      <label class="p06-field-label" for="p06-negative">Негативний промпт</label>
-     <textarea id="p06-negative" placeholder="Необов’язково: що модель не повинна додавати в цей кадр"></textarea>
+     <textarea id="p06-negative" placeholder="Необов’язково: що модель не повинна додавати в цей кадр">${esc(negativePrompt)}</textarea>
      <p class="p06-hint">Передається лише як параметр поточного generation job. Підтримка залежить від вибраної image-моделі.</p>
      <div class="p06-reference-block"><div class="p06-column-title"><strong>Референси з бібліотеки</strong><span>${assets.length}</span></div><div class="p06-reference-grid">${assets.slice(0,6).map(a=>`<button type="button" data-p06-asset="${esc(a.id)}" title="${esc(a.label)}"><img src="${esc(a.uri)}" alt="${esc(a.label)}"></button>`).join('')||'<p class="p06-empty">Додайте перше зображення</p>'}</div><button type="button" class="p06-secondary" data-p06-action="upload">＋ Завантажити референс</button></div>
     </section>
