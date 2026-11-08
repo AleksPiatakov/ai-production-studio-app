@@ -302,8 +302,8 @@ function validateProject(project, scope = {}) {
       if (!line.language) errors.push(issue('DIALOGUE_LANGUAGE_REQUIRED', 'Репліка повинна мати мову.', scene.id, line.id));
       if (productionCheck) {
         if (line.status !== 'approved') errors.push(issue('DIALOGUE_APPROVAL_REQUIRED', `Репліка «${character.name}» має бути затверджена перед production.`, scene.id, line.id));
-        const voice = voiceProfiles.find(profile => profile.identityKey === line.voiceIdentityKey && profile.ageBand === character.ageBand);
-        if (!voice) errors.push(issue('VOICE_PROFILE_REQUIRED', `Для репліки «${character.name}» потрібен профіль голосу з identity key «${line.voiceIdentityKey}».`, scene.id, line.id));
+        const voice = voiceProfiles.find(profile => profile.id === character.voiceProfileId) || voiceProfiles.find(profile => profile.identityKey === line.voiceIdentityKey && profile.ageBand === character.ageBand);
+        if (!voice) errors.push(issue('VOICE_PROFILE_REQUIRED', `Для репліки «${character.name}» потрібен призначений голосовий профіль або профіль з identity key «${line.voiceIdentityKey}».`, scene.id, line.id));
         else {
           if (voice.status !== 'approved') errors.push(issue('VOICE_PROFILE_NOT_APPROVED', `Профіль голосу «${voice.name}» ще не затверджений.`, scene.id, line.id));
           if (!voice.languages?.includes(line.language)) errors.push(issue('VOICE_LANGUAGE_UNSUPPORTED', `Профіль голосу «${voice.name}» не підтримує мову репліки.`, scene.id, line.id));
