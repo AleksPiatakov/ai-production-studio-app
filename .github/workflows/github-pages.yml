@@ -33,6 +33,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Run application tests
+        run: npm test
       - name: Build public-safe static preview
         run: node scripts/build-preview.js
       - name: Verify preview index and absence of local project data
@@ -42,6 +44,11 @@ jobs:
             echo "Sensitive file found in preview output"
             exit 1
           fi
+          grep -q 'AI Production Studio' preview-dist/index.html
+          test -f preview-dist/project-dashboard.js
+          test -f preview-dist/script-editor-demo.js
+          test -f preview-dist/approved-script-format.js
+          touch preview-dist/.nojekyll
           echo "Static preview files:"
           find preview-dist -type f | sort
       - name: Configure GitHub Pages
