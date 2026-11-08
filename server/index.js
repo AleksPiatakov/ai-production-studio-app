@@ -18,6 +18,14 @@ const { publicModel, updateStudioSettings, defaultModelCatalog, updateModelProfi
 const store = createStore();
 
 function send(res, status, payload) { res.writeHead(status, { 'content-type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(payload)); }
+function appendAssistantActivity(data, projectId, kind, summary, details = {}) {
+  if (data.studio?.settings?.assistants?.keepActionLog === false) return null;
+  const project = data.projects.find(item => item.id === projectId);
+  if (!project?.assistantWorkspace) return null;
+  const entry = { id: randomUUID(), kind: String(kind || 'activity'), summary: String(summary || '').slice(0, 500), details: details && typeof details === 'object' && !Array.isArray(details) ? details : {}, createdAt: new Date().toISOString() };
+  project.assistantWorkspace.activityLog = [...(project.assistantWorkspace.activityLog || []), entry].slice(-500);
+  return entry;
+}
 function authenticateWorker(req) {
   const token = process.env.AI_STUDIO_WORKER_TOKEN;
   if (!token) throw new Error('GPU Worker is not enabled. Set AI_STUDIO_WORKER_TOKEN locally first.');
