@@ -434,3 +434,22 @@
   .advisor-document-grid{grid-template-columns:1fr}
   .advisor-context-strip{grid-template-columns:1fr 1fr!important}
 }
+
+
+/* P-08 Voice Cloning — consent-first preparation workspace. */
+.voice-clone-page{display:grid;gap:16px;max-width:1360px;margin:0 auto;color:var(--aps-ink,#f3effb)}
+.voice-clone-page .voice-library-head>div:last-child{display:flex;gap:8px;align-items:center}
+.voice-clone-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.voice-clone-card{display:grid;gap:12px;padding:17px;border:1px solid rgba(144,124,221,.28);border-radius:14px;background:#11172d}
+.voice-clone-card h4{margin:0;color:#f5efff}
+.voice-clone-card label{display:grid;gap:7px;color:#c8bddc;font-size:12px}
+.voice-clone-card input,.voice-clone-card select,.voice-clone-card textarea{background:#171a32;color:#f3effb;border:1px solid rgba(144,124,221,.32)}
+.voice-clone-card textarea{min-height:90px}
+.voice-clone-samples{display:grid;gap:8px}
+.voice-clone-samples .check{display:flex;align-items:flex-start;gap:8px;padding:9px 10px;border:1px solid rgba(144,124,221,.2);border-radius:10px;background:#161b34}
+.voice-clone-samples small{display:block;color:#a99fc0}
+.voice-clone-provider{display:flex;justify-content:space-between;gap:12px;padding:11px 12px;border-radius:10px;background:#191a35;border:1px solid rgba(144,124,221,.22)}
+.voice-clone-provider strong{color:#a8e2c8}
+.voice-clone-card>small{color:#ada3c4;line-height:1.5}
+.voice-rights-warning{margin:0;padding:10px 12px;border:1px solid rgba(242,171,68,.3);border-radius:10px;background:rgba(168,107,30,.10);color:#e8c58c}
+@media(max-width:850px){.voice-clone-grid{grid-template-columns:1fr}}
