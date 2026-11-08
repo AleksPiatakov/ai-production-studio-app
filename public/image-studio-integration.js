@@ -7,7 +7,7 @@
   if(view!=='imageStudio')return oldPage();
   const scene=(active.scenes||[]).find(s=>s.id===activeSceneId)||(active.scenes||[])[0];
   const shot=(scene?.shots||[]).find(s=>s.id===activeShotId)||scene?.shots?.[0];
-  const imageModels=(productionStudioState?.models||[]).filter(model=>typeof clientModelSupports==='function'&&clientModelSupports(model,'image'));
+  const imageModels=typeof preferredModelOrder==='function'?preferredModelOrder((productionStudioState?.models||[]).filter(model=>typeof clientModelSupports==='function'&&clientModelSupports(model,'image'))):(productionStudioState?.models||[]).filter(model=>typeof clientModelSupports==='function'&&clientModelSupports(model,'image'));
   return window.APSImageStudio.render({scene,shot,shots:scene?.shots||[],assets:active.assets||[],selectedAssetId,imageModels,imageProfile:productionStudioState?.profiles?.image||'',notice:imageStudioNotice});
  };
  const oldTitle=viewTitle;
