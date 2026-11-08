@@ -26,3 +26,19 @@ test('DaVinci package routes expose report and files without replacing Resolve',
   assert.match(server,/handoff\.md/);
   assert.match(server,/mode === 'final' && !packagePlan\.canExport/);
 });
+
+
+test('G-08 export settings affect draft package without weakening final safety',()=>{
+  const server=fs.readFileSync(path.join(__dirname,'../server/index.js'),'utf8');
+  const handoff=fs.readFileSync(path.join(__dirname,'../server/davinci-handoff.js'),'utf8');
+  const ui=fs.readFileSync(path.join(__dirname,'../public/davinci-export.js'),'utf8');
+  assert.match(server,/const draftAllowed = exportSettings\.includeDrafts === true/);
+  assert.match(server,/verifyFiles: exportSettings\.verifyFiles !== false/);
+  assert.match(server,/mode === 'draft' && !draftAllowed/);
+  assert.match(server,/Чернетковий пакет вимкнено у налаштуваннях експорту/);
+  assert.match(handoff,/const verifyFiles = packageMode === 'final' \? true : options\.verifyFiles !== false/);
+  assert.match(handoff,/const missingFiles = verifyFiles \?/);
+  assert.match(ui,/const exportBlocked=Boolean\(report\)&&!report\.canExport/);
+  assert.match(ui,/Чернетковий пакет вимкнено у Налаштуваннях → Експорт/);
+  assert.match(ui,/вимкнена для draft/);
+});
