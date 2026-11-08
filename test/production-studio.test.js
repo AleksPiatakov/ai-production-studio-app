@@ -222,3 +222,18 @@ test('G-10 worker claim honors maxConcurrentJobs',()=>{
   assert.match(ui,/activeJobs=productionStudioState\.jobs\.filter/);
   assert.match(ui,/maxConcurrentJobs=Math\.max\(1,Number\(globalStudioSettings\?\.performance\?\.maxConcurrentJobs\)\|\|1\)/);
 });
+
+
+test('G-08 confirmExpensive gates generation entry points',()=>{
+  const queue=fs.readFileSync(path.join(__dirname,'../public/production-studio-ui.js'),'utf8');
+  const image=fs.readFileSync(path.join(__dirname,'../public/image-studio-integration.js'),'utf8');
+  const video=fs.readFileSync(path.join(__dirname,'../public/video-studio.js'),'utf8');
+  const sound=fs.readFileSync(path.join(__dirname,'../public/sound-music-studio.js'),'utf8');
+  assert.match(queue,/function confirmExpensiveGeneration/);
+  assert.match(queue,/confirmExpensive===false/);
+  assert.match(queue,/queueStudioGeneration[\s\S]*confirmExpensiveGeneration\(data\.type\|\|'generation',1\)/);
+  assert.match(queue,/retryStudioJob[\s\S]*confirmExpensiveGeneration\('retry',1/);
+  assert.match(image,/confirmExpensiveGeneration\('image',variantCount\)/);
+  assert.match(video,/confirmExpensiveGeneration\('video',variantCount\)/);
+  assert.match(sound,/confirmExpensiveGeneration\(soundStudioKind,variantCount\)/);
+});
