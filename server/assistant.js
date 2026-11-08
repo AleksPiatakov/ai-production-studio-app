@@ -115,10 +115,16 @@ function localGeneralAssistantAnswer(message) {
   return { answer, nextSteps: nextSteps.slice(0,3) };
 }
 
-async function askGeneralAssistant({ message, history = [] } = {}) {
+async function askGeneralAssistant({ message, history = [], enginePreference = 'auto' } = {}) {
   const question = String(message || '').trim();
   if (!question) throw new Error('Напишіть питання для Загального AI Помічника.');
-  const config = assistantConfiguration();
+  const configured = assistantConfiguration();
+  const preference = ['auto','local-planner','configured'].includes(enginePreference) ? enginePreference : 'auto';
+  const config = preference === 'local-planner'
+    ? { configured:false, engine:'local-planner', provider:'local', model:null }
+    : preference === 'configured' && configured.engine !== 'local-planner'
+      ? configured
+      : configured;
   let reply;
   if (config.engine === 'local-planner') reply = localGeneralAssistantAnswer(question);
   else if (config.engine === 'openai') {
