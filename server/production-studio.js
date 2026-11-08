@@ -89,6 +89,19 @@ function updateModelProfiles(current, input, models) {
   }
   return next;
 }
+function normalizeModelSetup(model, input = {}) {
+  const catalogMode = String(input.mode || model?.setup?.mode || 'simple');
+  const mode = ['simple','advanced'].includes(catalogMode) ? catalogMode : 'simple';
+  const targetRaw = String(input.executionTarget || model?.setup?.executionTarget || model?.execution || 'local');
+  const executionTarget = targetRaw === 'remote' ? 'remote' : 'local';
+  const storagePath = String(input.storagePath ?? model?.setup?.storagePath ?? '').trim().slice(0, 500);
+  const endpoint = String(input.endpoint ?? model?.setup?.endpoint ?? '').trim().slice(0, 500);
+  const connectionLabel = String(input.connectionLabel ?? model?.setup?.connectionLabel ?? '').trim().slice(0, 160);
+  const technicalNotes = String(input.technicalNotes ?? model?.setup?.technicalNotes ?? '').trim().slice(0, 2000);
+  if (executionTarget === 'remote' && endpoint && !/^https?:\/\//i.test(endpoint)) throw new Error('remote endpoint must start with http:// or https://');
+  return { mode, executionTarget, storagePath, endpoint, connectionLabel, technicalNotes, savedAt: new Date().toISOString() };
+}
+
 function probeStudioModel(model, facts={}) {
   if(!model)return { ok:false, status:'missing', message:'Модель не знайдена в реєстрі.' };
   let ok=false,message='';
@@ -112,6 +125,7 @@ function defaultModelRegistry() {
 function normalizeStudio(data) {
   data.studio = data.studio || {};
   data.studio.modelRegistry = Array.isArray(data.studio.modelRegistry) && data.studio.modelRegistry.length ? data.studio.modelRegistry : defaultModelRegistry();
+  data.studio.modelRegistry = data.studio.modelRegistry.map(model => ({ ...model, setup: normalizeModelSetup(model, model.setup || {}), lastProbe: model.lastProbe || null }));
   data.studio.generationJobs = Array.isArray(data.studio.generationJobs) ? data.studio.generationJobs : [];
   data.studio.workers = Array.isArray(data.studio.workers) ? data.studio.workers : [];
   data.studio.modelProfiles = updateModelProfiles(data.studio.modelProfiles, {}, data.studio.modelRegistry);
@@ -246,4 +260,4 @@ function registerWorkerOutputs(project, job) {
   return { assets, versions, outputAssetIds };
 }
 
-module.exports = { normalizeStudio, defaultModelRegistry, defaultModelCatalog, defaultModelProfiles, modelSupports, updateModelProfiles, probeStudioModel, defaultStudioSettings, normalizeStudioSettings, updateStudioSettings, createProjectAssistantAction, decideProjectAssistantAction, publicModel, generationEvent, createGenerationJob, transitionGenerationJob, retryGenerationJob, cancelGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs };
+module.exports = { normalizeStudio, defaultModelRegistry, defaultModelCatalog, defaultModelProfiles, modelSupports, updateModelProfiles, normalizeModelSetup, probeStudioModel, defaultStudioSettings, normalizeStudioSettings, updateStudioSettings, createProjectAssistantAction, decideProjectAssistantAction, publicModel, generationEvent, createGenerationJob, transitionGenerationJob, retryGenerationJob, cancelGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs };
