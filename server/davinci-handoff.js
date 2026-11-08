@@ -1,4 +1,5 @@
 const path = require('node:path');
+const fs = require('node:fs');
 
 const projectRoot = path.join(__dirname, '..');
 
@@ -27,11 +28,14 @@ function buildDaVinciHandoff(project, episode) {
     const keyImage = assetsById.get(shot.keyImageAssetId || scene.keyImageAssetId);
     const references = (shot.referenceAssetIds || []).map(id => assetsById.get(id)).filter(Boolean);
     const localReferences = references.filter(asset => assetPath(asset.uri));
+    const videoVariants = (project.assets || []).filter(asset => asset.type === 'video' && asset.linkedShotId === shot.id);
+    const videoAsset = videoVariants.find(asset => asset.status === 'approved') || videoVariants[0] || null;
     return {
       sceneId: scene.id, sceneNumber: scene.order, sceneTitle: scene.title, sceneDurationSeconds: scene.durationSeconds,
       shotId: shot.id || '', shotNumber: index + 1, shotDurationSeconds: shot.seconds, status: shot.status || 'draft',
       camera: shot.camera || '', imagePrompt: shot.imagePrompt || shot.prompt || '', motionPrompt: shot.motionPrompt || '', lighting: shot.lighting || '',
       keyImage: keyImage ? { id: keyImage.id, label: keyImage.label, status: keyImage.status, filePath: assetPath(keyImage.uri) } : null,
+      videoClip: videoAsset ? { id: videoAsset.id, label: videoAsset.label, status: videoAsset.status, filePath: assetPath(videoAsset.uri) } : null,
       localReferencePaths: localReferences.map(asset => assetPath(asset.uri)), localReferenceLabels: localReferences.map(asset => asset.label)
     };
   }));
@@ -45,6 +49,7 @@ function buildDaVinciHandoff(project, episode) {
   const blockers = [];
   if (!scenes.length) blockers.push('У випуску ще немає сцен для монтажу.');
   if (clips.some(clip => !clip.keyImage?.filePath)) blockers.push('Не для кожного шоту обрано локальний ключовий кадр.');
+  if (clips.some(clip => !clip.videoClip?.filePath)) blockers.push('Не для кожного шоту підготовлено локальний відеокліп.');
   if (clips.some(clip => clip.status !== 'approved')) blockers.push('Частина шотів ще не затверджена.');
   if (clips.some(clip => clip.keyImage && clip.keyImage.status !== 'approved')) blockers.push('Частина ключових кадрів ще не затверджена.');
   if (dialogue.some(line => line.status !== 'approved')) blockers.push('Репліки ще не затверджені.');
@@ -79,9 +84,85 @@ function handoffTimelineCsv(handoff, fps = 24) {
   let cursor = 0;
   const rows = handoff.clips.map(clip => {
     const duration = Number(clip.shotDurationSeconds || 0), start = cursor; cursor += duration;
-    return [timecode(start, fps), timecode(cursor, fps), duration, 'V1', `Scene ${clip.sceneNumber} Shot ${clip.shotNumber}`, clip.keyImage?.filePath || '', clip.sceneTitle, clip.shotNumber, clip.status, clip.camera, clip.motionPrompt || clip.imagePrompt];
+    return [timecode(start, fps), timecode(cursor, fps), duration, 'V1', `Scene ${clip.sceneNumber} Shot ${clip.shotNumber}`, clip.videoClip?.filePath || clip.keyImage?.filePath || '', clip.sceneTitle, clip.shotNumber, clip.status, clip.camera, clip.motionPrompt || clip.imagePrompt];
   });
   return [header, ...rows].map(row => row.map(csvCell).join(',')).join('\n') + '\n';
 }
 
-module.exports = { buildDaVinciHandoff, handoffMarkdown, handoffTimelineCsv, timecode };
+
+function packageFileRecord(sourcePath, destination, meta = {}) {
+  const exists = Boolean(sourcePath && fs.existsSync(sourcePath));
+  return { sourcePath: sourcePath || '', destination, exists, ...meta };
+}
+function buildDaVinciPackage(project, episode, mode = 'draft') {
+  const packageMode = mode === 'final' ? 'final' : 'draft';
+  const handoff = buildDaVinciHandoff(project, episode);
+  const sceneIds = new Set(project.scenes.filter(scene => scene.episodeId === episode.id).map(scene => scene.id));
+  const includeAsset = asset => sceneIds.has(asset.linkedSceneId) && (packageMode === 'draft' || asset.status === 'approved');
+  const soundAssets = (project.assets || []).filter(asset => ['music','ambient','sfx'].includes(asset.type) && includeAsset(asset));
+  const folders = {
+    Video: handoff.clips.map(clip => packageFileRecord(clip.videoClip?.filePath, `Video/scene-${clip.sceneNumber}-shot-${clip.shotNumber}${clip.videoClip?.filePath ? path.extname(clip.videoClip.filePath) : '.mov'}`, { sceneId: clip.sceneId, shotId: clip.shotId, status: clip.videoClip?.status || 'missing', kind: 'video' })).filter(record => packageMode === 'draft' || record.status === 'approved'),
+    'Dialogue/UK': [],
+    'Dialogue/EN': [],
+    Music: soundAssets.filter(asset => asset.type === 'music').map((asset,index) => packageFileRecord(assetPath(asset.uri), `Music/music-${index+1}${path.extname(asset.uri || '') || '.wav'}`, { assetId: asset.id, status: asset.status, kind: 'music' })),
+    Atmosphere: soundAssets.filter(asset => asset.type === 'ambient').map((asset,index) => packageFileRecord(assetPath(asset.uri), `Atmosphere/ambient-${index+1}${path.extname(asset.uri || '') || '.wav'}`, { assetId: asset.id, status: asset.status, kind: 'ambient' })),
+    SFX: soundAssets.filter(asset => asset.type === 'sfx').map((asset,index) => packageFileRecord(assetPath(asset.uri), `SFX/sfx-${index+1}${path.extname(asset.uri || '') || '.wav'}`, { assetId: asset.id, status: asset.status, kind: 'sfx' })),
+    Subtitles: [],
+    Edit_Data: [{ sourcePath: '', destination: 'Edit_Data/timeline.csv', exists: true, virtual: true, kind: 'timeline' }],
+    Manifest: [{ sourcePath: '', destination: 'Manifest/package-manifest.json', exists: true, virtual: true, kind: 'manifest' }],
+    Reports: [{ sourcePath: '', destination: 'Reports/readiness.json', exists: true, virtual: true, kind: 'report' }]
+  };
+  handoff.dialogue.forEach((line,lineIndex) => {
+    for (const draft of line.audioDrafts || []) {
+      if (packageMode === 'final' && draft.status !== 'approved') continue;
+      const language = draft.language === 'en' ? 'EN' : 'UK';
+      folders[`Dialogue/${language}`].push(packageFileRecord(draft.filePath, `Dialogue/${language}/line-${lineIndex+1}${path.extname(draft.filePath || '') || '.wav'}`, { status: draft.status, sceneId: line.sceneId, kind: 'dialogue' }));
+    }
+  });
+  for (const source of handoff.sources.localizations || []) {
+    if (source.subtitlesPath) folders.Subtitles.push(packageFileRecord(source.subtitlesPath, `Subtitles/${String(source.language || 'uk').toUpperCase()}${path.extname(source.subtitlesPath) || '.srt'}`, { status: source.status, language: source.language, kind: 'subtitles' }));
+  }
+  const physical = Object.values(folders).flat().filter(file => !file.virtual);
+  const missingFiles = physical.filter(file => !file.exists).map(file => `Файл відсутній: ${file.destination}`);
+  const readinessIssues = handoff.blockers.filter(item => !item.startsWith('Це чернетковий монтажний лист'));
+  if (!['approved','production','released'].includes(episode.status)) readinessIssues.unshift('Випуск не має затвердженого production-статусу.');
+  const issues = [...new Set([...readinessIssues, ...missingFiles])];
+  const finalReady = issues.length === 0;
+  return {
+    schemaVersion: 1,
+    kind: 'davinci-package-plan',
+    mode: packageMode,
+    generatedAt: new Date().toISOString(),
+    project: handoff.project,
+    episode: handoff.episode,
+    canExport: packageMode === 'draft' ? true : finalReady,
+    finalReady,
+    issues,
+    folders,
+    summary: {
+      files: physical.length,
+      existingFiles: physical.filter(file => file.exists).length,
+      missingFiles: physical.filter(file => !file.exists).length,
+      approvedVideoClips: handoff.clips.filter(clip => clip.videoClip?.status === 'approved' && clip.videoClip.filePath).length,
+      totalShots: handoff.clips.length
+    },
+    handoff
+  };
+}
+function packageManifestJson(packagePlan) {
+  const manifest = {
+    schemaVersion: packagePlan.schemaVersion,
+    kind: packagePlan.kind,
+    mode: packagePlan.mode,
+    generatedAt: packagePlan.generatedAt,
+    project: packagePlan.project,
+    episode: packagePlan.episode,
+    canExport: packagePlan.canExport,
+    finalReady: packagePlan.finalReady,
+    issues: packagePlan.issues,
+    files: Object.entries(packagePlan.folders).flatMap(([folder,files]) => files.map(file => ({ folder, destination: file.destination, sourcePath: file.sourcePath, exists: file.exists, virtual: Boolean(file.virtual), status: file.status || '', kind: file.kind || '' })))
+  };
+  return JSON.stringify(manifest, null, 2);
+}
+
+module.exports = { buildDaVinciHandoff, buildDaVinciPackage, packageManifestJson, handoffMarkdown, handoffTimelineCsv, timecode };
