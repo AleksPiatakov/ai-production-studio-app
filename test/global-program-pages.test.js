@@ -415,3 +415,12 @@ test('G-08 does not claim unfinished English interface localization',()=>{
   assert.match(settings,/option value="en" disabled/);
   assert.match(production,/next\.general\.interfaceLanguage = 'uk'/);
 });
+
+
+test('G-08 confirmDestructive covers assistant history deletion',()=>{
+  const app=fs.readFileSync(path.join(root,'public','app.js'),'utf8');
+  const assistants=fs.readFileSync(path.join(root,'public','assistant-workspaces.js'),'utf8');
+  assert.match(app,/clearProjectAdvice\(\)[\s\S]*confirmDestructiveAction\('Очистити історію AI Помічника цього проєкту/);
+  assert.match(assistants,/clearGlobalAssistant\(\)[\s\S]*confirmDestructiveAction\('Очистити історію Загального AI Помічника/);
+  assert.doesNotMatch(assistants,/clearGlobalAssistant\(\)[\s\S]{0,240}window\.confirm/);
+});
