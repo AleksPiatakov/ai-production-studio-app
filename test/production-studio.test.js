@@ -194,3 +194,15 @@ test('studio normalization preserves model setup and last probe without pretendi
   assert.equal(model.lastProbe.ok,false);
   assert.notEqual(model.status,'running');
 });
+
+
+test('generation jobs reject incompatible models',()=>{
+  const models=[
+    {id:'image-model',name:'Image',capability:'image',status:'ready'},
+    {id:'voice-model',name:'Voice',capability:'voice',status:'ready'}
+  ];
+  assert.throws(()=>createGenerationJob({projectId:'p1',type:'voice',modelId:'image-model'},models),/does not support voice/);
+  const job=createGenerationJob({projectId:'p1',type:'voice',modelId:'voice-model'},models);
+  assert.equal(job.type,'voice');
+  assert.equal(job.modelId,'voice-model');
+});
