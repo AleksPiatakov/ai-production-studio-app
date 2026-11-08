@@ -9,7 +9,8 @@
     ['imageStudio','▧','Зображення'],
     ['audio','◖','Озвучування'],
     ['sound','♫','Звук і музика'],
-    ['assets','♙','Персонажі та ресурси'],
+    ['assets','♙','Персонажі / Style Bible'],
+    ['mediaLibrary','▤','Медіабібліотека'],
     ['videoStudio','▶','Video Studio'],
     ['preview','✓','Перевірка готовності'],
     ['davinci','⇧','Експорт DaVinci']

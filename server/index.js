@@ -425,7 +425,7 @@ const server = http.createServer(async (req, res) => {
           const target = data.projects.find(item => item.id === projectId);
           target.assetVersions.push(version);
           const targetAsset = target.assets.find(item => item.id === asset.id);
-          if (!targetAsset.currentVersionId) targetAsset.currentVersionId = version.id;
+          if (!targetAsset.currentVersionId || targetAsset.status !== 'approved') targetAsset.currentVersionId = version.id;
         });
         return send(res, 201, version);
       }

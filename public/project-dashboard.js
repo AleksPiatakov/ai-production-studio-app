@@ -26,7 +26,7 @@ window.APSProjectDashboard = Object.freeze({ render: function renderDashboard(da
   <section class="p01-panel"><div class="p01-panel-heading"><div><p class="eyebrow">НЕЩОДАВНІ ВИПУСКИ</p><h4>Сценарії та епізоди</h4></div><button onclick="goToView('episodes')" type="button">Усі випуски</button></div>
   ${episodes.length?episodes.map(item=>`<button type="button" class="p01-list-item" onclick="goToView('episodes')"><span>${esc(item.title||'Без назви')}</span><small>${esc(statusLabel(item.status||'draft'))}</small></button>`).join(''):'<p class="empty">Випусків поки немає.</p>'}
   </section>
-  <section class="p01-panel"><div class="p01-panel-heading"><div><p class="eyebrow">МАТЕРІАЛИ ПРОЄКТУ</p><h4>Ресурси й готовність</h4></div><button onclick="goToView('assets')" type="button">Бібліотека</button></div>
+  <section class="p01-panel"><div class="p01-panel-heading"><div><p class="eyebrow">МАТЕРІАЛИ ПРОЄКТУ</p><h4>Ресурси й готовність</h4></div><button onclick="goToView('mediaLibrary')" type="button">Бібліотека</button></div>
    <div class="p01-list-item"><span>Ресурси</span><small>${assets.length} всього · ${approvedAssets} затверджено</small></div>
    <div class="p01-list-item"><span>Персонажі</span><small>${characters.length} у біблії персонажів</small></div>
    <div class="p01-list-item"><span>Поточний випуск</span><small>${(p.scenes||[]).length} сцен · ${(p.shots||[]).length} кадрів</small></div>
