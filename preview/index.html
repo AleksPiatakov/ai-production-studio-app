@@ -158,8 +158,9 @@ body:has(#screen-script.active) .preview-warning{display:none}
       </aside>
       <section class="editor-main">
        <label class="editor-title"><span>Назва сценарію</span><input value="Міст із Світла — Епізод 1" readonly></label>
+       <div class="aps-screenplay-controls" role="group" aria-label="Режим сценарного редактора"><span class="aps-screenplay-controls-title">Сценарний формат</span><button type="button" class="active" data-demo-script-surface="read">Перегляд</button><button type="button" data-demo-script-surface="structured">▤ Структура</button><button type="button" data-demo-script-surface="text">✎ Текст</button><span class="aps-screenplay-safe-note">Демо без збереження · локальна програма редагує один script.body</span></div>
        <label class="editor-body-label aps-reading"><span class="editor-writing-label"><strong>Текст сценарію</strong><small>Демонстрація редактора без збереження даних</small></span>
-        <textarea id="demo-script-text" readonly spellcheck="false"></textarea></label><div id="demo-script-reader" class="aps-screenplay-reader" aria-label="Демонстраційний форматований сценарій"></div>
+        <textarea id="demo-script-text" readonly spellcheck="false"></textarea></label><div id="demo-script-reader" class="aps-screenplay-reader" aria-label="Демонстраційний форматований сценарій"></div><div id="demo-script-structured" class="aps-structured-editor" aria-label="Демонстраційна структура сценарію" hidden></div>
       </section>
       <aside class="p02-ai-panel" aria-label="AI Помічник проєкту">
        <div class="p02-ai-title"><span class="p02-ai-avatar" aria-hidden="true">✧</span><div><strong>AI Помічник проєкту</strong><small>Міст із Світла · проєктний контекст</small></div></div>
