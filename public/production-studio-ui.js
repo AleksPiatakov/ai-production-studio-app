@@ -54,6 +54,12 @@ function clientModelSupports(model,task){
   if(task==='music'||task==='ambient'||task==='sfx')return capability===task||capability==='audio'||capability==='music-sfx';
   return false;
 }
+function preferredModelOrder(models){
+  const items=[...(models||[])];
+  if(globalStudioSettings?.performance?.preferLocal===false)return items;
+  const isLocal=model=>(model?.setup?.executionTarget||model?.execution||'local')==='local';
+  return items.sort((a,b)=>Number(isLocal(b))-Number(isLocal(a)));
+}
 function modelStatusClass(status){return ['ready','available','running'].includes(status)?'ready':['disabled','failed'].includes(status)?'disabled':'pending'}
 function modelStatusLabel(status){return ({installed:'встановлена',connected:'підключена',running:'запущена',failed:'помилка'})[status]||studioStatus(status)}
 function modelCatalogInfo(id){return productionStudioState.catalog.find(item=>item.id===id)}
@@ -75,7 +81,7 @@ function catalogCard(entry){
   return `<section class="model-card catalog-card"><div class="model-card-head"><div><strong>${esc(entry.name)}</strong><span class="tag">${esc(entry.category)}</span></div><span class="model-state ${model?modelStatusClass(model.status):'pending'}">${esc(model?modelStatusLabel(model.status):'не додана')}</span></div><p>${esc(entry.description)}</p><div class="model-facts"><span>Тип <b>${esc(entry.capability)}</b></span><span>Підключення <b>${esc(entry.installMode)}</b></span><span>Вимоги <b>${esc(entry.requirements)}</b></span></div><small>Ліцензія: ${esc(entry.license)} · Розмір: ${esc(entry.sizeNote)}</small><div class="model-card-actions">${model?`<button type="button" onclick="startModelSetup('${esc(entry.id)}')">Відкрити майстер</button><button class="primary" type="button" onclick="probeStudioModelUI('${esc(entry.id)}')">Перевірити</button>`:'<button type="button" disabled>Ще не підтримується</button>'}</div></section>`;
 }
 function modelProfileOptions(task,current){
-  const compatible=productionStudioState.models.filter(model=>clientModelSupports(model,task));
+  const compatible=preferredModelOrder(productionStudioState.models.filter(model=>clientModelSupports(model,task)));
   return '<option value="">Не призначено</option>'+compatible.map(model=>`<option value="${esc(model.id)}" ${current===model.id?'selected':''}>${esc(model.name)} · ${esc(studioStatus(model.status))}</option>`).join('');
 }
 function modelProfilesPanel(){
@@ -146,7 +152,7 @@ async function saveModelProfiles(event){
   catch(error){productionStudioState.error=error.message;render()}
 }
 function queueModelOptions(type){
-  const compatible=productionStudioState.models.filter(model=>clientModelSupports(model,type));
+  const compatible=preferredModelOrder(productionStudioState.models.filter(model=>clientModelSupports(model,type)));
   if(!compatible.length)return '<option value="">Немає сумісної моделі</option>';
   const preferred=productionStudioState.profiles?.[type]||'';
   return compatible.map(model=>`<option value="${esc(model.id)}" ${model.id===preferred?'selected':''}>${esc(model.name)} — ${esc(modelStatusLabel(model.status))}</option>`).join('');
