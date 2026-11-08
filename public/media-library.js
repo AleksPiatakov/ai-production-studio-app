@@ -59,7 +59,7 @@ function mediaCard(asset){
       <p>${stale?'Залежний затверджений сценарій змінено. Матеріал збережено без автоматичної регенерації.':esc(asset.notes||'Без нотатки')}</p>
       <div class="media-meta"><span>v${esc(asset.version||'0.1.0')}</span><span>${versions.length} версій</span><span>${uses.length} зв’язків</span></div>
       <div class="media-usage">${uses.length?uses.slice(0,3).map(item=>`<span>${esc(item)}</span>`).join(''):'<span>Не прив’язано до сцени/кадру</span>'}${uses.length>3?`<span>+${uses.length-3}</span>`:''}</div>
-      <div class="media-card-actions"><button type="button" onclick="openMediaVersionHistory('${esc(asset.id)}')">Версії</button><button type="button" onclick="openNewAssetVersion('${esc(asset.id)}')">＋ Нова версія</button><button type="button" onclick="openAsset('${esc(asset.id)}')">${approved?'Переглянути':'Редагувати'}</button></div>
+      <div class="media-card-actions"><button type="button" onclick="openMediaVersionHistory('${esc(asset.id)}')">Версії</button><button type="button" onclick="openNewAssetVersion('${esc(asset.id)}')">＋ Нова версія</button>${stale?`<button type="button" onclick="resolveDependencyReview('asset','${esc(asset.id)}')">✓ Перевірено</button>`:''}<button type="button" onclick="openAsset('${esc(asset.id)}')">${approved?'Переглянути':'Редагувати'}</button></div>
     </div>
   </article>`;
 }
