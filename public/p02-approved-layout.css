@@ -197,3 +197,23 @@ body.is-editor.p02-focus .p02-project-tabs{display:none!important}
  .p02-approved-layout .p02-project-tabs{padding:6px 10px;min-height:44px}
  .p02-approved-layout .p02-project-tabs button{padding:7px 9px;font-size:11px}
 }
+
+
+/* P-02 independent column collapse controls from the approved v0.4 editor behavior. */
+.p02-approved-layout>.p02-edit-layout.scenes-collapsed{grid-template-columns:0 minmax(0,1fr) minmax(275px,320px)}
+.p02-approved-layout>.p02-edit-layout.ai-collapsed{grid-template-columns:minmax(210px,265px) minmax(0,1fr) 0}
+.p02-approved-layout>.p02-edit-layout.scenes-collapsed.ai-collapsed{grid-template-columns:0 minmax(0,1fr) 0}
+.p02-approved-layout>.p02-edit-layout.scenes-collapsed>.p02-scene-sidebar{display:none!important}
+.p02-approved-layout>.p02-edit-layout.ai-collapsed>.p02-ai-panel{display:none!important}
+.p02-approved-layout [data-p02-toggle-scenes],
+.p02-approved-layout [data-p02-toggle-ai]{white-space:nowrap}
+.p02-approved-layout [data-p02-toggle-scenes].active,
+.p02-approved-layout [data-p02-toggle-ai].active{border-color:#714296;color:#e9d7ff;background:#211936}
+body.is-editor.p02-focus .p02-approved-layout [data-p02-toggle-scenes],
+body.is-editor.p02-focus .p02-approved-layout [data-p02-toggle-ai]{display:none!important}
+@media(max-width:980px){
+ .p02-approved-layout>.p02-edit-layout.scenes-collapsed,
+ .p02-approved-layout>.p02-edit-layout.ai-collapsed,
+ .p02-approved-layout>.p02-edit-layout.scenes-collapsed.ai-collapsed{grid-template-columns:190px minmax(0,1fr)}
+ .p02-approved-layout>.p02-edit-layout.scenes-collapsed{grid-template-columns:0 minmax(0,1fr)}
+}
