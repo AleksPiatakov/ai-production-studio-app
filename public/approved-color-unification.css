@@ -159,3 +159,78 @@ body .aps-nav-main button.active{
   border-color:#7339a6!important;
   color:#fff!important;
 }
+
+
+/* Approved shared chrome: one left rail + compact utility top bar.
+   The previous duplicate global tab strip is intentionally removed. */
+body>.aps-topbar{
+  min-height:62px!important;
+  padding:10px 18px!important;
+  background:#0b1024!important;
+  border-bottom:1px solid rgba(144,124,221,.24)!important;
+  box-shadow:none!important;
+}
+body>.aps-topbar .header-brand{display:flex;align-items:center;gap:12px;min-width:0}
+body>.aps-topbar .header-brand>div{min-width:0}
+body>.aps-topbar .header-brand .eyebrow{margin:0 0 2px;color:#9f91bf!important;font-size:9px;letter-spacing:.11em}
+body>.aps-topbar #aps-zone-title{margin:0;color:#f3effb!important;font-size:17px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body>.aps-topbar .sidebar-toggle{
+  background:#16172e!important;
+  border-color:rgba(144,124,221,.28)!important;
+  color:#d9cffa!important;
+}
+body>.aps-topbar .aps-local-badge{
+  display:inline-flex;align-items:center;gap:7px;margin-left:auto;padding:7px 10px;
+  border:1px solid rgba(88,194,156,.28);border-radius:999px;
+  background:rgba(65,151,124,.10);color:#9fe2c5;font-size:11px;font-weight:750;
+}
+
+/* Project AI assistant follows the approved dark shell instead of the legacy blue/white card. */
+body .floating-advisor-launcher{
+  background:linear-gradient(135deg,#63259d,#8e2bd3)!important;
+  border-color:#9d4ce1!important;
+  color:#fff!important;
+  box-shadow:0 14px 34px rgba(72,25,120,.34)!important;
+}
+body .floating-advisor-launcher:hover{background:linear-gradient(135deg,#742eb4,#a13be4)!important}
+body .floating-advisor{
+  background:#10162b!important;
+  border-color:rgba(144,124,221,.36)!important;
+  color:#f3effb!important;
+  box-shadow:0 24px 70px rgba(0,0,0,.52)!important;
+}
+body .floating-advisor-head{
+  background:#15172f!important;
+  border-bottom-color:rgba(144,124,221,.25)!important;
+}
+body .floating-advisor-head p{color:#f3effb!important}
+body .floating-advisor-head small{color:#aca2c4!important}
+body .floating-advisor-head button{
+  background:#1e203d!important;
+  border-color:rgba(144,124,221,.24)!important;
+  color:#d9cffa!important;
+}
+body .floating-advisor-head button:hover{background:#2b2346!important}
+body .floating-advisor-body{background:#10162b!important}
+body .floating-advisor-context{color:#bcb3d3!important}
+body .floating-advisor-thread article{
+  border-color:rgba(144,124,221,.22)!important;
+  color:#f3effb!important;
+}
+body .floating-advisor-thread article.user{background:#2b2147!important}
+body .floating-advisor-thread article.advisor{background:#191a35!important}
+body .floating-advisor-thread small{color:#a99fc0!important}
+body .floating-advisor textarea{
+  background:#171a32!important;color:#f3effb!important;border-color:rgba(144,124,221,.34)!important;
+}
+body .floating-advisor-full{color:#cdb9f8!important}
+@media(max-width:620px){
+  body>.aps-topbar{min-height:58px!important;padding:9px 12px!important}
+  body>.aps-topbar .header-brand .eyebrow{display:none}
+  body>.aps-topbar #aps-zone-title{font-size:15px}
+  body>.aps-topbar .aps-local-badge{padding:6px 8px;font-size:10px}
+}
+
+body .floating-advisor-head{cursor:move;user-select:none}
+body .floating-advisor.is-pinned .floating-advisor-head{cursor:default}
+body .floating-advisor.is-pinned{box-shadow:0 24px 70px rgba(0,0,0,.60),0 0 0 1px rgba(154,39,240,.16)!important}

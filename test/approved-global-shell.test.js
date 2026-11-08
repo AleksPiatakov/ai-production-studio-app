@@ -19,3 +19,29 @@ test('approved rail retains working project and module navigation', () => {
   assert.match(js, /goToView\(destination\)/);
   assert.match(js, /selectProject\(event\.target\.value\)/);
 });
+
+
+test('approved shell has one navigation system and compact utility topbar', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'public', 'index.html'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'public', 'approved-color-unification.css'), 'utf8');
+  assert.doesNotMatch(html, /id="global-nav"/);
+  assert.doesNotMatch(html, /MVP · генератори не підключено/);
+  assert.match(html, /class="aps-topbar"/);
+  assert.match(html, /id="aps-zone-title"/);
+  assert.match(css, /body>\.aps-topbar/);
+  assert.match(css, /body \.floating-advisor\{/);
+  assert.match(css, /body \.floating-advisor-launcher/);
+});
+
+
+test('project AI assistant supports move, resize, collapse and pin controls', () => {
+  const app = fs.readFileSync(path.join(__dirname, '..', 'public', 'app.js'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'public', 'approved-color-unification.css'), 'utf8');
+  assert.match(app, /toggleFloatingAdvisorPin/);
+  assert.match(app, /setupFloatingAdvisorInteraction/);
+  assert.match(app, /advisor-position/);
+  assert.match(app, /aria-pressed=/);
+  assert.match(css, /floating-advisor\.is-pinned/);
+  const legacy = fs.readFileSync(path.join(__dirname, '..', 'public', 'styles.css'), 'utf8');
+  assert.match(legacy, /resize:both/);
+});
