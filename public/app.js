@@ -159,14 +159,49 @@ renderWorkspaceNav=function(){const main=[['story','☷','1. План сезон
 // writes project data: it only exposes the studio context and returns advice.
 let advisorMessages=[], advisorBusy=false, advisorError='', advisorScope='all';
 function advisorKey(){return `ai-video-studio:advisor:${activeId||'project'}`}
-function readAdvisorMessages(){try{return JSON.parse(localStorage.getItem(advisorKey())||'[]')}catch{return[]}}
-function persistAdvisorMessages(){localStorage.setItem(advisorKey(),JSON.stringify(advisorMessages.slice(-20)))}
+function readAdvisorMessages(){
+  const stored=active?.assistantWorkspace?.memory;
+  if(Array.isArray(stored)&&stored.length)return stored;
+  try{return JSON.parse(localStorage.getItem(advisorKey())||'[]')}catch{return[]}
+}
+function persistAdvisorMessages(){
+  if(active?.assistantWorkspace)active.assistantWorkspace.memory=advisorMessages.slice(-100);
+}
 function advisorEpisode(){return advisorScope==='all'?null:(active?.episodes||[]).find(item=>item.id===advisorScope)||null}
 function setAdvisorScope(value){advisorScope=value||'all'}
-function advisorPanel(){const episode=advisorEpisode(),messages=advisorMessages.length?advisorMessages:readAdvisorMessages();if(messages!==advisorMessages)advisorMessages=messages;const episodeOptions=`<option value="all" ${advisorScope==='all'?'selected':''}>Весь серіал</option>`+(active?.episodes||[]).map(item=>`<option value="${esc(item.id)}" ${item.id===episode?.id?'selected':''}>Серія ${item.episodeNumber}: ${esc(item.title)}</option>`).join('');return `<article class="card full advisor-card"><header class="advisor-head"><div><p class="eyebrow">AI ПОМІЧНИК ПРОЄКТУ</p><h3>Обговорюємо весь проєкт в одному місці</h3><p class="muted">AI Помічник бачить сезон, поточний сценарій, персонажів, правила стилю, матеріали та етап виробництва. Він радить, але нічого не редагує і не затверджує без вас.</p></div><span class="tag ${assistantInfo.configured?'ready':''}">${assistantInfo.configured?'OpenAI підключено':'локальний режим'}</span></header><section class="advisor-context-strip"><span><b>${(active?.episodes||[]).length}</b> серій у плані</span><span><b>${(active?.bibles?.characters||[]).length}</b> персонажів</span><span><b>${(active?.scripts||[]).filter(item=>!item.deletedAt).length}</b> сценаріїв</span><label>Фокус розмови<select id="advisor-episode" onchange="setAdvisorScope(this.value)">${episodeOptions}</select></label></section><div id="advisor-thread" class="advisor-thread" aria-live="polite">${messages.length?messages.map(item=>item.role==='user'?`<article class="advisor-message user"><small>Ви</small><p>${esc(item.text)}</p></article>`:`<article class="advisor-message advisor"><small>AI Помічник проєкту</small><p>${esc(item.answer)}</p>${item.observations?.length?`<section><strong>На що звернути увагу</strong><ul>${item.observations.map(point=>`<li>${esc(point)}</li>`).join('')}</ul></section>`:''}${item.nextSteps?.length?`<section><strong>Логічний наступний крок</strong><ol>${item.nextSteps.map(point=>`<li>${esc(point)}</li>`).join('')}</ol></section>`:''}</article>`).join(''):`<div class="advisor-empty"><strong>Почнімо з питання.</strong><p>Наприклад: «Чи логічний перший сезон?», «Що дописати перед створенням кадрів?» або «Що зараз є головним ризиком для серіалу?»</p></div>`}</div><div class="advisor-suggestions"><button type="button" onclick="fillAdvisorQuestion('Проаналізуй логіку та послідовність всього першого сезону.')">Логіка сезону</button><button type="button" onclick="fillAdvisorQuestion('Що варто зробити наступним кроком у цьому проєкті?')">Наступний крок</button><button type="button" onclick="fillAdvisorQuestion('Які ризики для виробництва всього сезону треба закрити зараз?')">Ризики виробництва</button></div><form class="advisor-composer" onsubmit="askProjectAdvisor(event)"><textarea id="advisor-question" required placeholder="Напишіть питання або попросіть оцінити ідею…"></textarea><div><small>Порада не змінює сценарій, кадри, статуси чи матеріали автоматично.</small><button type="button" class="ghost" title="Очистити історію розмови" onclick="clearProjectAdvice()">Очистити</button><button class="primary" type="submit" ${advisorBusy||!assistantInfo.configured?'disabled':''}>${advisorBusy?'AI Помічник думає…':'Запитати AI Помічника'}</button></div></form>${advisorError?`<p class="assistant-error">${esc(advisorError)}</p>`:''}</article>`}
+function advisorPanel(){const episode=advisorEpisode(),messages=advisorMessages.length?advisorMessages:readAdvisorMessages();if(messages!==advisorMessages)advisorMessages=messages;const episodeOptions=`<option value="all" ${advisorScope==='all'?'selected':''}>Весь серіал</option>`+(active?.episodes||[]).map(item=>`<option value="${esc(item.id)}" ${item.id===episode?.id?'selected':''}>Серія ${item.episodeNumber}: ${esc(item.title)}</option>`).join('');return `<article class="card full advisor-card"><header class="advisor-head"><div><p class="eyebrow">AI ПОМІЧНИК ПРОЄКТУ</p><h3>Обговорюємо весь проєкт в одному місці</h3><p class="muted">AI Помічник бачить тільки цей проєкт, зберігає пам’ять розмови та може готувати зміни для P-13. Затверджені матеріали не змінюються без окремого прийняття.</p></div><span class="tag ${assistantInfo.configured?'ready':''}">${assistantInfo.configured?'OpenAI підключено':'локальний режим'}</span></header><section class="advisor-context-strip"><span><b>${(active?.episodes||[]).length}</b> серій у плані</span><span><b>${(active?.bibles?.characters||[]).length}</b> персонажів</span><span><b>${(active?.scripts||[]).filter(item=>!item.deletedAt).length}</b> сценаріїв</span><label>Фокус розмови<select id="advisor-episode" onchange="setAdvisorScope(this.value)">${episodeOptions}</select></label></section><div id="advisor-thread" class="advisor-thread" aria-live="polite">${messages.length?messages.map(item=>item.role==='user'?`<article class="advisor-message user"><small>Ви</small><p>${esc(item.text)}</p></article>`:`<article class="advisor-message advisor"><small>AI Помічник проєкту</small><p>${esc(item.answer)}</p>${item.observations?.length?`<section><strong>На що звернути увагу</strong><ul>${item.observations.map(point=>`<li>${esc(point)}</li>`).join('')}</ul></section>`:''}${item.nextSteps?.length?`<section><strong>Логічний наступний крок</strong><ol>${item.nextSteps.map(point=>`<li>${esc(point)}</li>`).join('')}</ol></section>`:''}</article>`).join(''):`<div class="advisor-empty"><strong>Почнімо з питання.</strong><p>Наприклад: «Чи логічний перший сезон?», «Що дописати перед створенням кадрів?» або «Що зараз є головним ризиком для серіалу?»</p></div>`}</div><div class="advisor-suggestions"><button type="button" onclick="fillAdvisorQuestion('Проаналізуй логіку та послідовність всього першого сезону.')">Логіка сезону</button><button type="button" onclick="fillAdvisorQuestion('Що варто зробити наступним кроком у цьому проєкті?')">Наступний крок</button><button type="button" onclick="fillAdvisorQuestion('Які ризики для виробництва всього сезону треба закрити зараз?')">Ризики виробництва</button></div><form class="advisor-composer" onsubmit="askProjectAdvisor(event)"><textarea id="advisor-question" required placeholder="Напишіть питання або попросіть оцінити ідею…"></textarea><div><small>Чат зберігається в пам’яті проєкту. Зміни застосовуються тільки через перегляд P-13.</small><button type="button" class="ghost" title="Очистити історію розмови" onclick="clearProjectAdvice()">Очистити</button><button class="primary" type="submit" ${advisorBusy||!assistantInfo.configured?'disabled':''}>${advisorBusy?'AI Помічник думає…':'Запитати AI Помічника'}</button></div></form>${advisorError?`<p class="assistant-error">${esc(advisorError)}</p>`:''}</article>`}
 function fillAdvisorQuestion(question){const field=$('#advisor-question');if(field){field.value=question;field.focus()}}
-async function askProjectAdvisor(event){event?.preventDefault();const field=$('#advisor-question'),message=field?.value.trim(),episodeId=$('#advisor-episode')?.value||advisorScope;if(!message||advisorBusy)return;advisorBusy=true;advisorError='';advisorMessages.push({role:'user',text:message});field.value='';persistAdvisorMessages();render();try{const result=await api(`/api/projects/${encodeURIComponent(activeId)}/assistant/advice`,{method:'POST',body:JSON.stringify({message,episodeId})});advisorMessages.push({role:'advisor',...result.reply});persistAdvisorMessages()}catch(error){advisorMessages.pop();advisorError=error.message==='not found'?'AI Помічник додано, але локальний сервер ще працює у попередній версії. Перезапустіть студію та оновіть сторінку.':error.message}finally{advisorBusy=false;render();setTimeout(()=>$('#advisor-thread')?.scrollTo({top:999999,behavior:'smooth'}),0)}}
-function clearProjectAdvice(){advisorMessages=[];advisorError='';localStorage.removeItem(advisorKey());render()}
+async function askProjectAdvisor(event){
+  event?.preventDefault();
+  const field=$('#advisor-question'),message=field?.value.trim(),episodeId=$('#advisor-episode')?.value||advisorScope;
+  if(!message||advisorBusy)return;
+  advisorBusy=true;advisorError='';
+  const optimistic={role:'user',text:message};
+  advisorMessages=[...readAdvisorMessages(),optimistic];
+  field.value='';render();
+  try{
+    const result=await api(`/api/projects/${encodeURIComponent(activeId)}/assistant/advice`,{method:'POST',body:JSON.stringify({message,episodeId})});
+    advisorMessages=Array.isArray(result.memory)?result.memory:[...advisorMessages,{role:'advisor',...result.reply}];
+    persistAdvisorMessages();
+    localStorage.removeItem(advisorKey());
+  }catch(error){
+    advisorMessages=advisorMessages.filter(item=>item!==optimistic);
+    advisorError=error.message==='not found'?'AI Помічник додано, але локальний сервер ще працює у попередній версії. Перезапустіть студію та оновіть сторінку.':error.message;
+  }finally{
+    advisorBusy=false;render();
+    setTimeout(()=>$('#advisor-thread')?.scrollTo({top:999999,behavior:'smooth'}),0);
+  }
+}
+async function clearProjectAdvice(){
+  advisorError='';
+  try{
+    await api(`/api/projects/${encodeURIComponent(activeId)}/assistant/messages`,{method:'DELETE'});
+    advisorMessages=[];
+    if(active?.assistantWorkspace)active.assistantWorkspace.memory=[];
+    localStorage.removeItem(advisorKey());
+  }catch(error){advisorError=error.message}
+  render();
+}
 const advisorPageContent=pageContent;pageContent=function(){return view==='advisor'?advisorPanel():advisorPageContent()}
 const advisorViewTitle=viewTitle;viewTitle=function(){return view==='advisor'?'AI Помічник проєкту':advisorViewTitle()}
 const advisorViewActions=viewActions;viewActions=function(){return view==='advisor'?'<button onclick="goToView(\'assistantChanges\')">Переглянути зміни AI</button><button onclick="clearProjectAdvice()">Очистити розмову</button>':advisorViewActions()}
@@ -379,20 +414,24 @@ function floatingAdvisorMarkup(){
   if(!floatingAdvisorOpen)return `<button class="floating-advisor-launcher" type="button" onclick="toggleFloatingAdvisor(true)" aria-label="Відкрити AI Помічника проєкту" title="AI Помічник проєкту">✦ <span>AI Помічник проєкту</span></button>`;
   return `<section class="floating-advisor ${floatingAdvisorCollapsed?'is-collapsed':''} ${floatingAdvisorPinned?'is-pinned':''}" aria-label="AI Помічник проєкту"${floatingAdvisorInlineStyle()}>
     <header class="floating-advisor-head" title="${floatingAdvisorPinned?'Помічник закріплено':'Перетягніть, щоб перемістити'}"><div><p>AI Помічник проєкту</p><small>${esc(active.name)} · лише поради</small></div><div><button type="button" onclick="toggleFloatingAdvisorPin()" aria-pressed="${floatingAdvisorPinned?'true':'false'}" aria-label="${floatingAdvisorPinned?'Відкріпити':'Закріпити'} AI Помічника проєкту" title="${floatingAdvisorPinned?'Відкріпити':'Закріпити'}">${floatingAdvisorPinned?'●':'○'}</button><button type="button" onclick="floatingAdvisorCollapsed=!floatingAdvisorCollapsed;render()" aria-label="${floatingAdvisorCollapsed?'Розгорнути':'Згорнути'} AI Помічника проєкту" title="${floatingAdvisorCollapsed?'Розгорнути':'Згорнути'}">${floatingAdvisorCollapsed?'□':'—'}</button><button type="button" onclick="toggleFloatingAdvisor(false)" aria-label="Закрити AI Помічника проєкту" title="Закрити">×</button></div></header>
-    ${floatingAdvisorCollapsed?'':`<div class="floating-advisor-body"><p class="floating-advisor-context">Помічник бачить лише поточний проєкт. Він не змінює сценарії, кадри або статуси.</p><div class="floating-advisor-thread" aria-live="polite">${messages.length?messages.map(item=>item.role==='user'?`<article class="user"><small>Ви</small><p>${esc(item.text)}</p></article>`:`<article class="advisor"><small>AI Помічник</small><p>${esc(item.answer)}</p></article>`).join(''):'<p class="muted">Запитайте про сюжет, наступний крок або ризики виробництва.</p>'}</div><form onsubmit="askFloatingProjectAdvisor(event)"><textarea id="floating-advisor-question" placeholder="Напишіть запит…" ${configured?'':'disabled'}></textarea><div><small>${configured?'Відповідь буде лише порадою.':'Підключіть модель у налаштуваннях, щоб поставити запит.'}</small><button class="primary" ${advisorBusy||!configured?'disabled':''}>${advisorBusy?'AI Помічник думає…':'Запитати'}</button></div></form><div class="floating-advisor-links"><button class="floating-advisor-full" type="button" onclick="toggleFloatingAdvisor(false);goToView('advisor')">Відкрити повний чат →</button><button class="floating-advisor-full" type="button" onclick="toggleFloatingAdvisor(false);goToView('assistantChanges')">Переглянути зміни AI →</button></div>${advisorError?`<p class="assistant-error">${esc(advisorError)}</p>`:''}</div>`}
+    ${floatingAdvisorCollapsed?'':`<div class="floating-advisor-body"><p class="floating-advisor-context">Помічник бачить лише поточний проєкт. Він не змінює сценарії, кадри або статуси.</p><div class="floating-advisor-thread" aria-live="polite">${messages.length?messages.map(item=>item.role==='user'?`<article class="user"><small>Ви</small><p>${esc(item.text)}</p></article>`:`<article class="advisor"><small>AI Помічник</small><p>${esc(item.answer)}</p></article>`).join(''):'<p class="muted">Запитайте про сюжет, наступний крок або ризики виробництва.</p>'}</div><form onsubmit="askFloatingProjectAdvisor(event)"><textarea id="floating-advisor-question" placeholder="Напишіть запит…" ${configured?'':'disabled'}></textarea><div><small>${configured?'Відповідь буде лише порадою.':'Підключіть модель у налаштуваннях, щоб поставити запит.'}</small><button class="primary" ${advisorBusy||!configured?'disabled':''}>${advisorBusy?'AI Помічник думає…':'Запитати'}</button></div></form><div class="floating-advisor-links"><button class="floating-advisor-full" type="button" onclick="toggleFloatingAdvisor(false);goToView('advisor')">Відкрити повний чат →</button><button class="floating-advisor-full" type="button" onclick="toggleFloatingAdvisor(false);openAssistantChangeDraft()">Підготувати зміну →</button><button class="floating-advisor-full" type="button" onclick="toggleFloatingAdvisor(false);goToView('assistantChanges')">Переглянути зміни AI →</button></div>${advisorError?`<p class="assistant-error">${esc(advisorError)}</p>`:''}</div>`}
   </section>`;
 }
 async function askFloatingProjectAdvisor(event){
   event.preventDefault();
   const field=$('#floating-advisor-question'),message=field?.value.trim();
   if(!message||advisorBusy||!assistantInfo.configured)return;
-  advisorBusy=true;advisorError='';advisorMessages.push({role:'user',text:message});persistAdvisorMessages();render();
+  advisorBusy=true;advisorError='';
+  const optimistic={role:'user',text:message};
+  advisorMessages=[...readAdvisorMessages(),optimistic];render();
   try{
     const episodeId=activeEpisodeId||(active.episodes||[])[0]?.id||'all';
     const result=await api(`/api/projects/${encodeURIComponent(activeId)}/assistant/advice`,{method:'POST',body:JSON.stringify({message,episodeId})});
-    advisorMessages.push({role:'advisor',...result.reply});persistAdvisorMessages();
+    advisorMessages=Array.isArray(result.memory)?result.memory:[...advisorMessages,{role:'advisor',...result.reply}];
+    persistAdvisorMessages();
+    localStorage.removeItem(advisorKey());
   }catch(error){
-    advisorMessages.pop();advisorError=error.message;
+    advisorMessages=advisorMessages.filter(item=>item!==optimistic);advisorError=error.message;
   }finally{advisorBusy=false;render()}
 }
 // P-01: restore the canonical six-module dashboard after legacy route overrides.
