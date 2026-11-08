@@ -105,7 +105,7 @@ test('model setup persists configuration separately from readiness probes',()=>{
   assert.match(studio,/model-readiness-grid/);
   assert.match(studio,/executionTarget/);
   assert.match(studio,//setup/);
-  assert.match(server,/parts\[4\] === 'setup'/);
+  assert.ok(server.includes("parts[4] === 'setup'"));
   assert.match(server,/item\.lastProbe/);
   assert.match(server,/hasPiperVoice\(\)/);
   assert.match(server,/onlineWorkers/);
