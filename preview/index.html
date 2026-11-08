@@ -106,6 +106,7 @@ body:has(#screen-script.active) .preview-warning{display:none}
     <button type="button" data-screen="sound"><span aria-hidden="true">♫</span> Звук і музика</button>
     <button type="button" data-screen="video"><span aria-hidden="true">▶</span> Video Studio</button>
     <button type="button" data-screen="media"><span aria-hidden="true">▤</span> Медіабібліотека</button>
+    <button type="button" data-screen="davinci"><span aria-hidden="true">⇧</span> Експорт DaVinci</button>
   </nav>
   <p class="preview-rail-label">ГЛОБАЛЬНІ ІНСТРУМЕНТИ</p>
   <nav class="preview-rail" aria-label="Глобальні інструменти">
@@ -210,6 +211,13 @@ body:has(#screen-script.active) .preview-warning{display:none}
      </div>
    </section>
   </article>
+ </div>
+ <div class="preview-screen" id="screen-davinci">
+  <section class="davinci-export"><header class="davinci-export-head"><div><p class="eyebrow">ЕКСПОРТ ДЛЯ DAVINCI RESOLVE</p><h3>Монтажний пакет</h3><p>Прев’ю структури пакета. Реальні локальні файли не передаються на GitHub Pages.</p></div><button type="button" disabled>↻ Оновити перевірку</button></header>
+  <div class="davinci-controls"><label>Випуск<select disabled><option>Демонстраційний випуск</option></select></label><div class="davinci-mode"><button class="active" type="button" data-preview-davinci-mode="draft">Чернетковий пакет</button><button type="button" data-preview-davinci-mode="final">Фінальний пакет</button></div><span class="davinci-fps">24 FPS</span></div>
+  <div class="davinci-summary"><span><b>0/3</b> файлів знайдено</span><span><b>0/2</b> відеокліпів затверджено</span><span><b>3</b> файлів відсутні</span><span><b>ні</b> готово для final</span></div>
+  <div class="davinci-layout"><section class="davinci-package-tree"><div class="davinci-section-title"><span>СТРУКТУРА ПАКЕТА</span><strong>Папки та файли</strong></div><div class="davinci-tree"><details open><summary><span>▾</span><strong>Video</strong><em>2</em></summary><div><div class="davinci-file missing"><span>!</span><code>Video/scene-1-shot-1.mov</code><small>файл відсутній</small></div><div class="davinci-file missing"><span>!</span><code>Video/scene-1-shot-2.mov</code><small>файл відсутній</small></div></div></details><details open><summary><span>▾</span><strong>Dialogue/UK</strong><em>0</em></summary><div><p>Порожньо</p></div></details><details open><summary><span>▾</span><strong>Edit_Data</strong><em>1</em></summary><div><div class="davinci-file exists"><span>◇</span><code>Edit_Data/timeline.csv</code><small>створюється програмою</small></div></div></details><details open><summary><span>▾</span><strong>Manifest</strong><em>1</em></summary><div><div class="davinci-file exists"><span>◇</span><code>Manifest/package-manifest.json</code><small>створюється програмою</small></div></div></details></div></section>
+  <section class="davinci-readiness"><div class="davinci-section-title"><span>ПЕРЕВІРКА</span><strong id="preview-davinci-title">Чернетковий пакет</strong></div><div class="davinci-issues"><strong id="preview-davinci-status">Чернетковий пакет можна сформувати з попередженнями</strong><ul><li>Відеокліпи ще не підготовлено.</li><li>Субтитри відсутні.</li></ul></div><div class="davinci-actions"><button disabled>Manifest JSON</button><button disabled>Timeline CSV</button><button disabled>Монтажний лист</button></div><p class="davinci-format-note">GitHub Pages не створює та не завантажує локальний монтажний пакет.</p></section></div></section>
  </div>
  <div class="preview-screen" id="screen-media">
   <section class="media-library"><header class="media-library-head"><div><p class="eyebrow">МЕДІАБІБЛІОТЕКА</p><h3>Матеріали поточного проєкту</h3><p>Каталог, статуси, версії та зв’язки ресурсів.</p></div><button class="primary" type="button" disabled>＋ Додати ресурс</button></header>
@@ -413,7 +421,7 @@ document.getElementById('preview-image-studio').addEventListener('change',event=
 
 <script>
 window.goToView=function(name){
- const demoRoutes={home:'home',projects:'projects',script:'script',storyboard:'storyboard',imageStudio:'images',audio:'voice',sound:'sound',videoStudio:'video',mediaLibrary:'media',shot:'shot',models:'models',queue:'queue',assistants:'assistant',settings:'settings'};
+ const demoRoutes={home:'home',projects:'projects',script:'script',storyboard:'storyboard',imageStudio:'images',audio:'voice',sound:'sound',videoStudio:'video',mediaLibrary:'media',davinci:'davinci',shot:'shot',models:'models',queue:'queue',assistants:'assistant',settings:'settings'};
  if(demoRoutes[name]){window.previewNavigate(demoRoutes[name]);return;}
  const labels={assets:'Персонажі та бібліотека',episodes:'Епізоди',preview:'Відео та експорт',davinci:'Експорт для DaVinci'};
  document.getElementById('preview-feedback').textContent='«'+(labels[name]||name)+'»: екран поки не включено до статичного прев’ю. Реальні дані доступні лише в локальній програмі.';
@@ -456,6 +464,9 @@ document.getElementById('preview-dashboard').innerHTML=window.APSProjectDashboar
 </script>
 <script>
 (()=>{const root=document.getElementById('screen-video');if(!root)return;root.querySelectorAll('[data-preview-video-mode]').forEach(button=>button.addEventListener('click',()=>{const mode=button.dataset.previewVideoMode;root.querySelectorAll('[data-preview-video-mode]').forEach(x=>x.classList.toggle('active',x===button));root.querySelectorAll('[data-preview-video-panel]').forEach(panel=>panel.hidden=panel.dataset.previewVideoPanel!==mode)}));})();
+</script>
+<script>
+(()=>{const root=document.getElementById('screen-davinci');if(!root)return;root.querySelectorAll('[data-preview-davinci-mode]').forEach(button=>button.addEventListener('click',()=>{const final=button.dataset.previewDavinciMode==='final';root.querySelectorAll('[data-preview-davinci-mode]').forEach(x=>x.classList.toggle('active',x===button));root.querySelector('#preview-davinci-title').textContent=final?'Фінальний пакет':'Чернетковий пакет';root.querySelector('#preview-davinci-status').textContent=final?'Фінальний пакет заблоковано':'Чернетковий пакет можна сформувати з попередженнями'}));})();
 </script>
 <script>
 (()=>{const root=document.getElementById('screen-settings');if(!root)return;root.querySelectorAll('[data-preview-settings-tab]').forEach(button=>button.addEventListener('click',()=>{const id=button.dataset.previewSettingsTab;root.querySelectorAll('[data-preview-settings-tab]').forEach(x=>x.classList.toggle('active',x===button));root.querySelectorAll('[data-preview-settings-panel]').forEach(panel=>panel.hidden=panel.dataset.previewSettingsPanel!==id)}));})();
