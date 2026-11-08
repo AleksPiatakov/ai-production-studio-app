@@ -124,3 +124,13 @@ test('new project API preflights storage and verifies manifest and SQLite packag
   assert.ok(server.includes('verifyProjectPackage'));
   assert.ok(server.includes('storageVerified'));
 });
+
+
+test('storage keys migrate from the legacy product prefix',()=>{
+  const app=fs.readFileSync(path.join(root,'public','app.js'),'utf8');
+  assert.match(app,/APS_STORAGE_PREFIX='ai-production-studio:'/);
+  assert.match(app,/APS_LEGACY_STORAGE_PREFIX='ai-video-studio:'/);
+  assert.match(app,/localStorage\.getItem\(nextKey\)===null/);
+  assert.match(app,/localStorage\.setItem\(nextKey,localStorage\.getItem\(legacyKey\)\)/);
+  assert.doesNotMatch(app,/localStorage\.setItem\('ai-video-studio:/);
+});
