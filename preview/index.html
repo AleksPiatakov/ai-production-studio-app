@@ -103,6 +103,7 @@ body:has(#screen-script.active) .preview-warning{display:none}
     <button type="button" data-screen="storyboard"><span aria-hidden="true">▦</span> Сторіборд</button>
     <button type="button" data-screen="images"><span aria-hidden="true">▧</span> Зображення</button>
     <button type="button" data-screen="voice"><span aria-hidden="true">◖</span> Озвучування</button>
+    <button type="button" data-screen="sound"><span aria-hidden="true">♫</span> Звук і музика</button>
   </nav>
   <p class="preview-rail-label">ГЛОБАЛЬНІ ІНСТРУМЕНТИ</p>
   <nav class="preview-rail" aria-label="Глобальні інструменти">
@@ -207,6 +208,17 @@ body:has(#screen-script.active) .preview-warning{display:none}
      </div>
    </section>
   </article>
+ </div>
+ <div class="preview-screen" id="screen-sound">
+  <section class="sound-studio">
+   <header class="sound-studio-head"><div><p class="eyebrow">ЗВУК І МУЗИКА</p><h3>Створити → прослухати → вибрати → зберегти</h3><p>Спрощений аудіомодуль без монтажного таймлайну.</p></div><button type="button" disabled>＋ Додати готовий аудіофайл</button></header>
+   <nav class="sound-kind-tabs"><button type="button" class="active" data-preview-sound-kind="music">Музика</button><button type="button" data-preview-sound-kind="ambient">Атмосфера</button><button type="button" data-preview-sound-kind="sfx">SFX</button></nav>
+   <div class="sound-workspace">
+    <form class="sound-create-panel" onsubmit="return false"><div class="sound-panel-title"><span>СТВОРЕННЯ</span><strong id="preview-sound-title">Музика</strong></div><label>Сцена / контекст<select disabled><option>Без прив’язки до сцени</option></select></label><label>Промпт<textarea readonly placeholder="Настрій, жанр, темп, інструменти…"></textarea></label><label>Модель<select disabled><option>Сумісна локальна модель не підключена до прев’ю</option></select></label><div class="sound-create-grid"><label>Тривалість, с<input readonly value="30"></label><label>Варіанти<select disabled><option>3</option></select></label></div><div class="sound-create-status">GitHub Pages не запускає AI-моделі.</div><button class="primary" type="button" disabled>Створити варіанти в черзі</button></form>
+    <section class="sound-results-panel"><div class="sound-panel-title"><span>МАТЕРІАЛИ</span><strong>Збережені варіанти</strong></div><p class="global-empty">У безпечному прев’ю немає локальних аудіофайлів.</p></section>
+   </div>
+   <p class="sound-rule">Trim/fade/volume у локальній програмі зберігаються як неруйнівні інструкції; файл не перезаписується.</p>
+  </section>
  </div>
  <div class="preview-screen" id="screen-voice">
   <div class="p07-workspace">
@@ -377,7 +389,7 @@ document.getElementById('preview-image-studio').addEventListener('change',event=
 
 <script>
 window.goToView=function(name){
- const demoRoutes={home:'home',projects:'projects',script:'script',storyboard:'storyboard',imageStudio:'images',audio:'voice',shot:'shot',models:'models',queue:'queue',assistants:'assistant',settings:'settings'};
+ const demoRoutes={home:'home',projects:'projects',script:'script',storyboard:'storyboard',imageStudio:'images',audio:'voice',sound:'sound',shot:'shot',models:'models',queue:'queue',assistants:'assistant',settings:'settings'};
  if(demoRoutes[name]){window.previewNavigate(demoRoutes[name]);return;}
  const labels={assets:'Персонажі та бібліотека',episodes:'Епізоди',preview:'Відео та експорт',davinci:'Експорт для DaVinci'};
  document.getElementById('preview-feedback').textContent='«'+(labels[name]||name)+'»: екран поки не включено до статичного прев’ю. Реальні дані доступні лише в локальній програмі.';
@@ -414,6 +426,9 @@ document.getElementById('preview-dashboard').innerHTML=window.APSProjectDashboar
 
 <script>
 (()=>{const root=document.getElementById('screen-models');if(!root)return;root.querySelectorAll('[data-preview-model-tab]').forEach(button=>button.addEventListener('click',()=>{const id=button.dataset.previewModelTab;root.querySelectorAll('[data-preview-model-tab]').forEach(x=>x.classList.toggle('active',x===button));root.querySelectorAll('[data-preview-model-panel]').forEach(panel=>panel.hidden=panel.dataset.previewModelPanel!==id)}));})();
+</script>
+<script>
+(()=>{const root=document.getElementById('screen-sound');if(!root)return;const labels={music:'Музика',ambient:'Атмосфера',sfx:'SFX'};root.querySelectorAll('[data-preview-sound-kind]').forEach(button=>button.addEventListener('click',()=>{root.querySelectorAll('[data-preview-sound-kind]').forEach(x=>x.classList.toggle('active',x===button));root.querySelector('#preview-sound-title').textContent=labels[button.dataset.previewSoundKind]}));})();
 </script>
 <script>
 (()=>{const root=document.getElementById('screen-settings');if(!root)return;root.querySelectorAll('[data-preview-settings-tab]').forEach(button=>button.addEventListener('click',()=>{const id=button.dataset.previewSettingsTab;root.querySelectorAll('[data-preview-settings-tab]').forEach(x=>x.classList.toggle('active',x===button));root.querySelectorAll('[data-preview-settings-panel]').forEach(panel=>panel.hidden=panel.dataset.previewSettingsPanel!==id)}));})();

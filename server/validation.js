@@ -131,7 +131,26 @@ function validateAssetInput(input) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) throw new InputError('request body must be an object');
   const annotations = input.annotations === undefined ? [] : input.annotations;
   if (!Array.isArray(annotations) || annotations.some(annotation => !annotation || !['pencil', 'arrow'].includes(annotation.type) || !Array.isArray(annotation.points) || annotation.points.length < 2 || annotation.points.some(point => !Array.isArray(point) || point.length !== 2 || point.some(value => typeof value !== 'number' || value < 0 || value > 1)))) throw new InputError('annotations must contain normalized pencil or arrow points');
-  return { type: oneOf(input.type, ['blender-rig', 'blender-scene', 'reference', 'image', 'video', 'audio', 'music', 'sfx', 'export'], 'type'), scope: oneOf(input.scope, ['character', 'location', 'object', 'style', 'scene', 'shot', 'audio', 'other'], 'scope', 'other'), linkedCharacterId: optionalString(input.linkedCharacterId, 'linkedCharacterId'), label: nonEmptyString(input.label, 'label'), uri: nonEmptyString(input.uri, 'uri'), version: nonEmptyString(input.version || '0.1.0', 'version'), notes: optionalString(input.notes, 'notes'), annotations: annotations.map(annotation => ({ type: annotation.type, color: typeof annotation.color === 'string' && /^#[0-9a-fA-F]{6}$/.test(annotation.color) ? annotation.color : '#ffcc66', points: annotation.points.map(point => [point[0], point[1]]) })), status: oneOf(input.status, bibleStatuses, 'status', 'draft') };
+  const edit = input.audioEdit && typeof input.audioEdit === 'object' && !Array.isArray(input.audioEdit) ? input.audioEdit : {};
+  return {
+    type: oneOf(input.type, ['blender-rig', 'blender-scene', 'reference', 'image', 'video', 'audio', 'music', 'ambient', 'sfx', 'export'], 'type'),
+    scope: oneOf(input.scope, ['character', 'location', 'object', 'style', 'scene', 'shot', 'audio', 'other'], 'scope', 'other'),
+    linkedCharacterId: optionalString(input.linkedCharacterId, 'linkedCharacterId'),
+    linkedSceneId: optionalString(input.linkedSceneId, 'linkedSceneId'),
+    label: nonEmptyString(input.label, 'label'),
+    uri: nonEmptyString(input.uri, 'uri'),
+    version: nonEmptyString(input.version || '0.1.0', 'version'),
+    notes: optionalString(input.notes, 'notes'),
+    annotations: annotations.map(annotation => ({ type: annotation.type, color: typeof annotation.color === 'string' && /^#[0-9a-fA-F]{6}$/.test(annotation.color) ? annotation.color : '#ffcc66', points: annotation.points.map(point => [point[0], point[1]]) })),
+    audioEdit: ['audio','music','ambient','sfx'].includes(input.type) ? {
+      trimStart: boundedNumber(edit.trimStart, 'audioEdit.trimStart', 0, 36000, 0),
+      trimEnd: boundedNumber(edit.trimEnd, 'audioEdit.trimEnd', 0, 36000, 0),
+      fadeIn: boundedNumber(edit.fadeIn, 'audioEdit.fadeIn', 0, 60, 0),
+      fadeOut: boundedNumber(edit.fadeOut, 'audioEdit.fadeOut', 0, 60, 0),
+      volume: boundedNumber(edit.volume, 'audioEdit.volume', 0, 2, 1)
+    } : undefined,
+    status: oneOf(input.status, bibleStatuses, 'status', 'draft')
+  };
 }
 
 function validateProfileInput(input) {

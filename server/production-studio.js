@@ -67,14 +67,14 @@ function defaultModelCatalog() {
   ];
 }
 function defaultModelProfiles() {
-  return { planning: 'local-planner', voice: 'macos-tts', image: '', video: '', music: '', sfx: '' };
+  return { planning: 'local-planner', voice: 'macos-tts', image: '', video: '', music: '', ambient: '', sfx: '' };
 }
 function modelSupports(model, task) {
   const capability=String(model?.capability||'');
   if(task==='planning')return capability==='planning';
   if(task==='voice')return capability==='voice';
   if(task==='image'||task==='video')return capability===task||capability==='image-video';
-  if(task==='music'||task==='sfx')return capability===task||capability==='audio'||capability==='music-sfx';
+  if(task==='music'||task==='ambient'||task==='sfx')return capability===task||capability==='audio'||capability==='music-sfx';
   return false;
 }
 function updateModelProfiles(current, input, models) {
@@ -129,13 +129,13 @@ function normalizeStudio(data) {
 function publicModel(model) { return { ...model, configured: ['ready', 'available', 'connected', 'running'].includes(model.status) }; }
 function createGenerationJob(input, models) {
   const type = String(input.type || '');
-  if (!['image', 'video', 'voice', 'music', 'sfx'].includes(type)) throw new Error('generation type must be image, video, voice, music, or sfx');
+  if (!['image', 'video', 'voice', 'music', 'ambient', 'sfx'].includes(type)) throw new Error('generation type must be image, video, voice, music, ambient, or sfx');
   const projectId = String(input.projectId || '').trim();
   if (!projectId) throw new Error('projectId is required');
   const model = models.find(item => item.id === input.modelId);
   if (!model) throw new Error('selected model is not registered');
   const status = ['ready','available','running'].includes(model.status) ? 'queued' : 'blocked';
-  return { id: randomUUID(), projectId, type, modelId: model.id, status, priority: ['low', 'normal', 'high'].includes(input.priority) ? input.priority : 'normal', prompt: String(input.prompt || '').trim(), inputAssetIds: Array.isArray(input.inputAssetIds) ? input.inputAssetIds : [], outputAssetId: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), executor: null, error: status === 'blocked' ? `Модель «${model.name}» не готова до виконання.` : null, note: 'Завдання зареєстровано. Виконання почнеться лише після підключення сумісного локального або GPU worker.' };
+  return { id: randomUUID(), projectId, type, modelId: model.id, status, priority: ['low', 'normal', 'high'].includes(input.priority) ? input.priority : 'normal', prompt: String(input.prompt || '').trim(), parameters: input.parameters && typeof input.parameters === 'object' && !Array.isArray(input.parameters) ? { ...input.parameters } : {}, context: input.context && typeof input.context === 'object' && !Array.isArray(input.context) ? { ...input.context } : {}, inputAssetIds: Array.isArray(input.inputAssetIds) ? input.inputAssetIds : [], outputAssetId: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), executor: null, error: status === 'blocked' ? `Модель «${model.name}» не готова до виконання.` : null, note: 'Завдання зареєстровано. Виконання почнеться лише після підключення сумісного локального або GPU worker.' };
 }
 function transitionGenerationJob(job, nextStatus, note = '') {
   if (!jobStates.includes(nextStatus)) throw new Error('unsupported generation job status');
@@ -150,7 +150,7 @@ function createAssetVersion(asset, input) {
 function registerWorker(input) {
   const name = String(input.name || '').trim();
   if (!name) throw new Error('worker name is required');
-  const capabilities = Array.isArray(input.capabilities) ? [...new Set(input.capabilities.map(String).filter(value => ['image', 'video', 'voice', 'music', 'sfx'].includes(value)))] : [];
+  const capabilities = Array.isArray(input.capabilities) ? [...new Set(input.capabilities.map(String).filter(value => ['image', 'video', 'voice', 'music', 'ambient', 'sfx'].includes(value)))] : [];
   if (!capabilities.length) throw new Error('worker must declare at least one supported capability');
   return { id: randomUUID(), name, capabilities, modelIds: Array.isArray(input.modelIds) ? input.modelIds.map(String).slice(0, 20) : [], status: 'online', registeredAt: new Date().toISOString(), lastSeenAt: new Date().toISOString(), runtime: String(input.runtime || 'unspecified') };
 }
@@ -167,11 +167,14 @@ function workerJobUpdate(job, worker, input) {
 function registerWorkerOutputs(project, job) {
   if (job.status !== 'completed') return { assets: [], versions: [] };
   const assets = [], versions = [];
-  const typeFor = kind => ({ image: 'image', video: 'video', voice: 'audio', audio: 'audio', music: 'music', sfx: 'sfx' }[kind] || 'reference');
+  const typeFor = kind => ({ image: 'image', video: 'video', voice: 'audio', audio: 'audio', music: 'music', ambient: 'ambient', sfx: 'sfx' }[kind] || 'reference');
   for (const output of job.outputs || []) {
     if (!output.uri) continue;
     const existing = output.assetId && project.assets.find(asset => asset.id === output.assetId);
-    const asset = existing || { id: randomUUID(), type: typeFor(output.kind || job.type), scope: 'other', linkedCharacterId: '', label: `${job.type} · ${job.id.slice(0, 8)}`, uri: output.uri, version: '1.0.0', notes: 'Чернетковий результат, зареєстрований GPU Worker.', annotations: [], status: 'draft', currentVersionId: null, generatedByJobId: job.id };
+    const assetType = typeFor(output.kind || job.type);
+    const isSound = ['audio','music','ambient','sfx'].includes(assetType);
+    const linkedSceneId = String(job.context?.sceneId || '');
+    const asset = existing || { id: randomUUID(), type: assetType, scope: linkedSceneId ? 'scene' : (isSound ? 'audio' : 'other'), linkedCharacterId: '', linkedSceneId, label: `${job.type} · ${job.id.slice(0, 8)}`, uri: output.uri, version: '1.0.0', notes: 'Чернетковий результат, зареєстрований GPU Worker.', annotations: [], audioEdit: isSound ? { trimStart:0, trimEnd:0, fadeIn:0, fadeOut:0, volume:1 } : undefined, status: 'draft', currentVersionId: null, generatedByJobId: job.id };
     const version = { id: randomUUID(), assetId: asset.id, version: `worker-${job.id.slice(0, 8)}-${versions.length + 1}`, status: 'draft', createdAt: new Date().toISOString(), source: 'worker', uri: output.uri, prompt: job.prompt || '', model: job.modelId, seed: '', parameters: { checksum: output.checksum || '' }, parentVersionId: existing?.currentVersionId || null, notes: 'Результат worker-а. Потребує ручного перегляду й затвердження.', approvedAt: null, generationJobId: job.id };
     if (!existing) { asset.currentVersionId = version.id; assets.push(asset); }
     versions.push(version);
