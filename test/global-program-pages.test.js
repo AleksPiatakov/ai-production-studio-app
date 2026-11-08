@@ -444,3 +444,14 @@ test('P-06 negative prompt is passed as an optional generation parameter',()=>{
   assert.match(integration,/const negativePrompt=String\(root\.querySelector\('#p06-negative'\)/);
   assert.match(integration,/negativePrompt\?\{negativePrompt\}:\{\}/);
 });
+
+
+test('P-06 keeps negative prompt draft per shot across renders',()=>{
+  const renderer=fs.readFileSync(path.join(root,'public','image-studio-p06.js'),'utf8');
+  const integration=fs.readFileSync(path.join(root,'public','image-studio-integration.js'),'utf8');
+  assert.match(renderer,/const negativePrompt=data\.negativePrompt\|\|''/);
+  assert.match(renderer,/\$\{esc\(negativePrompt\)\}<\/textarea>/);
+  assert.match(integration,/const negativePromptDrafts=new Map\(\)/);
+  assert.match(integration,/negativePrompt:shot\?\.id\?negativePromptDrafts\.get\(shot\.id\)\|\|''/);
+  assert.match(integration,/negativePromptDrafts\.set\(shot\.id,event\.target\.value\)/);
+});
