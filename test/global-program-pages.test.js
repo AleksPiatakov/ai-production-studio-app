@@ -265,3 +265,17 @@ test('P-14 protects approved assets and normalizes version provenance',()=>{
   assert.match(studio,/generationJobId/);
   assert.match(studio,/source:'worker'/);
 });
+
+
+test('P-02 structured editor keeps script.body canonical',()=>{
+  const ui=fs.readFileSync(path.join(root,'public','approved-script-reading.js'),'utf8');
+  const css=fs.readFileSync(path.join(root,'public','approved-script-reading.css'),'utf8');
+  assert.match(ui,/data-aps-script-mode="structured"/);
+  assert.match(ui,/aps-structured-editor/);
+  assert.match(ui,/syncStructuredBlock/);
+  assert.match(ui,/editor\.value=lines\.join\('\\n'\)/);
+  assert.match(ui,/editor\.dispatchEvent\(new Event\('input'/);
+  assert.doesNotMatch(ui,/fetch\(|api\(/);
+  assert.match(css,/aps-structured-block\.dialogue/);
+  assert.match(css,/contenteditable="true"/);
+});
