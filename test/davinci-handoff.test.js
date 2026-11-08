@@ -84,3 +84,23 @@ test('DaVinci manifest includes checksum field for package files', () => {
   const manifest=JSON.parse(packageManifestJson(plan));
   assert.equal(manifest.files[0].checksum,'abc123');
 });
+
+
+test('DaVinci handoff blocks stale approved shots and assets',()=>{
+  const project={
+    id:'p-stale',name:'Stale Package',defaultLanguage:'uk',
+    assets:[
+      {id:'key',label:'Key',type:'image',uri:'/assets/test-animatic/luma-prelude-draft-v1.png',status:'approved',dependencyStatus:'needs-review'},
+      {id:'clip',label:'Clip',type:'video',uri:'/assets/test-animatic/luma-prelude-draft-v1.png',status:'approved',dependencyStatus:'needs-review',linkedSceneId:'scene-1',linkedShotId:'shot-1'}
+    ],
+    localizations:[],
+    scenes:[{id:'scene-1',episodeId:'episode-1',order:1,title:'S',durationSeconds:4,shots:[{id:'shot-1',seconds:4,status:'approved',dependencyStatus:'needs-review',camera:'wide',keyImageAssetId:'key',referenceAssetIds:[]}],dialogue:[]}]
+  };
+  const episode={id:'episode-1',title:'E',status:'approved',targetMinutes:1};
+  const handoff=buildDaVinciHandoff(project,episode);
+  assert.ok(handoff.blockers.some(item=>item.includes('шотів потребує повторної перевірки')));
+  assert.ok(handoff.blockers.some(item=>item.includes('ключових кадрів потребує повторної перевірки')));
+  assert.ok(handoff.blockers.some(item=>item.includes('відеокліпів потребує повторної перевірки')));
+  const final=buildDaVinciPackage(project,episode,'final');
+  assert.equal(final.canExport,false);
+});
