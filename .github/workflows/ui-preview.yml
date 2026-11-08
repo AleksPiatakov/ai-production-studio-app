@@ -7,6 +7,10 @@ on:
       - 'preview/**'
       - 'public/*.css'
       - 'public/*.js'
+      - 'server/**'
+      - 'shared/**'
+      - 'test/**'
+      - 'package.json'
       - 'scripts/build-preview.js'
       - '.github/workflows/ui-preview.yml'
   workflow_dispatch:
