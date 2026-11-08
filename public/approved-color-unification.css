@@ -230,3 +230,7 @@ body .floating-advisor-full{color:#cdb9f8!important}
   body>.aps-topbar #aps-zone-title{font-size:15px}
   body>.aps-topbar .aps-local-badge{padding:6px 8px;font-size:10px}
 }
+
+body .floating-advisor-head{cursor:move;user-select:none}
+body .floating-advisor.is-pinned .floating-advisor-head{cursor:default}
+body .floating-advisor.is-pinned{box-shadow:0 24px 70px rgba(0,0,0,.60),0 0 0 1px rgba(154,39,240,.16)!important}
