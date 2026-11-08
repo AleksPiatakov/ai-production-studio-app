@@ -21,7 +21,7 @@ function normalizeStudioSettings(value = {}) {
     assistants: { ...base.assistants, ...(value.assistants || {}) },
     export: { ...base.export, ...(value.export || {}) }
   };
-  next.general.interfaceLanguage = next.general.interfaceLanguage === 'en' ? 'en' : 'uk';
+  next.general.interfaceLanguage = 'uk'; // Full UI localization is not implemented yet; do not persist a misleading English mode.
   next.general.startView = ['home','projects','overview'].includes(next.general.startView) ? next.general.startView : 'overview';
   next.general.confirmDestructive = next.general.confirmDestructive !== false;
   next.files.projectRoot = String(next.files.projectRoot || 'data/projects');
