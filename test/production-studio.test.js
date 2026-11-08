@@ -1,5 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 const { normalizeStudio, defaultModelRegistry, defaultModelCatalog, updateModelProfiles, normalizeModelSetup, probeStudioModel, updateStudioSettings, createProjectAssistantAction, decideProjectAssistantAction, createGenerationJob, transitionGenerationJob, retryGenerationJob, cancelGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs } = require('../server/production-studio');
 
 test('migrates existing projects to the production-studio architecture without losing their data', () => {
