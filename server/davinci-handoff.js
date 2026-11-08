@@ -33,18 +33,18 @@ function buildDaVinciHandoff(project, episode) {
     const videoAsset = videoVariants.find(asset => asset.status === 'approved') || videoVariants[0] || null;
     return {
       sceneId: scene.id, sceneNumber: scene.order, sceneTitle: scene.title, sceneDurationSeconds: scene.durationSeconds,
-      shotId: shot.id || '', shotNumber: index + 1, shotDurationSeconds: shot.seconds, status: shot.status || 'draft',
+      shotId: shot.id || '', shotNumber: index + 1, shotDurationSeconds: shot.seconds, status: shot.status || 'draft', dependencyStatus: shot.dependencyStatus || '',
       camera: shot.camera || '', imagePrompt: shot.imagePrompt || shot.prompt || '', motionPrompt: shot.motionPrompt || '', lighting: shot.lighting || '',
-      keyImage: keyImage ? { id: keyImage.id, label: keyImage.label, status: keyImage.status, filePath: assetPath(keyImage.uri) } : null,
-      videoClip: videoAsset ? { id: videoAsset.id, label: videoAsset.label, status: videoAsset.status, filePath: assetPath(videoAsset.uri) } : null,
+      keyImage: keyImage ? { id: keyImage.id, label: keyImage.label, status: keyImage.status, dependencyStatus: keyImage.dependencyStatus || '', filePath: assetPath(keyImage.uri) } : null,
+      videoClip: videoAsset ? { id: videoAsset.id, label: videoAsset.label, status: videoAsset.status, dependencyStatus: videoAsset.dependencyStatus || '', filePath: assetPath(videoAsset.uri) } : null,
       localReferencePaths: localReferences.map(asset => assetPath(asset.uri)), localReferenceLabels: localReferences.map(asset => asset.label)
     };
   }));
   const dialogue = scenes.flatMap(scene => (scene.dialogue || []).map(line => ({
     sceneId: scene.id, sceneNumber: scene.order, sceneTitle: scene.title,
     ukrainian: line.textUk || (line.language === 'uk' ? line.text : ''), english: line.textEn || (line.language === 'en' ? line.text : ''),
-    estimatedSeconds: line.estimatedSeconds || 0, status: line.status || 'draft', performanceNote: line.performanceNote || '',
-    audioDrafts: (line.audioDrafts || []).map(audio => ({ language: audio.language, status: audio.status || 'draft', filePath: assetPath(audio.uri) }))
+    estimatedSeconds: line.estimatedSeconds || 0, status: line.status || 'draft', dependencyStatus: line.dependencyStatus || '', performanceNote: line.performanceNote || '',
+    audioDrafts: (line.audioDrafts || []).map(audio => ({ language: audio.language, status: audio.status || 'draft', reviewReason: audio.reviewReason || '', filePath: assetPath(audio.uri) }))
   })));
   const localizations = (project.localizations || []).map(sourceForLocalization).filter(Boolean);
   const blockers = [];
@@ -52,8 +52,13 @@ function buildDaVinciHandoff(project, episode) {
   if (clips.some(clip => !clip.keyImage?.filePath)) blockers.push('Не для кожного шоту обрано локальний ключовий кадр.');
   if (clips.some(clip => !clip.videoClip?.filePath)) blockers.push('Не для кожного шоту підготовлено локальний відеокліп.');
   if (clips.some(clip => clip.status !== 'approved')) blockers.push('Частина шотів ще не затверджена.');
+  if (clips.some(clip => clip.dependencyStatus === 'needs-review')) blockers.push('Частина шотів потребує повторної перевірки після зміни сценарію.');
   if (clips.some(clip => clip.keyImage && clip.keyImage.status !== 'approved')) blockers.push('Частина ключових кадрів ще не затверджена.');
+  if (clips.some(clip => clip.keyImage?.dependencyStatus === 'needs-review')) blockers.push('Частина ключових кадрів потребує повторної перевірки після зміни сценарію.');
+  if (clips.some(clip => clip.videoClip?.dependencyStatus === 'needs-review')) blockers.push('Частина відеокліпів потребує повторної перевірки після зміни сценарію.');
   if (dialogue.some(line => line.status !== 'approved')) blockers.push('Репліки ще не затверджені.');
+  if (dialogue.some(line => line.dependencyStatus === 'needs-review')) blockers.push('Частина реплік потребує повторної перевірки після зміни сценарію.');
+  if (dialogue.some(line => line.audioDrafts.some(audio => audio.status === 'needs-review'))) blockers.push('Частина озвучок потребує повторної перевірки після зміни сценарію.');
   if (dialogue.some(line => !line.audioDrafts.some(audio => audio.status === 'approved' && audio.filePath))) blockers.push('Для частини реплік немає затвердженої локальної озвучки.');
   if (!localizations.some(item => item.language === 'uk' && item.subtitlesPath)) blockers.push('Для української версії не підготовлено локальні субтитри.');
   blockers.push('Це чернетковий монтажний лист: він не створює фінального відео та не змінює статуси у студії.');
@@ -106,7 +111,7 @@ function buildDaVinciPackage(project, episode, mode = 'draft') {
   const packageMode = mode === 'final' ? 'final' : 'draft';
   const handoff = buildDaVinciHandoff(project, episode);
   const sceneIds = new Set(project.scenes.filter(scene => scene.episodeId === episode.id).map(scene => scene.id));
-  const includeAsset = asset => sceneIds.has(asset.linkedSceneId) && (packageMode === 'draft' || asset.status === 'approved');
+  const includeAsset = asset => sceneIds.has(asset.linkedSceneId) && (packageMode === 'draft' || (asset.status === 'approved' && asset.dependencyStatus !== 'needs-review'));
   const soundAssets = (project.assets || []).filter(asset => ['music','ambient','sfx'].includes(asset.type) && includeAsset(asset));
   const folders = {
     Video: handoff.clips.map(clip => packageFileRecord(clip.videoClip?.filePath, `Video/scene-${clip.sceneNumber}-shot-${clip.shotNumber}${clip.videoClip?.filePath ? path.extname(clip.videoClip.filePath) : '.mov'}`, { sceneId: clip.sceneId, shotId: clip.shotId, status: clip.videoClip?.status || 'missing', kind: 'video' })).filter(record => packageMode === 'draft' || record.status === 'approved'),
