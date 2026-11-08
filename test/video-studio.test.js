@@ -52,3 +52,11 @@ test('P-10 requires a keyframe before queuing video variants',()=>{
   assert.match(ui,/Спочатку додайте ключовий кадр/);
   assert.match(ui,/const key=shotKeyImage\(shot\);if\(!key\)/);
 });
+
+
+test('Pages preview mirrors the P-10 keyframe gate',()=>{
+  const preview=fs.readFileSync(path.join(__dirname,'..','preview','index.html'),'utf8');
+  assert.match(preview,/Локальний keyframe не передається в Pages/);
+  assert.match(preview,/Спочатку додайте ключовий кадр/);
+  assert.doesNotMatch(preview,/<button class="primary" type="button" disabled>Створити варіанти<\/button>/);
+});
