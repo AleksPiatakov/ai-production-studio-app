@@ -30,3 +30,17 @@ test('settings expose five approved tabs without adding a second navigation syst
   assert.match(pages,/\/api\/studio\/settings/);
   assert.match(css,/\.settings-tabs/);
 });
+
+
+test('generation queue is global and can filter or target a project',()=>{
+  const studio=fs.readFileSync(path.join(root,'public/production-studio-ui.js'),'utf8');
+  assert.match(studio,/studioQueueProjectFilter/);
+  assert.match(studio,/Усі проєкти/);
+  assert.match(studio,/name="projectId"/);
+  assert.match(studio,/setStudioQueueProjectFilter/);
+  assert.doesNotMatch(studio,/const current = productionStudioState\.jobs\.filter\(job => job\.projectId === activeId\)/);
+});
+
+test('internal G screen identifiers are not shown in program page markup',()=>{
+  assert.doesNotMatch(pages,/>G-0[1289]/);
+});
