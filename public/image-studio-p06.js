@@ -12,6 +12,9 @@
   const selected=assets.find(x=>x.id===data.selectedAssetId)||assets[0];
   const src=selected?.uri||'';
   const shotPrompt=shot?.imagePrompt||shot?.prompt||'';
+  const imageModels=data.imageModels||[];
+  const imageProfile=data.imageProfile||'';
+  const modelOptions=imageModels.map(model=>`<option value="${esc(model.id)}" ${model.id===imageProfile?'selected':''}>${esc(model.name)} · ${esc(model.status||'')}</option>`).join('');
   return `<article class="p06-studio" aria-label="Image Studio">
    <nav class="p06-project-tabs" aria-label="Розділи проєкту"><button type="button" data-p06-route="overview">Огляд</button><button type="button" data-p06-route="script">Сценарій</button><button type="button" data-p06-route="storyboard">Сторіборд</button><button type="button" class="active" aria-current="page">Image Studio</button><button type="button" data-p06-route="audio">Voice Studio</button><button type="button" data-p06-route="assets">Матеріали</button></nav>
    <div class="p06-section-tabs"><span class="active">Генерація зображень</span><span>Редактор зображень</span><span>Арт-стилі</span><span>Референси</span><span>Бібліотека зображень</span></div>
@@ -38,13 +41,13 @@
     </section>
     <aside class="p06-settings">
      <div class="p06-setting-header"><strong>Параметри</strong><span>Локальна робота</span></div>
-     <label>Модель генерації<input disabled value="Не підключена"></label>
-     <label>Роздільна здатність<input disabled value="1920 × 1080 · план"></label>
+     <label>Модель генерації<select id="p06-model" ${imageModels.length?'':'disabled'}><option value="">${imageModels.length?'Оберіть модель':'Не підключена'}</option>${modelOptions}</select></label>
+     <label>Роздільна здатність<select id="p06-resolution"><option value="1920x1080">1920 × 1080</option><option value="1280x720">1280 × 720</option><option value="1024x1024">1024 × 1024</option></select></label>
      <div class="p06-setting-row"><span>Співвідношення</span><strong>16:9</strong></div>
-     <label>Кількість варіантів<input disabled value="Немає активного worker"></label>
+     <label>Кількість варіантів<select id="p06-variants-count">${[1,2,3,4].map(n=>`<option value="${n}" ${n===2?'selected':''}>${n}</option>`).join('')}</select></label>
      <div class="p06-setting-row"><span>Рівень деталізації</span><strong>Залежить від моделі</strong></div>
-     <button type="button" class="p06-generate" disabled title="Генератор ще не підключено">Генерація недоступна</button>
-     <p class="p06-hint">Для створення нових зображень потрібно підключити сумісну локальну модель у Центрі моделей. Цей екран не запускає фіктивну генерацію.</p>
+     <button type="button" class="p06-generate" data-p06-action="generate" ${imageModels.length&&shotPrompt.trim()?'':'disabled'}>${imageModels.length?'Створити варіанти':'Генерація недоступна'}</button>
+     <p class="p06-hint">${imageModels.length?'Задачі підуть у глобальну чергу й виконаються тільки сумісним worker-ом.':'Для створення нових зображень потрібно підключити сумісну image-модель у Центрі моделей.'}</p>
      <div class="p06-history"><strong>Історія матеріалів</strong><p>${assets.length} збережених зображень і референсів</p><button type="button" data-p06-route="assets" class="p06-secondary">Відкрити бібліотеку</button></div>
     </aside>
    </div>
