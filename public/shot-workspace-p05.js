@@ -8,7 +8,8 @@
   const scene=d.scene||null,shot=d.shot||null,shots=d.shots||[],assets=d.assets||[];
   const refs=cards(assets,shot),allImages=assets.filter(a=>['image','reference'].includes(a.type)&&image(a));
   const main=allImages.find(a=>a.id===d.selectedAssetId)||assets.find(a=>a.id===shot?.keyImageAssetId&&image(a))||refs[0]||null;
-  const noModel='<span class="p05-no-model">Модель не підключена · генерація вимкнена</span>';
+  const imageModel=d.imageModel||null;
+  const noModel=imageModel?'<span class="p05-no-model ready">'+esc(imageModel.name)+' · '+esc(imageModel.status||'доступна')+'</span>':'<span class="p05-no-model">Модель не підключена · генерація вимкнена</span>';
   const sceneIndex=d.sceneIndex??'—';
   return `<article class="p05-workspace" aria-label="P-05 — редактор кадру">
    <nav class="p05-tabs" aria-label="Розділи проєкту">
@@ -27,7 +28,7 @@
      </div>
      <button class="p05-outline" data-p05-action="edit" type="button" ${shot?'':'disabled'}>✎ Параметри кадру</button>
      <button class="p05-outline" data-p05-action="upload" type="button">＋ Завантажити референс</button>
-     <div class="p05-local-state">Локальна генерація зображень<br><strong>Не підключена</strong></div>
+     <div class="p05-local-state">Локальна генерація зображень<br><strong>${imageModel?esc(imageModel.name):'Не підключена'}</strong></div>
     </aside>
     <section class="p05-canvas">
      <div class="p05-canvas-top"><strong>Кадр ${Math.max(1,shots.findIndex(s=>s.id===shot?.id)+1)} · Сцена ${esc(sceneIndex)}</strong><span>${esc(shot?.seconds||'—')} с · ${esc(shot?.status||'чернетка')}</span></div>
@@ -46,7 +47,7 @@
      <div class="p05-control-buttons"><button data-p05-action="edit" ${shot?'':'disabled'}>✎ Редагувати</button><button data-p05-action="brief" ${shot?'':'disabled'}>▧ Зібрати промпт</button></div>
      <details class="p05-detail"><summary>Негативний промпт</summary><p>Окреме поле негативного промпту поки не підтримується моделлю збереження.</p></details>
      <div class="p05-params"><strong>Параметри кадру</strong><div><span>Камера</span><b>${esc(shot?.camera||'Не задано')}</b></div><div><span>Світло</span><b>${esc(shot?.lighting||'Не задано')}</b></div><div><span>Емоція</span><b>${esc(shot?.emotion||'Не задано')}</b></div><div><span>Критерії готовності</span><b>${shot?.acceptanceCriteria?'Указані':'Не задані'}</b></div></div>
-     <button type="button" class="p05-generate" disabled>✦ Генерація недоступна</button>
+     <button type="button" class="p05-generate" data-p05-route="imageStudio" ${imageModel?'':'disabled'}>${imageModel?'✦ Відкрити Image Studio':'✦ Генерація недоступна'}</button>
      ${noModel}
     </aside>
     <aside class="p05-assistant">
