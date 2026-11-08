@@ -237,3 +237,21 @@ test('G-08 confirmExpensive gates generation entry points',()=>{
   assert.match(video,/confirmExpensiveGeneration\('video',variantCount\)/);
   assert.match(sound,/confirmExpensiveGeneration\(soundStudioKind,variantCount\)/);
 });
+
+
+test('G-08 preferLocal orders compatible models without overriding explicit profiles',()=>{
+  const queue=fs.readFileSync(path.join(__dirname,'../public/production-studio-ui.js'),'utf8');
+  const image=fs.readFileSync(path.join(__dirname,'../public/image-studio-integration.js'),'utf8');
+  const video=fs.readFileSync(path.join(__dirname,'../public/video-studio.js'),'utf8');
+  const sound=fs.readFileSync(path.join(__dirname,'../public/sound-music-studio.js'),'utf8');
+  const settings=fs.readFileSync(path.join(__dirname,'../public/global-studio-pages.js'),'utf8');
+  assert.match(queue,/function preferredModelOrder/);
+  assert.match(queue,/preferLocal===false/);
+  assert.match(queue,/model\?\.setup\?\.executionTarget\|\|model\?\.execution\|\|'local'/);
+  assert.match(queue,/const preferred=productionStudioState\.profiles\?\.\[type\]\|\|''/);
+  assert.match(image,/preferredModelOrder/);
+  assert.match(video,/preferredModelOrder/);
+  assert.match(sound,/preferredModelOrder/);
+  assert.match(settings,/generic worker contract не імітує цю дію/);
+  assert.doesNotMatch(queue,/releaseModelsAfterTask[\s\S]{0,500}status=['"]not-installed/);
+});
