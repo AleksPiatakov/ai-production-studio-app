@@ -283,6 +283,81 @@ const server = http.createServer(async (req, res) => {
         }, { noSnapshot: true });
         return send(res, 200, { cleared: true });
       }
+      if (req.method === 'POST' && parts[3] === 'assistant' && parts[4] === 'tasks' && parts.length === 5) {
+        const input = await body(req), title = String(input.title || '').trim();
+        if (!title) return send(res, 400, { error: 'task title is required' });
+        const task = { id: randomUUID(), title: title.slice(0, 240), status: 'open', createdAt: new Date().toISOString(), completedAt: null };
+        store.update(data => {
+          const target = data.projects.find(item => item.id === projectId);
+          target.assistantWorkspace.tasks = [...(target.assistantWorkspace.tasks || []), task];
+        }, { noSnapshot: true });
+        return send(res, 201, task);
+      }
+      if (req.method === 'PUT' && parts[3] === 'assistant' && parts[4] === 'tasks' && parts[5]) {
+        const input = await body(req); let updated;
+        store.update(data => {
+          const target = data.projects.find(item => item.id === projectId);
+          const task = (target.assistantWorkspace.tasks || []).find(item => item.id === parts[5]);
+          if (!task) return;
+          if (input.title !== undefined) {
+            const title = String(input.title || '').trim();
+            if (title) task.title = title.slice(0, 240);
+          }
+          if (input.status !== undefined && ['open','done'].includes(input.status)) {
+            task.status = input.status;
+            task.completedAt = input.status === 'done' ? new Date().toISOString() : null;
+          }
+          updated = task;
+        }, { noSnapshot: true });
+        return updated ? send(res, 200, updated) : send(res, 404, { error: 'assistant task not found' });
+      }
+      if (req.method === 'DELETE' && parts[3] === 'assistant' && parts[4] === 'tasks' && parts[5]) {
+        let removed = false;
+        store.update(data => {
+          const target = data.projects.find(item => item.id === projectId);
+          const before = target.assistantWorkspace.tasks || [];
+          target.assistantWorkspace.tasks = before.filter(item => item.id !== parts[5]);
+          removed = target.assistantWorkspace.tasks.length !== before.length;
+        }, { noSnapshot: true });
+        return removed ? send(res, 200, { deleted: true }) : send(res, 404, { error: 'assistant task not found' });
+      }
+      if (req.method === 'POST' && parts[3] === 'assistant' && parts[4] === 'documents' && parts.length === 5) {
+        const input = await body(req), title = String(input.title || '').trim(), content = String(input.content || '');
+        if (!title) return send(res, 400, { error: 'document title is required' });
+        const now = new Date().toISOString();
+        const document = { id: randomUUID(), title: title.slice(0, 240), content, createdAt: now, updatedAt: now };
+        store.update(data => {
+          const target = data.projects.find(item => item.id === projectId);
+          target.assistantWorkspace.documents = [...(target.assistantWorkspace.documents || []), document];
+        }, { noSnapshot: true });
+        return send(res, 201, document);
+      }
+      if (req.method === 'PUT' && parts[3] === 'assistant' && parts[4] === 'documents' && parts[5]) {
+        const input = await body(req); let updated;
+        store.update(data => {
+          const target = data.projects.find(item => item.id === projectId);
+          const document = (target.assistantWorkspace.documents || []).find(item => item.id === parts[5]);
+          if (!document) return;
+          if (input.title !== undefined) {
+            const title = String(input.title || '').trim();
+            if (title) document.title = title.slice(0, 240);
+          }
+          if (input.content !== undefined) document.content = String(input.content || '');
+          document.updatedAt = new Date().toISOString();
+          updated = document;
+        }, { noSnapshot: true });
+        return updated ? send(res, 200, updated) : send(res, 404, { error: 'assistant document not found' });
+      }
+      if (req.method === 'DELETE' && parts[3] === 'assistant' && parts[4] === 'documents' && parts[5]) {
+        let removed = false;
+        store.update(data => {
+          const target = data.projects.find(item => item.id === projectId);
+          const before = target.assistantWorkspace.documents || [];
+          target.assistantWorkspace.documents = before.filter(item => item.id !== parts[5]);
+          removed = target.assistantWorkspace.documents.length !== before.length;
+        }, { noSnapshot: true });
+        return removed ? send(res, 200, { deleted: true }) : send(res, 404, { error: 'assistant document not found' });
+      }
       if (req.method === 'POST' && parts[3] === 'autopilot' && parts[4] === 'episode') {
         const blueprint = buildAutopilotBlueprint(project, await body(req));
         const baseSeason = Number(project.episodes[0]?.seasonNumber || 1);
