@@ -72,3 +72,15 @@ test('timeline prefers generated video clip when a shot has one', () => {
   const csv=handoffTimelineCsv(handoff,24);
   assert.match(csv,/luma-prelude-draft-v1\.png/);
 });
+
+
+test('DaVinci manifest includes checksum field for package files', () => {
+  const { packageManifestJson } = require('../server/davinci-handoff');
+  const plan = {
+    schemaVersion:1,kind:'davinci-package-plan',mode:'draft',generatedAt:new Date().toISOString(),
+    project:{id:'p1',name:'Demo'},episode:{id:'e1',title:'Episode'},canExport:true,finalReady:true,issues:[],
+    folders:{Video:[{destination:'Video/a.mov',sourcePath:'/tmp/a.mov',exists:true,virtual:false,status:'approved',kind:'video',checksum:'abc123'}]}
+  };
+  const manifest=JSON.parse(packageManifestJson(plan));
+  assert.equal(manifest.files[0].checksum,'abc123');
+});
