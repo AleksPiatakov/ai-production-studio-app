@@ -378,3 +378,59 @@
     width:100%;
   }
 }
+
+
+/* Project AI Assistant workspace tabs: chat, tasks, documents, journal. */
+.advisor-tabs{
+  display:flex;gap:6px;overflow-x:auto;padding:6px;
+  border:1px solid var(--aps-border);border-radius:11px;background:#10152a;
+}
+.advisor-tabs button{
+  flex:0 0 auto;background:transparent!important;border-color:transparent!important;
+  color:#a79db7!important;box-shadow:none!important;
+}
+.advisor-tabs button.active{
+  background:#30234b!important;border-color:#70409e!important;color:#fff!important;
+}
+.advisor-workspace-panel{
+  display:grid;gap:12px;min-width:0;padding:14px;
+  border:1px solid var(--aps-border);border-radius:13px;background:#10152a;
+}
+.advisor-chat-panel{padding:0;overflow:hidden}
+.advisor-chat-panel .advisor-thread{border:0!important;border-radius:0!important}
+.advisor-chat-panel .advisor-suggestions{padding-inline:14px}
+.advisor-chat-panel .advisor-composer{border-top:1px solid rgba(144,124,221,.18)}
+.advisor-chat-panel .advisor-composer>label{display:grid;gap:5px;margin:0 0 8px}
+.advisor-tool-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.advisor-tool-head>div{display:grid;gap:4px}
+.advisor-tool-head strong{color:#f0eaf6;font-size:14px}
+.advisor-tool-head p{margin:0;color:#9f96ad;font-size:10px;line-height:1.45}
+.advisor-tool-list,.advisor-journal-list{display:grid;gap:7px}
+.advisor-task{
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;
+  padding:10px 11px;border:1px solid rgba(144,124,221,.17);border-radius:9px;background:#151830;
+}
+.advisor-task.done{opacity:.68}
+.advisor-task.done strong{text-decoration:line-through}
+.advisor-task>div{display:grid;gap:2px}.advisor-task strong{color:#e9e3f0;font-size:11px}.advisor-task small{color:#837b90;font-size:8px}
+.advisor-task-check{width:30px;height:30px;padding:0!important;border-radius:999px!important;color:#c8aff0!important}
+.advisor-document-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.advisor-document-card{
+  display:grid;gap:7px;min-height:150px;padding:12px!important;text-align:left!important;
+  border:1px solid rgba(144,124,221,.18)!important;border-radius:11px!important;
+  background:#151830!important;color:#e9e2f0!important;box-shadow:none!important;
+}
+.advisor-document-card>span{color:#9385a7;font-size:8px;font-weight:800;letter-spacing:.08em}
+.advisor-document-card strong{font-size:12px}.advisor-document-card p{margin:0;color:#a59cad;font-size:9px;line-height:1.45}
+.advisor-document-card small{margin-top:auto;color:#7f768c;font-size:8px}
+.advisor-journal-list article{
+  display:flex;align-items:flex-start;gap:9px;padding:9px 10px;
+  border:1px solid rgba(144,124,221,.16);border-radius:9px;background:#151830;
+}
+.advisor-journal-list article>div{display:grid;gap:2px}.advisor-journal-list strong{color:#e9e2ef;font-size:11px}.advisor-journal-list small{color:#82798e;font-size:8px}
+@media(max-width:850px){.advisor-document-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){
+  .advisor-tool-head{flex-direction:column}.advisor-tool-head>button{width:100%}
+  .advisor-document-grid{grid-template-columns:1fr}
+  .advisor-context-strip{grid-template-columns:1fr 1fr!important}
+}
