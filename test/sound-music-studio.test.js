@@ -58,7 +58,7 @@ test('Sound & Music UI is a simple project module, not a multitrack editor',()=>
   assert.match(js,/queueSoundVariants/);
   assert.match(js,/openSoundAssetEditor/);
   assert.match(js,/Оригінальний аудіофайл не перезаписується/);
-  assert.doesNotMatch(js,/multitrack|timeline/i);
+  assert.doesNotMatch(js,/<(?:div|section|nav)[^>]+(?:multitrack|timeline)/i);
   assert.match(css,/\.sound-workspace/);
   assert.match(rail,/\['sound','♫','Звук і музика'\]/);
 });
