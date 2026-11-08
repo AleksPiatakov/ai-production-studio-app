@@ -108,3 +108,12 @@ test('G-08 keepActionLog affects only non-critical assistant activity',()=>{
   assert.match(ui,/Розширена активність/);
   assert.match(settings,/P-13 рішення та rollback-аудит зберігаються завжди/);
 });
+
+
+test('Pages preview explains mandatory P-13 audit and optional activity log',()=>{
+  const preview=fs.readFileSync(path.join(__dirname,'../preview/index.html'),'utf8');
+  assert.match(preview,/Зберігати розширений журнал помічника/);
+  assert.match(preview,/P-13 рішення та rollback-аудит зберігаються завжди/);
+  assert.match(preview,/Обов’язковий аудит P-13/);
+  assert.match(preview,/Розширена активність/);
+});
