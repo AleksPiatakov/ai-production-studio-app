@@ -80,7 +80,7 @@ async function queueSoundVariants(event){
   event.preventDefault();const form=event.currentTarget,fd=new FormData(form),modelId=String(fd.get('modelId')||''),prompt=String(fd.get('prompt')||'').trim();
   const variantCount=Math.max(1,Math.min(5,Number(fd.get('variantCount'))||1)),durationSeconds=Math.max(1,Number(fd.get('durationSeconds'))||1),sceneId=String(fd.get('sceneId')||'');
   if(!modelId||!prompt)return;
-  if(variantCount>1&&!window.confirm(`Створити ${variantCount} окремі задачі? Якщо підключений worker виконує платні/ресурсомісткі генерації, вони можуть використати ресурси.`))return;
+  if(!confirmExpensiveGeneration(soundStudioKind,variantCount))return;
   soundStudioNotice='Додаємо задачі в чергу…';render();
   try{
     for(let i=1;i<=variantCount;i++)await api('/api/studio/generation-jobs',{method:'POST',body:JSON.stringify({projectId:activeId,type:soundStudioKind,modelId,prompt,priority:fd.get('priority')||'normal',parameters:{durationSeconds,variantIndex:i,variantCount},context:{sceneId}})});
