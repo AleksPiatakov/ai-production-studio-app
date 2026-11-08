@@ -741,6 +741,43 @@ const server = http.createServer(async (req, res) => {
           store.update(data => { const lines = data.projects.find(item => item.id === projectId).scenes.find(item => item.id === scene.id).dialogue; lines[lines.findIndex(item => item.id === line.id)] = updated; }); return send(res, 200, updated);
         }
       }
+      if (req.method === 'POST' && parts[3] === 'dependency-review' && parts[4] === 'resolve') {
+        const input = await body(req), targetType = String(input.targetType || ''), targetId = String(input.targetId || '').trim(), note = String(input.note || '').trim().slice(0, 1000);
+        if (!['scene','shot','dialogue','asset'].includes(targetType)) return send(res, 400, { error: 'targetType must be scene, shot, dialogue, or asset' });
+        if (!targetId) return send(res, 400, { error: 'targetId is required' });
+        let review;
+        store.update(data => {
+          const targetProject = data.projects.find(item => item.id === projectId);
+          let target = null;
+          if (targetType === 'scene') target = targetProject.scenes.find(item => item.id === targetId);
+          if (targetType === 'shot') target = targetProject.scenes.flatMap(scene => scene.shots || []).find(item => item.id === targetId);
+          if (targetType === 'dialogue') target = targetProject.scenes.flatMap(scene => scene.dialogue || []).find(item => item.id === targetId);
+          if (targetType === 'asset') target = targetProject.assets.find(item => item.id === targetId);
+          if (!target) return;
+          if (target.dependencyStatus !== 'needs-review') return;
+          const previousReason = target.dependencyReason || '';
+          const dependencyScriptId = target.dependencyScriptId || '';
+          delete target.dependencyStatus;
+          delete target.dependencyReason;
+          delete target.dependencyScriptId;
+          delete target.dependencyChangedAt;
+          if (targetType === 'dialogue') {
+            target.audioDrafts = (target.audioDrafts || []).map(draft => {
+              if (draft.status !== 'needs-review' || draft.reviewReason !== 'approved-script-changed') return draft;
+              const restored = { ...draft, status: draft.previousStatus || 'draft' };
+              delete restored.previousStatus;
+              delete restored.reviewReason;
+              delete restored.dependencyScriptId;
+              delete restored.dependencyChangedAt;
+              return restored;
+            });
+          }
+          review = { id: randomUUID(), targetType, targetId, previousReason, dependencyScriptId, note, reviewedAt: new Date().toISOString() };
+          targetProject.dependencyReviewLog = [...(targetProject.dependencyReviewLog || []), review].slice(-500);
+        });
+        if (!review) return send(res, 409, { error: 'target does not currently require dependency review' });
+        return send(res, 200, review);
+      }
       if (req.method === 'POST' && parts[3] === 'assets' && parts.length === 4) {
         const asset = { id: randomUUID(), ...validateAssetInput(await body(req)) };
         if (asset.linkedCharacterId && !project.bibles.characters.some(item => item.id === asset.linkedCharacterId)) return send(res, 400, { error: 'linkedCharacterId must reference a character in this project' });
