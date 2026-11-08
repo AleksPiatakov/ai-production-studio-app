@@ -533,8 +533,60 @@ const server = http.createServer(async (req, res) => {
         const existing = project.scripts.find(item => item.id === parts[4]);
         if (!existing) return send(res, 404, { error: 'script not found' });
         const input = validateScriptInput(await body(req)); if (input.episodeId && !project.episodes.some(item => item.id === input.episodeId)) return send(res, 400, { error: 'episodeId must reference an episode in this project' });
-        const script = { ...existing, ...input, updatedAt: new Date().toISOString() };
-        store.update(data => { const scripts = data.projects.find(item => item.id === projectId).scripts; scripts[scripts.findIndex(item => item.id === existing.id)] = script; }); return send(res, 200, script);
+        const approvedContentChanged = existing.status === 'approved' && (
+          existing.title !== input.title ||
+          existing.logline !== input.logline ||
+          existing.body !== input.body ||
+          existing.episodeId !== input.episodeId
+        );
+        const changedAt = new Date().toISOString();
+        const script = { ...existing, ...input, ...(approvedContentChanged ? { status:'in-review', dependencyReviewAt:changedAt } : {}), updatedAt: changedAt };
+        store.update(data => {
+          const targetProject = data.projects.find(item => item.id === projectId);
+          const scripts = targetProject.scripts;
+          scripts[scripts.findIndex(item => item.id === existing.id)] = script;
+          if (!approvedContentChanged) return;
+          const episodeIds = new Set([existing.episodeId, input.episodeId].filter(Boolean));
+          const dependentScenes = targetProject.scenes.filter(scene => !episodeIds.size || episodeIds.has(scene.episodeId));
+          const sceneIds = new Set(dependentScenes.map(scene => scene.id));
+          const shotIds = new Set();
+          dependentScenes.forEach(scene => {
+            scene.dependencyStatus = 'needs-review';
+            scene.dependencyReason = 'approved-script-changed';
+            scene.dependencyScriptId = existing.id;
+            scene.dependencyChangedAt = changedAt;
+            (scene.shots || []).forEach(shot => {
+              shotIds.add(shot.id);
+              shot.dependencyStatus = 'needs-review';
+              shot.dependencyReason = 'approved-script-changed';
+              shot.dependencyScriptId = existing.id;
+              shot.dependencyChangedAt = changedAt;
+            });
+            (scene.dialogue || []).forEach(line => {
+              line.dependencyStatus = 'needs-review';
+              line.dependencyReason = 'approved-script-changed';
+              line.dependencyScriptId = existing.id;
+              line.dependencyChangedAt = changedAt;
+              line.audioDrafts = (line.audioDrafts || []).map(draft => ({
+                ...draft,
+                previousStatus: draft.status === 'needs-review' ? (draft.previousStatus || 'draft') : (draft.status || 'draft'),
+                status:'needs-review',
+                reviewReason:'approved-script-changed',
+                dependencyScriptId:existing.id,
+                dependencyChangedAt:changedAt
+              }));
+            });
+          });
+          (targetProject.assets || []).forEach(asset => {
+            if ((asset.linkedSceneId && sceneIds.has(asset.linkedSceneId)) || (asset.linkedShotId && shotIds.has(asset.linkedShotId))) {
+              asset.dependencyStatus = 'needs-review';
+              asset.dependencyReason = 'approved-script-changed';
+              asset.dependencyScriptId = existing.id;
+              asset.dependencyChangedAt = changedAt;
+            }
+          });
+        });
+        return send(res, 200, { ...script, dependencyReviewRequired: approvedContentChanged });
       }
       if (req.method === 'POST' && parts[3] === 'voice-profiles') {
         const input = validateVoiceProfileInput(await body(req));
