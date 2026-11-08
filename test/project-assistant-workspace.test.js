@@ -57,10 +57,13 @@ test('P-13 accepted action exposes its exact rollback snapshot',()=>{
   const ui=fs.readFileSync(path.join(__dirname,'../public/assistant-workspaces.js'),'utf8');
   assert.match(server,/rollbackVersionId=rollbackVersion\.id/);
   assert.match(server,/rollbackVersionCreatedAt=rollbackVersion\.createdAt/);
-  assert.match(server,/store\.update\(data => \{[\s\S]*rollbackVersionId[\s\S]*\}, \{ noSnapshot: true \}\)/);
+  assert.match(server,/parts\[6\] === 'rollback'/);
+  assert.match(server,/rollbackLog/);
+  assert.match(server,/status:'rolled-back'/);
+  assert.match(server,/rollbackAuditId:audit\.id/);
   assert.match(ui,/rollbackAssistantChange/);
+  assert.match(ui,/assistant\/actions\/\$\{encodeURIComponent\(id\)\}\/rollback/);
   assert.match(ui,/action\.rollbackVersionId/);
-  assert.match(ui,/versions\/\$\{encodeURIComponent\(action\.rollbackVersionId\)\}\/restore/);
   assert.match(ui,/Відкотити цю зміну/);
 });
 
