@@ -22,3 +22,12 @@ test('P-07 voice takes keep reproducibility metadata',()=>{
   assert.match(ui,/Профіль:/);
   assert.match(ui,/модель:/);
 });
+
+
+test('P-07 Pages preview shows reproducibility metadata without real voice IDs',()=>{
+  const preview=fs.readFileSync(path.join(__dirname,'..','preview','index.html'),'utf8');
+  assert.match(preview,/metadata demo/);
+  assert.match(preview,/preview-only engine/);
+  assert.match(preview,/Профіль: demo-profile · модель: system-demo/);
+  assert.match(preview,/Settings: synthetic metadata · без реального voice ID/);
+});
