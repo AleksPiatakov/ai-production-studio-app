@@ -104,7 +104,7 @@ if(typeof voiceEditorPanel==='function'){
     let html=baseVoiceEditorPanel();
     const marker='</section></div>';
     const index=html.lastIndexOf(marker);
-    if(index>=0)html=html.slice(0,index+marker.length)+voiceRightsEditorSection()+html.slice(index+marker.length);
+    if(index>=0){const sectionClose='</section>';html=html.slice(0,index+sectionClose.length)+voiceRightsEditorSection()+html.slice(index+sectionClose.length);}
     return html;
   };
 }
