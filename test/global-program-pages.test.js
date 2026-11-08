@@ -143,3 +143,22 @@ test('P-04 storyboard cards show duration camera and status',()=>{
   assert.match(ui,/p04-shot-status/);
   assert.match(ui,/item\.status/);
 });
+
+
+test('P-06 image variants create real generation jobs',()=>{
+  const ui=fs.readFileSync(path.join(root,'public','image-studio-integration.js'),'utf8');
+  assert.match(ui,/for\(let n=1;n<=variantCount;n\+\+\)await api\('\/api\/studio\/generation-jobs'/);
+  assert.match(ui,/type:'image'/);
+  assert.match(ui,/variantIndex:n,variantCount/);
+  assert.match(ui,/context:\{sceneId:scene\.id,shotId:shot\.id\}/);
+  assert.match(ui,/inputAssetIds/);
+});
+
+test('P-05 shot workspace exposes emotion and model readiness',()=>{
+  const ui=fs.readFileSync(path.join(root,'public','shot-workspace-p05.js'),'utf8');
+  assert.match(ui,/Емоція/);
+  assert.match(ui,/shot\?\.emotion/);
+  assert.match(ui,/imageModel\?'<span class="p05-no-model ready"/);
+  assert.match(ui,/Модель не підключена · генерація вимкнена/);
+  assert.match(ui,/data-p05-route="imageStudio"/);
+});
