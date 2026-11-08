@@ -213,7 +213,7 @@ async function handleProjectWizardSubmit(event){
     const created=await api('/api/projects',{method:'POST',body:JSON.stringify(projectWizard.data)});
     if(!created.creation?.storageVerified)throw new Error('Проєкт створено, але перевірка локального пакета не підтверджена.');
     const dlg=document.getElementById('modal');dlg.close();dlg.classList.remove('project-wizard-dialog');document.getElementById('modal-cancel').onclick=closeModal;
-    view='overview';workspaceMode='guided';activeEpisodeId=null;localStorage.setItem('ai-video-studio:workspace-mode','guided');
+    view='overview';workspaceMode='guided';activeEpisodeId=null;localStorage.setItem('ai-production-studio:workspace-mode','guided');
     await load(created.id);
   }catch(error){submit.disabled=false;submit.textContent='Створити проєкт';window.alert(error.message)}
 }
