@@ -214,3 +214,12 @@ test('G-03 supports real engine choice and collapsible global context',()=>{
   assert.match(assistant,/configured/);
   assert.match(css,/global-ai-layout\.context-collapsed/);
 });
+
+
+test('Pages preview mirrors G-03 model and context controls',()=>{
+  const preview=fs.readFileSync(path.join(root,'preview','index.html'),'utf8');
+  assert.match(preview,/id="preview-global-ai-engine"/);
+  assert.match(preview,/id="preview-global-ai-context"/);
+  assert.match(preview,/preview-global-ai-layout/);
+  assert.match(preview,/context-collapsed/);
+});
