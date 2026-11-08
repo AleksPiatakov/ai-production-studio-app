@@ -498,9 +498,16 @@ const server = http.createServer(async (req, res) => {
         const episode = project.episodes.find(item => item.id === parts[4]);
         if (!episode) return send(res, 404, { error: 'episode not found' });
         const mode = url.searchParams.get('mode') === 'final' ? 'final' : 'draft';
-        const packagePlan = buildDaVinciPackage(project, episode, mode);
+        const exportSettings = store.read().studio.settings?.export || {};
+        const draftAllowed = exportSettings.includeDrafts === true;
+        const packagePlan = buildDaVinciPackage(project, episode, mode, { verifyFiles: exportSettings.verifyFiles !== false });
+        if (mode === 'draft' && !draftAllowed) {
+          packagePlan.canExport = false;
+          packagePlan.issues = [...new Set([...(packagePlan.issues || []), 'Чернетковий пакет вимкнено у Налаштуваннях → Експорт.'])];
+        }
         const file = parts[6] || 'report';
         if (file === 'report') return send(res, 200, packagePlan);
+        if (mode === 'draft' && !draftAllowed) return send(res, 409, { error: 'Чернетковий пакет вимкнено у налаштуваннях експорту.', report: packagePlan });
         if (mode === 'final' && !packagePlan.canExport) return send(res, 409, { error: 'Фінальний пакет ще не готовий.', report: packagePlan });
         if (file === 'manifest.json') {
           res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'content-disposition': `attachment; filename="davinci-package-manifest-${episode.id}-${mode}.json"` });
