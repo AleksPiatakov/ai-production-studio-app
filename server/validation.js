@@ -39,12 +39,20 @@ function stringArray(value, field) {
 
 function validateProjectInput(input) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) throw new InputError('request body must be an object');
+  const defaultLanguage = oneOf(input.defaultLanguage, supportedLanguages, 'defaultLanguage', 'uk');
+  const additionalLanguages = stringArray(input.additionalLanguages, 'additionalLanguages');
+  if (additionalLanguages.some(code => !supportedLanguages.includes(code))) throw new InputError('additionalLanguages contains an unsupported language');
   return {
     name: nonEmptyString(input.name, 'name'),
     type: oneOf(input.type, projectTypes, 'type', 'general'),
-    defaultLanguage: oneOf(input.defaultLanguage, supportedLanguages, 'defaultLanguage', 'uk'),
+    defaultLanguage,
+    additionalLanguages: additionalLanguages.filter(code => code !== defaultLanguage),
     targetMinutes: positiveNumber(input.targetMinutes, 'targetMinutes', 10),
-    description: optionalString(input.description, 'description')
+    description: optionalString(input.description, 'description'),
+    resolution: oneOf(input.resolution, ['1280x720','1920x1080','3840x2160'], 'resolution', '1920x1080'),
+    aspectRatio: oneOf(input.aspectRatio, ['16:9','9:16','1:1','4:3'], 'aspectRatio', '16:9'),
+    fps: boundedNumber(input.fps, 'fps', 12, 60, 24),
+    plannedEpisodes: boundedNumber(input.plannedEpisodes, 'plannedEpisodes', 1, 200, 1)
   };
 }
 

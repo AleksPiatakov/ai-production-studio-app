@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { normalizeStudio, defaultModelRegistry, createGenerationJob, transitionGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs } = require('../server/production-studio');
+const { normalizeStudio, defaultModelRegistry, updateStudioSettings, createGenerationJob, transitionGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs } = require('../server/production-studio');
 
 test('migrates existing projects to the production-studio architecture without losing their data', () => {
   const data = normalizeStudio({ projects: [{ id: 'p-1', name: 'Existing project', assets: [{ id: 'a-1' }] }] });
@@ -46,4 +46,27 @@ test('registers a completed worker result as a draft asset and a separate draft 
   assert.equal(registered.assets[0].status, 'draft');
   assert.equal(registered.versions[0].status, 'draft');
   assert.equal(registered.versions[0].parentVersionId, null);
+});
+
+
+test('normalizes and updates five persistent studio settings sections', () => {
+  const data = normalizeStudio({ projects: [] });
+  assert.equal(data.studio.settings.general.startView, 'overview');
+  assert.equal(data.studio.settings.files.versionHistoryLimit, 30);
+  const next = updateStudioSettings(data.studio.settings, {
+    general: { startView: 'projects' },
+    files: { versionHistoryLimit: 48 },
+    assistants: { projectAutonomy: 'safe-actions' },
+    export: { includeDrafts: true }
+  });
+  assert.equal(next.general.startView, 'projects');
+  assert.equal(next.files.versionHistoryLimit, 48);
+  assert.equal(next.assistants.projectAutonomy, 'safe-actions');
+  assert.equal(next.export.includeDrafts, true);
+  assert.equal(next.performance.maxConcurrentJobs, 1);
+});
+
+test('normalizes production settings for pre-existing projects', () => {
+  const data = normalizeStudio({ projects: [{ id: 'p-old' }] });
+  assert.deepEqual(data.projects[0].productionSettings, { resolution: '1920x1080', aspectRatio: '16:9', fps: 24, plannedEpisodes: 1 });
 });

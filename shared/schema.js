@@ -13,9 +13,11 @@ function defaultProfile() {
   return { audience: '', format: '', tone: '', mission: '', gospelFoundation: '', creativeApproach: '', audiencePromise: '', editorialRules: '', exclusions: '', seasonArc: '', approvalOwner: '' };
 }
 
-function projectTemplate({ id, name, type, defaultLanguage, targetMinutes, description }) {
+function projectTemplate({ id, name, type, defaultLanguage, targetMinutes, description, additionalLanguages = [], resolution = '1920x1080', aspectRatio = '16:9', fps = 24, plannedEpisodes = 1 }) {
+  const extraLanguages = [...new Set((additionalLanguages || []).filter(code => supportedLanguages.includes(code) && code !== defaultLanguage))];
   return { id, name, type, description, defaultLanguage, targetMinutes, createdAt: new Date().toISOString(),
-    languages: supportedLanguages.map(code => ({ code, status: code === defaultLanguage ? 'original' : 'planned' })),
+    languages: supportedLanguages.map(code => ({ code, status: code === defaultLanguage ? 'original' : (extraLanguages.includes(code) ? 'planned' : 'hidden') })),
+    productionSettings: { resolution, aspectRatio, fps: Number(fps) || 24, plannedEpisodes: Number(plannedEpisodes) || 1 },
     profile: defaultProfile(), workflow: defaultWorkflow(),
     bibles: { style: [], characters: [] }, episodes: [], scripts: [], voiceProfiles: [], localizations: [], assets: [], assetVersions: [], scenes: [], productions: [], renderJobs: [],
     storage: { layoutVersion: 2, root: `data/projects/${id}`, manifest: `data/projects/${id}/Project_Data/project.json`, database: `data/projects/${id}/Project_Data/project.sqlite`, assetDirectories: ['Assets/Images', 'Assets/Video', 'Assets/Voices', 'Assets/Music', 'Assets/SFX'], exportDirectory: 'Exports', backupDirectory: 'Backups' },

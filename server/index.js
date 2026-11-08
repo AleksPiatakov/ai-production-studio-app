@@ -13,7 +13,7 @@ const { synthesizeMacVoice, synthesizePiperVoice, hasPiperVoice } = require('./l
 const { configuration: elevenLabsConfiguration, listVoices: listElevenLabsVoices, synthesizeElevenLabsVoice } = require('./elevenlabs');
 const { validateProject, validateProjectInput, validateBibleInput, validateSceneInput, validateShotInput, validateDialogueInput, validateAssetInput, validateProfileInput, validateWorkflowInput, validateScriptInput, validateVoiceProfileInput, validateLocalizationInput, validateRenderJobInput, validateEpisodeInput } = require('./validation');
 const { projectTemplate, allowedAgeBands, supportedLanguages, workflowStages } = require('../shared/schema');
-const { publicModel, createGenerationJob, transitionGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs } = require('./production-studio');
+const { publicModel, updateStudioSettings, createGenerationJob, transitionGenerationJob, createAssetVersion, registerWorker, claimGenerationJob, workerJobUpdate, registerWorkerOutputs } = require('./production-studio');
 const store = createStore();
 
 function send(res, status, payload) { res.writeHead(status, { 'content-type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(payload)); }
@@ -64,6 +64,13 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost'); const parts = url.pathname.split('/').filter(Boolean);
   try {
     if (req.method === 'GET' && url.pathname === '/api/health') return send(res, 200, { status: 'ok', mode: 'local-control-plane', piper: hasPiperVoice() ? 'ready' : 'not-installed', elevenLabs: elevenLabsConfiguration() });
+    if (req.method === 'GET' && url.pathname === '/api/studio/settings') return send(res, 200, store.read().studio.settings);
+    if (req.method === 'PUT' && url.pathname === '/api/studio/settings') {
+      const input = await body(req);
+      let updated;
+      store.update(data => { data.studio.settings = updateStudioSettings(data.studio.settings, input); updated = data.studio.settings; }, { noSnapshot: true });
+      return send(res, 200, updated);
+    }
     if (req.method === 'GET' && url.pathname === '/api/studio/models') return send(res, 200, store.read().studio.modelRegistry.map(publicModel));
     if (req.method === 'POST' && url.pathname === '/api/studio/models') {
       const input = await body(req);

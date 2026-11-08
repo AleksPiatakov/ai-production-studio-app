@@ -5,6 +5,7 @@
 <meta name="robots" content="noindex,nofollow">
 <title>AI Production Studio — UI Preview</title>
 <link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="./editor.css"><link rel="stylesheet" href="./actions.css"><link rel="stylesheet" href="./contrast.css"><link rel="stylesheet" href="./voice-editor.css"><link rel="stylesheet" href="./workspace-dialog.css"><link rel="stylesheet" href="./studio-theme.css"><link rel="stylesheet" href="./script-editor-p02.css"><link rel="stylesheet" href="./p02-approved-layout.css"><link rel="stylesheet" href="./approved-script-reading.css"><link rel="stylesheet" href="./p04-approved-storyboard.css"><link rel="stylesheet" href="./p07-voice-takes.css"><link rel="stylesheet" href="./mobile-studio.css"><link rel="stylesheet" href="./image-studio-p06.css"><link rel="stylesheet" href="./shot-workspace-p05.css">
+<link rel="stylesheet" href="./global-studio-pages.css">
 <link rel="stylesheet" href="./approved-color-unification.css?v=20261107b">
 <style>
 /* Preview-specific mock only: no local data, model execution or API. */
@@ -27,6 +28,8 @@
 .preview-rail button:focus-visible{outline:2px solid #c8a4ff;outline-offset:2px}
 #preview-layout #app-sidebar .side-note{margin:22px 13px;color:#a69bb9;font-size:11px}
 #preview-layout #content{min-width:0}
+.preview-global-zone .preview-project{display:none}
+.preview-global-zone .preview-rail-label.project-only{display:none}
 .preview-main-card h3{max-width:100%}
 @media(max-width:800px){.preview-brand{padding:12px}.preview-rail{padding:8px}.preview-rail button{min-height:40px}}
 .preview-screen{display:none}.preview-screen.active{display:block}
@@ -103,8 +106,12 @@ body:has(#screen-script.active) .preview-warning{display:none}
   </nav>
   <p class="preview-rail-label">ГЛОБАЛЬНІ ІНСТРУМЕНТИ</p>
   <nav class="preview-rail" aria-label="Глобальні інструменти">
-    <button type="button" data-screen="models"><span aria-hidden="true">◈</span> AI-моделі</button>
-    <button type="button" data-screen="assistant"><span aria-hidden="true">✧</span> AI-помічник</button>
+    <button type="button" data-screen="home"><span aria-hidden="true">⌂</span> Головна</button>
+    <button type="button" data-screen="projects"><span aria-hidden="true">▤</span> Проєкти</button>
+    <button type="button" data-screen="assistant"><span aria-hidden="true">✧</span> AI Помічники</button>
+    <button type="button" data-screen="models"><span aria-hidden="true">◈</span> AI Моделі</button>
+    <button type="button" data-screen="queue"><span aria-hidden="true">≡</span> Черга генерацій</button>
+    <button type="button" data-screen="settings"><span aria-hidden="true">⚙</span> Налаштування</button>
   </nav>
   <p class="side-note">Перегляд вигляду. Проєкти й AI-моделі залишаються на Mac.</p>
  </aside>
@@ -253,8 +260,42 @@ body:has(#screen-script.active) .preview-warning{display:none}
     <button type="submit" style="background:#7a2ec9;color:#fff">Закрити</button>
   </form></dialog>
  <div class="preview-screen" id="screen-shot"><div id="preview-shot-workspace"></div></div>
+ <div class="preview-screen" id="screen-home">
+  <section class="global-home">
+   <div class="global-home-hero"><div><p class="eyebrow">AI PRODUCTION STUDIO</p><h3>Виробничий центр</h3><p>Глобальна зона для проєктів, AI-моделей, черги та загального помічника.</p></div><div class="global-home-actions"><button class="primary" type="button" data-screen="projects">＋ Новий проєкт</button><button type="button" data-screen="projects">Усі проєкти</button></div></div>
+   <div class="global-section-head"><div><p class="eyebrow">ОСТАННІ ПРОЄКТИ</p><h4>Продовжити роботу</h4></div></div>
+   <div class="global-project-grid">
+    <article class="global-project-card"><button class="global-project-open" type="button" data-screen="project"><span class="global-project-icon">▣</span><span class="global-project-copy"><strong>Демонстраційний проєкт</strong><small>Анімаційний серіал · UK</small></span></button><div class="global-project-meta"><span>2 випуски</span><span>3 ресурси</span><span>1920x1080</span></div></article>
+    <article class="global-project-card"><button class="global-project-open" type="button"><span class="global-project-icon">▣</span><span class="global-project-copy"><strong>Другий приклад</strong><small>Універсальне відео · UK</small></span></button><div class="global-project-meta"><span>0 випусків</span><span>0 ресурсів</span><span>1920x1080</span></div></article>
+   </div>
+   <div class="global-home-lower"><section class="global-panel"><p class="eyebrow">ОСТАННІ МАТЕРІАЛИ</p><h4>Локальні ресурси</h4><p class="global-empty">У прев’ю немає реальних локальних файлів.</p></section><section class="global-panel global-assistant-entry"><p class="eyebrow">ЗАГАЛЬНИЙ AI ПОМІЧНИК</p><h4>Окремий від проєктів</h4><p>Не отримує автоматичного доступу до проєктних файлів.</p><button type="button" data-screen="assistant">Відкрити AI Помічники →</button></section></div>
+  </section>
+ </div>
+ <div class="preview-screen" id="screen-projects">
+  <section class="global-projects-page"><div class="global-toolbar"><div><p class="eyebrow">ПРОЄКТИ</p><h3>Каталог проєктів</h3><p>Пошук, фільтри та створення окремих локальних робочих просторів.</p></div><button class="primary" type="button">＋ Новий проєкт</button></div>
+   <div class="global-project-filters"><label>Пошук<input type="search" placeholder="Назва або опис…"></label><label>Тип<select><option>Усі типи</option><option>Анімаційний серіал</option><option>Універсальне відео</option></select></label></div>
+   <div class="global-project-grid global-project-grid-large">
+    <article class="global-project-card"><button class="global-project-open" type="button" data-screen="project"><span class="global-project-icon">▣</span><span class="global-project-copy"><strong>Демонстраційний проєкт</strong><small>Анімаційний серіал · UK</small></span></button><div class="global-project-meta"><span>2 випуски</span><span>3 ресурси</span><span>1920x1080</span></div></article>
+    <article class="global-project-card"><button class="global-project-open" type="button"><span class="global-project-icon">▣</span><span class="global-project-copy"><strong>Приклад короткого відео</strong><small>Універсальне відео · UK</small></span></button><div class="global-project-meta"><span>0 випусків</span><span>0 ресурсів</span><span>1080x1920</span></div></article>
+   </div>
+  </section>
+ </div>
+ <div class="preview-screen" id="screen-settings">
+  <section class="global-settings-page"><div class="global-toolbar"><div><p class="eyebrow">НАЛАШТУВАННЯ</p><h3>Налаштування AI Production Studio</h3><p>П’ять глобальних розділів програми.</p></div></div>
+   <nav class="settings-tabs" aria-label="Розділи налаштувань"><button class="active" type="button" data-preview-settings-tab="general">Загальні</button><button type="button" data-preview-settings-tab="files">Файли та сховище</button><button type="button" data-preview-settings-tab="performance">Продуктивність</button><button type="button" data-preview-settings-tab="assistants">AI Помічники</button><button type="button" data-preview-settings-tab="export">Експорт</button></nav>
+   <form class="settings-form" onsubmit="return false">
+    <div data-preview-settings-panel="general"><label>Мова інтерфейсу<select><option>Українська</option><option>English</option></select></label><label>Початковий екран<select><option>Останній проєкт</option><option>Головна</option><option>Проєкти</option></select></label><label class="settings-check"><input type="checkbox" checked> Підтверджувати руйнівні дії</label></div>
+    <div data-preview-settings-panel="files" hidden><label>Коренева папка<input value="data/projects" readonly></label><label>Кількість автоматичних версій<input type="number" value="30"></label></div>
+    <div data-preview-settings-panel="performance" hidden><label class="settings-check"><input type="checkbox" checked> Надавати перевагу локальним моделям</label><label>Паралельні генерації<select><option>1</option><option>2</option></select></label></div>
+    <div data-preview-settings-panel="assistants" hidden><label>Помічник проєкту<select><option>Тільки пропозиції</option><option>Автоматичні безпечні дії</option></select></label><label class="settings-check"><input type="checkbox" checked> Підтверджувати дорогі генерації</label></div>
+    <div data-preview-settings-panel="export" hidden><label>Пакет DaVinci<select><option>Папки + manifest</option></select></label><label class="settings-check"><input type="checkbox" checked> Перевіряти файли перед експортом</label></div>
+    <div class="settings-actions"><span>Демонстрація · зміни не зберігаються</span><button class="primary" type="button">Зберегти</button></div>
+   </form>
+  </section>
+ </div>
+ <div class="preview-screen" id="screen-queue"><div class="preview-main-card"><p class="eyebrow">ЧЕРГА ГЕНЕРАЦІЙ</p><h3>Глобальна черга</h3><p>У локальній програмі черга показує завдання всіх проєктів і дозволяє фільтрувати їх. Онлайн-прев’ю нічого не запускає.</p><div class="studio-queue-filter"><label>Показати проєкт<select><option>Усі проєкти</option><option>Демонстраційний проєкт</option></select></label><span>0 завдань</span></div><p class="global-empty">Немає демонстраційних завдань.</p></div></div>
  <div class="preview-screen" id="screen-models"><div class="preview-main-card"><p class="eyebrow">ЦЕНТР AI-МОДЕЛЕЙ</p><h3>Мої моделі</h3><p>Онлайн-прев’ю не підключається до локальних моделей. Реєстр і генерація працюватимуть у настільній програмі.</p></div></div>
- <div class="preview-screen" id="screen-assistant"><div class="preview-main-card"><p class="eyebrow">AI-ПОМІЧНИК ПРОЄКТУ</p><h3>Помічник у межах проєкту</h3><p>Модальне вікно, рішення і версії будуть підключені в основному застосунку. Демо не передає приватні дані.</p></div></div>
+ <div class="preview-screen" id="screen-assistant"><div class="preview-main-card"><p class="eyebrow">AI ПОМІЧНИКИ</p><h3>Два ізольовані робочі простори</h3><p><strong>Загальний помічник</strong> працює поза проєктами. <strong>Помічник проєкту</strong> має доступ лише до активного проєкту. Онлайн-прев’ю не передає приватні дані й не виконує AI-запити.</p></div></div>
  <p class="preview-warning" id="preview-feedback" role="status">Відкрито демонстрацію екрана P-01. Кнопки модулів показують майбутню навігацію, а не запускають генерацію.</p>
  </section>
 </main>
@@ -319,7 +360,7 @@ document.getElementById('preview-image-studio').addEventListener('change',event=
 
 <script>
 window.goToView=function(name){
- const demoRoutes={script:'script',storyboard:'storyboard',imageStudio:'images',audio:'voice',shot:'shot',models:'models',assistants:'assistant'};
+ const demoRoutes={home:'home',projects:'projects',script:'script',storyboard:'storyboard',imageStudio:'images',audio:'voice',shot:'shot',models:'models',queue:'queue',assistants:'assistant',settings:'settings'};
  if(demoRoutes[name]){window.previewNavigate(demoRoutes[name]);return;}
  const labels={assets:'Персонажі та бібліотека',episodes:'Епізоди',preview:'Відео та експорт',davinci:'Експорт для DaVinci'};
  document.getElementById('preview-feedback').textContent='«'+(labels[name]||name)+'»: екран поки не включено до статичного прев’ю. Реальні дані доступні лише в локальній програмі.';
@@ -334,7 +375,7 @@ document.getElementById('preview-dashboard').innerHTML=window.APSProjectDashboar
 });
 </script>
 <script>
-(()=>{const buttons=[...document.querySelectorAll('[data-screen]')],panels=[...document.querySelectorAll('.preview-screen')];function select(id){if(!document.getElementById('screen-'+id))return;panels.forEach(p=>p.classList.toggle('active',p.id==='screen-'+id));buttons.forEach(b=>{const active=b.dataset.screen===id;b.classList.toggle('active',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});document.getElementById('preview-feedback').textContent='Відкрито демонстраційний екран. Збереження та генератори працюють тільки в локальному застосунку.';}window.previewNavigate=select;buttons.forEach(b=>b.addEventListener('click',()=>select(b.dataset.screen)));if(window.matchMedia('(max-width:700px)').matches){document.getElementById('preview-layout').classList.add('sidebar-collapsed');document.getElementById('sidebar-toggle').setAttribute('aria-expanded','false')}document.getElementById('sidebar-toggle').addEventListener('click',()=>{const main=document.getElementById('preview-layout');const collapsed=main.classList.toggle('sidebar-collapsed');document.getElementById('sidebar-toggle').setAttribute('aria-expanded',String(!collapsed))});document.querySelectorAll('[data-module]').forEach(button=>button.addEventListener('click',()=>{document.getElementById('preview-feedback').textContent='Модуль «'+button.dataset.module+'» буде доступний в основному застосунку. Це лише дизайн-прев’ю.'}));})();
+(()=>{const buttons=[...document.querySelectorAll('[data-screen]')],panels=[...document.querySelectorAll('.preview-screen')];const globalScreens=new Set(['home','projects','assistant','models','queue','settings']);const heroMeta={home:['ГЛОБАЛЬНА ЗОНА','Головна','Проєкти, моделі, черга та загальний AI-помічник.'],projects:['ГЛОБАЛЬНА ЗОНА','Проєкти','Каталог локальних проєктів.'],assistant:['ГЛОБАЛЬНА ЗОНА','AI Помічники','Ізольовані глобальний і проєктний контексти.'],models:['ГЛОБАЛЬНА ЗОНА','AI Моделі','Підключені локальні й віддалені моделі.'],queue:['ГЛОБАЛЬНА ЗОНА','Черга генерацій','Глобальна черга завдань усіх проєктів.'],settings:['ГЛОБАЛЬНА ЗОНА','Налаштування','Параметри програми, файлів, продуктивності, AI та експорту.'],project:['ДЕМО ПРОЄКТ · ПІДГОТОВКА МАТЕРІАЛІВ','Робочий стіл','Усі творчі модулі одного проєкту — в одному місці.']};function select(id){if(!document.getElementById('screen-'+id))return;panels.forEach(p=>p.classList.toggle('active',p.id==='screen-'+id));buttons.forEach(b=>{const active=b.dataset.screen===id;b.classList.toggle('active',active);if(active)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});document.body.classList.toggle('preview-global-zone',globalScreens.has(id));const meta=heroMeta[id],hero=document.querySelector('#content>.hero');if(meta&&hero){hero.querySelector('.eyebrow').textContent=meta[0];hero.querySelector('h2').textContent=meta[1];hero.querySelector('p:not(.eyebrow)').textContent=meta[2]}document.getElementById('preview-feedback').textContent='Відкрито демонстраційний екран. Збереження та генератори працюють тільки в локальному застосунку.';}window.previewNavigate=select;buttons.forEach(b=>b.addEventListener('click',()=>select(b.dataset.screen)));if(window.matchMedia('(max-width:700px)').matches){document.getElementById('preview-layout').classList.add('sidebar-collapsed');document.getElementById('sidebar-toggle').setAttribute('aria-expanded','false')}document.getElementById('sidebar-toggle').addEventListener('click',()=>{const main=document.getElementById('preview-layout');const collapsed=main.classList.toggle('sidebar-collapsed');document.getElementById('sidebar-toggle').setAttribute('aria-expanded',String(!collapsed))});document.querySelectorAll('[data-module]').forEach(button=>button.addEventListener('click',()=>{document.getElementById('preview-feedback').textContent='Модуль «'+button.dataset.module+'» буде доступний в основному застосунку. Це лише дизайн-прев’ю.'}));})();
 </script>
 <script>
 (()=>{
@@ -351,6 +392,10 @@ document.getElementById('preview-dashboard').innerHTML=window.APSProjectDashboar
   document.getElementById('demo-p04-camera').textContent=cameras[i];
  }));
 })();
+</script>
+
+<script>
+(()=>{const root=document.getElementById('screen-settings');if(!root)return;root.querySelectorAll('[data-preview-settings-tab]').forEach(button=>button.addEventListener('click',()=>{const id=button.dataset.previewSettingsTab;root.querySelectorAll('[data-preview-settings-tab]').forEach(x=>x.classList.toggle('active',x===button));root.querySelectorAll('[data-preview-settings-panel]').forEach(panel=>panel.hidden=panel.dataset.previewSettingsPanel!==id)}));})();
 </script>
 <script>
 (()=>{

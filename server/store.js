@@ -36,12 +36,13 @@ function createStore(file = path.join(process.cwd(), 'data', 'studio.json')) {
     const data = read();
     const before = new Map((data.projects || []).map(project => [project.id, snapshot(project)]));
     mutator(data);
+    const historyLimit = Math.max(5, Math.min(100, Number(data.studio?.settings?.files?.versionHistoryLimit) || 30));
     if (!options.noSnapshot) for (const project of data.projects || []) {
       const previous = before.get(project.id);
       if (previous && !sameSnapshot(previous, project)) {
         const history = Array.isArray(project.versionHistory) ? project.versionHistory : [];
         history.push({ id: randomUUID(), createdAt: new Date().toISOString(), label: 'Автоматично збережено перед зміною', snapshot: previous });
-        project.versionHistory = history.slice(-30);
+        project.versionHistory = history.slice(-historyLimit);
       }
     }
     write(data); return data;

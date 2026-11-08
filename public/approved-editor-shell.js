@@ -13,9 +13,12 @@
     ['davinci','⇧','Експорт DaVinci']
   ];
   const globalRoutes=[
+    ['home','⌂','Головна'],
+    ['projects','▤','Проєкти'],
+    ['assistants','✧','AI Помічники'],
     ['models','◈','AI Моделі'],
     ['queue','≡','Черга генерацій'],
-    ['assistants','✧','AI Помічники']
+    ['settings','⚙','Налаштування']
   ];
   const routeMarkup=routes=>routes.map(([id,icon,title])=>
     '<button type="button" data-aps-destination="'+id+'" '+(view===id?'class="active" aria-current="page"':'')+'><span aria-hidden="true">'+icon+'</span>'+title+'</button>'
@@ -25,7 +28,7 @@
     const aside=document.getElementById('app-sidebar');
     if(!aside)return;
     const isEditor=view==='editor';
-    const globalZone=['models','queue','assistants'].includes(view);
+    const globalZone=['home','projects','models','queue','assistants','settings'].includes(view);
     document.body.classList.add('aps-approved-studio-shell');
     document.body.classList.toggle('aps-approved-editor-shell',isEditor);
     document.body.classList.toggle('aps-global-zone',globalZone);
@@ -44,8 +47,14 @@
       '</nav>'+
       '<div class="aps-nav-bottom"><span aria-hidden="true">◉</span><span>Локальний проєкт<br><small>Дані зберігаються на цьому Mac</small></span></div>';
     rail.querySelectorAll('[data-aps-destination]').forEach(button=>{
-      button.addEventListener('click',()=>{
+      button.addEventListener('click',async()=>{
         const destination=button.dataset.apsDestination;
+        if(['models','queue','assistants'].includes(destination)&&typeof refreshProductionStudio==='function'){
+          view=destination;
+          await refreshProductionStudio();
+          render();
+          return;
+        }
         if(destination==='davinci')goToView('davinci');
         else goToView(destination);
       });

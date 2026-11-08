@@ -160,3 +160,24 @@ test('blocks production when key art, voice profile, or approved audio is missin
   assert.equal(result.valid, false);
   assert.deepEqual(result.errors.map(error => error.code).sort(), ['DIALOGUE_AUDIO_REQUIRED', 'SHOT_KEY_IMAGE_NOT_APPROVED', 'SHOT_REFERENCE_NOT_APPROVED', 'VOICE_PROFILE_NOT_APPROVED'].sort());
 });
+
+
+test('validates production parameters from the three-step project wizard', () => {
+  const project = validateProjectInput({
+    name: 'Studio test',
+    type: 'animated-series',
+    defaultLanguage: 'uk',
+    additionalLanguages: ['en'],
+    targetMinutes: 8,
+    resolution: '3840x2160',
+    aspectRatio: '16:9',
+    fps: 25,
+    plannedEpisodes: 12
+  });
+  assert.deepEqual(project.additionalLanguages, ['en']);
+  assert.equal(project.resolution, '3840x2160');
+  assert.equal(project.fps, 25);
+  assert.equal(project.plannedEpisodes, 12);
+  assert.throws(() => validateProjectInput({ name: 'Broken', fps: 120 }), /fps/);
+  assert.throws(() => validateProjectInput({ name: 'Broken', resolution: '800x600' }), /resolution/);
+});
