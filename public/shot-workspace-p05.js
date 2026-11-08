@@ -45,7 +45,7 @@
      <textarea id="p05-prompt" readonly placeholder="Поки немає опису кадру">${esc(shot?.imagePrompt||shot?.prompt||'')}</textarea>
      <div class="p05-control-buttons"><button data-p05-action="edit" ${shot?'':'disabled'}>✎ Редагувати</button><button data-p05-action="brief" ${shot?'':'disabled'}>▧ Зібрати промпт</button></div>
      <details class="p05-detail"><summary>Негативний промпт</summary><p>Окреме поле негативного промпту поки не підтримується моделлю збереження.</p></details>
-     <div class="p05-params"><strong>Параметри кадру</strong><div><span>Камера</span><b>${esc(shot?.camera||'Не задано')}</b></div><div><span>Світло</span><b>${esc(shot?.lighting||'Не задано')}</b></div><div><span>Критерії готовності</span><b>${shot?.acceptanceCriteria?'Указані':'Не задані'}</b></div></div>
+     <div class="p05-params"><strong>Параметри кадру</strong><div><span>Камера</span><b>${esc(shot?.camera||'Не задано')}</b></div><div><span>Світло</span><b>${esc(shot?.lighting||'Не задано')}</b></div><div><span>Емоція</span><b>${esc(shot?.emotion||'Не задано')}</b></div><div><span>Критерії готовності</span><b>${shot?.acceptanceCriteria?'Указані':'Не задані'}</b></div></div>
      <button type="button" class="p05-generate" disabled>✦ Генерація недоступна</button>
      ${noModel}
     </aside>
