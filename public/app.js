@@ -264,6 +264,16 @@ async function askProjectAdvisor(event){
     setTimeout(()=>$('#advisor-thread')?.scrollTo({top:999999,behavior:'smooth'}),0);
   }
 }
+async function resolveDependencyReview(targetType,targetId){
+  if(!targetType||!targetId)return;
+  if(!window.confirm('Позначити цей матеріал як перевірений після зміни сценарію? Файл і статус затвердження не зміняться.'))return;
+  const note=window.prompt('Необов’язкова примітка до перевірки:','');
+  if(note===null)return;
+  try{
+    await api(`/api/projects/${encodeURIComponent(activeId)}/dependency-review/resolve`,{method:'POST',body:JSON.stringify({targetType,targetId,note})});
+    await load(activeId);
+  }catch(error){window.alert(error.message)}
+}
 async function clearProjectAdvice(){
   advisorError='';
   try{
