@@ -8,7 +8,7 @@ const { createStore } = require('./store');
 const { inspectContinuity } = require('./continuity');
 const { assistantConfiguration, generateAssistantDraft, askProjectAdvisor } = require('./assistant');
 const { buildAutopilotBlueprint } = require('./autopilot');
-const { buildDaVinciHandoff, handoffMarkdown, handoffTimelineCsv } = require('./davinci-handoff');
+const { buildDaVinciHandoff, buildDaVinciPackage, packageManifestJson, handoffMarkdown, handoffTimelineCsv } = require('./davinci-handoff');
 const { synthesizeMacVoice, synthesizePiperVoice, hasPiperVoice } = require('./local-voice');
 const { configuration: elevenLabsConfiguration, listVoices: listElevenLabsVoices, synthesizeElevenLabsVoice } = require('./elevenlabs');
 const { validateProject, validateProjectInput, validateBibleInput, validateSceneInput, validateShotInput, validateDialogueInput, validateAssetInput, validateProfileInput, validateWorkflowInput, validateScriptInput, validateVoiceProfileInput, validateLocalizationInput, validateRenderJobInput, validateEpisodeInput } = require('./validation');
@@ -202,6 +202,28 @@ const server = http.createServer(async (req, res) => {
         const packageData = { schemaVersion: 1, exportedAt: new Date().toISOString(), project: { id: project.id, name: project.name, defaultLanguage: project.defaultLanguage }, episode, scripts: project.scripts.filter(script => script.episodeId === episode.id), scenes, manifests: project.productions.filter(manifest => sceneIds.has(manifest.sceneId)), localizations: project.localizations };
         res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'content-disposition': `attachment; filename="episode-package-${episode.id}.json"` });
         return res.end(JSON.stringify(packageData, null, 2));
+      }
+      if (req.method === 'GET' && parts[3] === 'episodes' && parts[4] && parts[5] === 'davinci-package') {
+        const episode = project.episodes.find(item => item.id === parts[4]);
+        if (!episode) return send(res, 404, { error: 'episode not found' });
+        const mode = url.searchParams.get('mode') === 'final' ? 'final' : 'draft';
+        const packagePlan = buildDaVinciPackage(project, episode, mode);
+        const file = parts[6] || 'report';
+        if (file === 'report') return send(res, 200, packagePlan);
+        if (mode === 'final' && !packagePlan.canExport) return send(res, 409, { error: 'Фінальний пакет ще не готовий.', report: packagePlan });
+        if (file === 'manifest.json') {
+          res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'content-disposition': `attachment; filename="davinci-package-manifest-${episode.id}-${mode}.json"` });
+          return res.end(packageManifestJson(packagePlan));
+        }
+        if (file === 'timeline.csv') {
+          res.writeHead(200, { 'content-type': 'text/csv; charset=utf-8', 'content-disposition': `attachment; filename="davinci-timeline-${episode.id}-${mode}.csv"` });
+          return res.end(handoffTimelineCsv(packagePlan.handoff, Number(project.productionSettings?.fps) || 24));
+        }
+        if (file === 'handoff.md') {
+          res.writeHead(200, { 'content-type': 'text/markdown; charset=utf-8', 'content-disposition': `attachment; filename="davinci-handoff-${episode.id}-${mode}.md"` });
+          return res.end(handoffMarkdown(packagePlan.handoff));
+        }
+        return send(res, 404, { error: 'package file not found' });
       }
       if (req.method === 'GET' && parts[3] === 'episodes' && parts[4] && parts[5] === 'davinci-handoff' && parts[6] === 'timeline.csv') {
         const episode = project.episodes.find(item => item.id === parts[4]);
