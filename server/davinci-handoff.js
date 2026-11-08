@@ -22,7 +22,8 @@ function sourceForLocalization(localization) {
   };
 }
 
-function buildDaVinciHandoff(project, episode) {
+function buildDaVinciHandoff(project, episode, options = {}) {
+  const preferredLanguage = options.defaultLanguage === 'en' ? 'en' : (options.defaultLanguage === 'uk' ? 'uk' : (project.defaultLanguage === 'en' ? 'en' : 'uk'));
   const scenes = project.scenes.filter(scene => scene.episodeId === episode.id).sort((left, right) => Number(left.order || 0) - Number(right.order || 0));
   const assetsById = new Map((project.assets || []).map(asset => [asset.id, asset]));
   const clips = scenes.flatMap(scene => (scene.shots || []).map((shot, index) => {
@@ -46,7 +47,7 @@ function buildDaVinciHandoff(project, episode) {
     estimatedSeconds: line.estimatedSeconds || 0, status: line.status || 'draft', dependencyStatus: line.dependencyStatus || '', performanceNote: line.performanceNote || '',
     audioDrafts: (line.audioDrafts || []).map(audio => ({ language: audio.language, status: audio.status || 'draft', reviewReason: audio.reviewReason || '', filePath: assetPath(audio.uri) }))
   })));
-  const localizations = (project.localizations || []).map(sourceForLocalization).filter(Boolean);
+  const localizations = (project.localizations || []).map(sourceForLocalization).filter(Boolean).sort((a,b)=>(a.language===preferredLanguage?-1:b.language===preferredLanguage?1:0));
   const blockers = [];
   if (!scenes.length) blockers.push('У випуску ще немає сцен для монтажу.');
   if (clips.some(clip => !clip.keyImage?.filePath)) blockers.push('Не для кожного шоту обрано локальний ключовий кадр.');
@@ -60,9 +61,9 @@ function buildDaVinciHandoff(project, episode) {
   if (dialogue.some(line => line.dependencyStatus === 'needs-review')) blockers.push('Частина реплік потребує повторної перевірки після зміни сценарію.');
   if (dialogue.some(line => line.audioDrafts.some(audio => audio.status === 'needs-review'))) blockers.push('Частина озвучок потребує повторної перевірки після зміни сценарію.');
   if (dialogue.some(line => !line.audioDrafts.some(audio => audio.status === 'approved' && audio.filePath))) blockers.push('Для частини реплік немає затвердженої локальної озвучки.');
-  if (!localizations.some(item => item.language === 'uk' && item.subtitlesPath)) blockers.push('Для української версії не підготовлено локальні субтитри.');
+  if (!localizations.some(item => item.language === preferredLanguage && item.subtitlesPath)) blockers.push(`Для ${preferredLanguage==='en'?'англійської':'української'} версії не підготовлено локальні субтитри.`);
   blockers.push('Це чернетковий монтажний лист: він не створює фінального відео та не змінює статуси у студії.');
-  return { schemaVersion: 2, kind: 'davinci-resolve-handoff-draft', generatedAt: new Date().toISOString(), project: { id: project.id, name: project.name, defaultLanguage: project.defaultLanguage }, episode: { id: episode.id, title: episode.title, status: episode.status, targetMinutes: episode.targetMinutes }, sources: { localizations }, clips, dialogue, blockers };
+  return { schemaVersion: 2, kind: 'davinci-resolve-handoff-draft', generatedAt: new Date().toISOString(), project: { id: project.id, name: project.name, defaultLanguage: project.defaultLanguage, exportDefaultLanguage: preferredLanguage }, episode: { id: episode.id, title: episode.title, status: episode.status, targetMinutes: episode.targetMinutes }, sources: { localizations }, clips, dialogue, blockers };
 }
 
 function handoffMarkdown(handoff) {
@@ -110,7 +111,7 @@ function packageFileRecord(sourcePath, destination, meta = {}) {
 function buildDaVinciPackage(project, episode, mode = 'draft', options = {}) {
   const packageMode = mode === 'final' ? 'final' : 'draft';
   const verifyFiles = packageMode === 'final' ? true : options.verifyFiles !== false;
-  const handoff = buildDaVinciHandoff(project, episode);
+  const handoff = buildDaVinciHandoff(project, episode, { defaultLanguage: options.defaultLanguage });
   const sceneIds = new Set(project.scenes.filter(scene => scene.episodeId === episode.id).map(scene => scene.id));
   const includeAsset = asset => sceneIds.has(asset.linkedSceneId) && (packageMode === 'draft' || (asset.status === 'approved' && asset.dependencyStatus !== 'needs-review'));
   const soundAssets = (project.assets || []).filter(asset => ['music','ambient','sfx'].includes(asset.type) && includeAsset(asset));
