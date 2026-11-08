@@ -1,7 +1,7 @@
 /* G-03 Global AI Assistant + P-13 project AI change review.
    Global chat never receives project data automatically.
    Project changes remain typed proposals until explicit accept/reject. */
-let globalAssistantState={history:[],configuration:null,busy:false,error:''};
+let globalAssistantState={history:[],configuration:null,assistant:null,busy:false,error:''};
 let projectAssistantActions=[];
 let projectAssistantActionsBusy=false;
 let projectAssistantActionsError='';
@@ -12,6 +12,7 @@ async function refreshGlobalAssistant(){
     const state=await api('/api/studio/general-assistant');
     globalAssistantState.history=state.history||[];
     globalAssistantState.configuration=state.configuration||null;
+    globalAssistantState.assistant=state.assistant||null;
     globalAssistantState.error='';
   }catch(error){globalAssistantState.error=error.message}
 }
@@ -24,7 +25,7 @@ function globalAssistantPanel(){
   return `<section class="global-ai-page">
     <header class="global-ai-head"><div><p class="eyebrow">ЗАГАЛЬНИЙ AI ПОМІЧНИК</p><h3>Робочий чат студії</h3><p>Працює поза проєктами. Проєктні файли, сценарії, медіа та пам’ять проєктів не передаються автоматично.</p></div><div class="global-ai-model"><span>${configured?(cfg?.engine==='local-planner'?'● Локальний режим':'● Підключено'):'○ Не підключено'}</span><strong>${esc(cfg?.model||(cfg?.engine==='local-planner'?'Local Planner':cfg?.engine)||'Текстова модель не налаштована')}</strong></div></header>
     <div class="global-ai-layout">
-      <aside class="global-ai-info"><div class="global-ai-info-card safe"><span>КОНТЕКСТ</span><strong>Глобальна зона</strong><p>Налаштування програми, моделі, черга та загальні виробничі питання.</p></div><div class="global-ai-info-card blocked"><span>ДОСТУП ДО ПРОЄКТІВ</span><strong>Відсутній</strong><p>Щоб працювати з конкретним проєктом, відкрийте його проєктний AI-помічник.</p></div><button type="button" onclick="goToView('projects')">Відкрити проєкти →</button></aside>
+      <aside class="global-ai-info"><div class="global-ai-info-card safe"><span>КОНТЕКСТ</span><strong>Глобальна зона</strong><p>Налаштування програми, моделі, черга та загальні виробничі питання.</p></div><div class="global-ai-info-card blocked"><span>ДОСТУП ДО ПРОЄКТІВ</span><strong>${globalAssistantState.assistant?.projectAccess==='none'?'Відсутній':'Не підтверджено'}</strong><p>Щоб працювати з конкретним проєктом, відкрийте його проєктний AI-помічник.</p></div><button type="button" onclick="goToView('projects')">Відкрити проєкти →</button></aside>
       <section class="global-ai-chat"><div id="global-ai-thread" class="global-ai-thread" aria-live="polite">${history.length?history.map(globalAssistantMessage).join(''):'<div class="global-ai-empty"><span>✧</span><strong>Окрема глобальна розмова</strong><p>Запитайте про роботу студії, AI-моделі, чергу, налаштування або загальний виробничий процес.</p></div>'}</div>
         <form class="global-ai-composer" onsubmit="askGlobalAssistant(event)"><textarea id="global-ai-question" required placeholder="Напишіть питання…" ${configured?'':'disabled'}></textarea><div><small>${configured?'Проєктні дані не додаються до запиту.':'Підключіть текстову модель, щоб активувати чат.'}</small><div><button type="button" onclick="clearGlobalAssistant()" ${history.length?'':'disabled'}>Очистити</button><button class="primary" type="submit" ${configured&&!globalAssistantState.busy?'':'disabled'}>${globalAssistantState.busy?'Відповідає…':'Надіслати'}</button></div></div></form>${globalAssistantState.error?`<p class="assistant-error">${esc(globalAssistantState.error)}</p>`:''}
       </section>
