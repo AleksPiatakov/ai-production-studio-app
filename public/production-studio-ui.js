@@ -169,6 +169,6 @@ async function openQueueJobResult(id){
 }
 function downloadDaVinciTimeline() { const episode = (active.episodes || []).find(item => item.id === activeEpisodeId) || (active.episodes || [])[0]; if (!episode) return window.alert('Спочатку створіть або виберіть випуск.'); window.location.href = `/api/projects/${encodeURIComponent(activeId)}/episodes/${encodeURIComponent(episode.id)}/davinci-handoff/timeline.csv`; }
 const baseProductionPageContent = pageContent; pageContent = function () { return ['models', 'modelSetup', 'queue', 'assistants', 'davinci'].includes(view) ? productionStudioPanel() : baseProductionPageContent(); };
-const baseProductionTitle = viewTitle; viewTitle = function () { return ({ models: 'Центр AI-моделей', modelSetup: 'Налаштування моделі', queue: 'Черга генерацій', assistants: 'AI-помічники', davinci: 'Підготовка DaVinci' })[view] || baseProductionTitle(); };
+const baseProductionTitle = viewTitle; viewTitle = function () { return ({ models: 'Центр AI-моделей', modelSetup: 'Налаштування моделі', queue: 'Черга генерацій', assistants: 'Загальний AI Помічник', davinci: 'Підготовка DaVinci' })[view] || baseProductionTitle(); };
 const baseProductionNav = renderWorkspaceNav; renderWorkspaceNav = function () { baseProductionNav(); };
 setTimeout(refreshProductionStudio, 0);
