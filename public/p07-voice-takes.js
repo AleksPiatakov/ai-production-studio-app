@@ -11,7 +11,7 @@
       .sort((a,b)=>Number(a.order||0)-Number(b.order||0))
       .flatMap(scene=>(scene.dialogue||[]).map(line=>({scene,line,
         character:(active.bibles?.characters||[]).find(c=>c.id===line.characterId),
-        voice:(active.voiceProfiles||[]).find(v=>v.identityKey===line.voiceIdentityKey)})));
+        voice:(active.voiceProfiles||[]).find(v=>v.id===((active.bibles?.characters||[]).find(c=>c.id===line.characterId)?.voiceProfileId))||(active.voiceProfiles||[]).find(v=>v.identityKey===line.voiceIdentityKey)})));
   }
   function projectScope(){
     const episode=(active.episodes||[]).find(e=>e.id===activeEpisodeId)||(active.episodes||[])[0];
