@@ -207,9 +207,9 @@ body:has(#screen-script.active) .preview-warning{display:none}
    </div>
    <section class="p04-filmstrip"><div class="p04-strip-title"><strong>Сцена 2 · 3 кадри</strong><span class="tag">Тестове прев'ю</span></div>
      <div class="p04-strip-items">
-       <button type="button" class="p04-strip-item active" data-demo-p04-shot="1"><span class="p04-shot-number">1</span><span class="p04-image-pending">Кадр 1<small>Референс не додано</small></span><small>0:05 · Середній план</small></button>
-       <button type="button" class="p04-strip-item" data-demo-p04-shot="2"><span class="p04-shot-number">2</span><span class="p04-image-pending">Кадр 2<small>Референс не додано</small></span><small>0:07 · Загальний план</small></button>
-       <button type="button" class="p04-strip-item" data-demo-p04-shot="3"><span class="p04-shot-number">3</span><span class="p04-image-pending">Кадр 3<small>Референс не додано</small></span><small>0:06 · Крупний план</small></button>
+       <button type="button" class="p04-strip-item active" data-demo-p04-shot="1"><span class="p04-shot-number">1</span><span class="p04-image-pending">Кадр 1<small>Референс не додано</small></span><small>0:05 · Середній план</small><span class="p04-shot-status">Чернетка</span></button>
+       <button type="button" class="p04-strip-item" data-demo-p04-shot="2"><span class="p04-shot-number">2</span><span class="p04-image-pending">Кадр 2<small>Референс не додано</small></span><small>0:07 · Загальний план</small><span class="p04-shot-status">На перевірці</span></button>
+       <button type="button" class="p04-strip-item" data-demo-p04-shot="3"><span class="p04-shot-number">3</span><span class="p04-image-pending">Кадр 3<small>Референс не додано</small></span><small>0:06 · Крупний план</small><span class="p04-shot-status">Чернетка</span></button>
      </div>
    </section>
   </article>
@@ -445,6 +445,14 @@ body:has(#screen-script.active) .preview-warning{display:none}
     <div class="advisor-thread"><article class="advisor-message user"><small>Ви</small><p>Що зараз є головним ризиком цього проєкту?</p></article><article class="advisor-message advisor"><small>AI Помічник проєкту</small><p>Найбільший ризик — перейти до генерації відео до остаточного затвердження ключових кадрів і голосів.</p><section><strong>Наступний крок</strong><ol><li>Закрити затвердження ключових кадрів.</li><li>Перевірити голоси персонажів.</li></ol></section></article></div>
     <div class="advisor-suggestions"><button type="button" disabled>Логіка</button><button type="button" disabled>Наступний крок</button><button type="button" disabled>Ризики</button></div>
     <form class="advisor-composer" onsubmit="return false"><label>Фокус розмови<select disabled><option>Весь проєкт</option></select></label><textarea readonly placeholder="Напишіть питання або попросіть оцінити ідею…"></textarea><div><small>Чат зберігається в пам’яті проєкту. Зміни застосовуються тільки через P-13.</small><div><button type="button" disabled>Очистити</button><button class="primary" type="button" disabled>Запитати AI Помічника</button></div></div></form>
+   </section>
+   <section class="advisor-preview-documents" aria-label="Документи AI Помічника проєкту">
+    <div class="advisor-preview-documents-head"><div><p class="eyebrow">ДОКУМЕНТИ</p><h4>Робочі документи проєкту</h4></div><span class="tag">3 документи</span></div>
+    <div class="advisor-preview-document-list">
+     <article class="advisor-document-card"><div><strong>Production Notes</strong><small>Оновлено сьогодні · проєктний документ</small></div><div class="actions"><button type="button" class="advisor-document-open" disabled>Редагувати</button><button type="button" class="advisor-document-delete" disabled>Видалити</button></div></article>
+     <article class="advisor-document-card"><div><strong>Character Consistency Checklist</strong><small>Лише цей проєкт · збережено локально</small></div><div class="actions"><button type="button" class="advisor-document-open" disabled>Редагувати</button><button type="button" class="advisor-document-delete" disabled>Видалити</button></div></article>
+    </div>
+    <p class="preview-note">У GitHub Pages це лише візуальна демонстрація. У локальній програмі документи можна відкривати, редагувати та видаляти.</p>
    </section>
    <div class="global-home-actions"><button type="button" data-screen="aiChanges">Переглянути зміни AI →</button><button type="button" data-screen="project">Назад до проєкту</button></div>
   </article>
